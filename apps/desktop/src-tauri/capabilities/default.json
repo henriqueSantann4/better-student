@@ -8,6 +8,14 @@
     "sql:default",
     "sql:allow-execute",
     "allow-versao-nucleo",
-    "allow-abrir-suap"
+    "allow-abrir-suap",
+    "allow-email-conectar",
+    "allow-email-conectado",
+    "allow-email-desconectar",
+    "allow-email-buscar",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://myaccount.google.com/*" }]
+    }
   ]
 }

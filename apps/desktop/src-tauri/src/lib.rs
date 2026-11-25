@@ -4,6 +4,8 @@
 //! do sistema operacional (arquivos, rede local, notificações, cofre de
 //! senhas). Regras de negócio ficam em TypeScript, no pacote `shared`.
 
+mod email;
+
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_sql::{Migration, MigrationKind};
 
@@ -106,6 +108,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0004_calendario.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "email",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0005_email.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -117,7 +125,16 @@ pub fn run() {
                 .add_migrations(BANCO, migrations())
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![versao_nucleo, abrir_suap, entregar_suap])
+        .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![
+            versao_nucleo,
+            abrir_suap,
+            entregar_suap,
+            email::email_conectar,
+            email::email_conectado,
+            email::email_desconectar,
+            email::email_buscar
+        ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o Better Student");
 }

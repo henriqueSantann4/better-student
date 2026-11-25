@@ -1,50 +1,169 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { isTauri } from "@tauri-apps/api/core";
 import {
   buscarEmails,
   configuracao,
   emailValido,
+  emails as repoEmails,
   iniciais,
   type CategoriaEmail,
   type Email as EmailT,
 } from "@better-student/shared";
 import { useApp } from "../contexto";
+import { abrirContaGoogle, conectar, conexaoDisponivel, desconectar, estaConectado, sincronizar } from "../email/conexao";
 import { formatarDataEmail } from "../formatos";
 
 const CATEGORIAS: CategoriaEmail[] = ["principal", "atualizacoes", "divulgacao"];
 type Pasta = "entrada" | "estrela" | "naoLidos";
 
 /**
- * E-mail institucional. Por enquanto, a conexão com o Google (OAuth + Gmail
- * API) ainda não existe: no app, a caixa aparece vazia com esse aviso; no
- * modo navegador de desenvolvimento, aparecem e-mails de exemplo fictícios
- * para dar para ver e ajustar a tela.
+ * E-mail institucional, lido por IMAP com senha de app (o IFSP bloqueia apps
+ * externos no Google, mas permite IMAP). Fluxo:
+ *   1. o usuário informa o endereço;
+ *   2. o assistente leva às páginas da conta Google e recebe a senha de app;
+ *   3. a caixa de entrada busca os e-mails novos sempre que é aberta.
+ * No modo navegador de desenvolvimento não há IMAP: aparecem exemplos.
  */
 export function Email() {
   const { t } = useTranslation();
   const { banco } = useApp();
   const [endereco, setEndereco] = useState<string | null | undefined>(undefined);
   const [editando, setEditando] = useState(false);
+  // `undefined` = ainda conferindo o cofre.
+  const [conectado, setConectado] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     configuracao.ler<string>(banco, "emailInstitucional").then(setEndereco).catch(() => setEndereco(null));
   }, [banco]);
 
-  if (endereco === undefined) return <p className="suave">{t("app.carregando")}</p>;
+  useEffect(() => {
+    if (!endereco) return;
+    if (!conexaoDisponivel()) {
+      setConectado(false);
+      return;
+    }
+    estaConectado(endereco).then(setConectado).catch(() => setConectado(false));
+  }, [endereco]);
+
+  if (endereco === undefined || (endereco && conectado === undefined)) {
+    return <p className="suave">{t("app.carregando")}</p>;
+  }
   if (endereco === null || editando) {
     return (
       <ConfigurarEmail
         atual={endereco}
         aoSalvar={(novo) => {
           setEndereco(novo);
+          setConectado(undefined);
           setEditando(false);
         }}
         aoCancelar={endereco ? () => setEditando(false) : undefined}
       />
     );
   }
-  return <CaixaEntrada endereco={endereco} aoTrocar={() => setEditando(true)} />;
+  if (conexaoDisponivel() && !conectado) {
+    return <AssistenteConexao endereco={endereco} aoConectar={() => setConectado(true)} aoTrocar={() => setEditando(true)} />;
+  }
+  return (
+    <CaixaEntrada
+      endereco={endereco}
+      aoTrocar={() => setEditando(true)}
+      aoDesconectar={
+        conexaoDisponivel()
+          ? () => {
+              void desconectar(banco, endereco).then(() => setConectado(false));
+            }
+          : undefined
+      }
+    />
+  );
+}
+
+/**
+ * Assistente da senha de app. O Google não deixa gerar a senha sozinho (de
+ * propósito), então o app faz o resto: abre as páginas certas, já na conta
+ * institucional, e testa a senha colada antes de guardar.
+ */
+function AssistenteConexao({
+  endereco,
+  aoConectar,
+  aoTrocar,
+}: {
+  endereco: string;
+  aoConectar: () => void;
+  aoTrocar: () => void;
+}) {
+  const { t } = useTranslation();
+  const [senha, setSenha] = useState("");
+  const [testando, setTestando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const letras = senha.replace(/\s+/g, "");
+
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    setTestando(true);
+    setErro(null);
+    try {
+      await conectar(endereco, letras);
+      setSenha("");
+      aoConectar();
+    } catch (falha) {
+      setErro(String(falha));
+    } finally {
+      setTestando(false);
+    }
+  }
+
+  return (
+    <section className="cartao estreito assistente">
+      <h1>{t("email.assistente.titulo")}</h1>
+      <p className="suave">{t("email.assistente.descricao", { endereco })}</p>
+
+      <ol className="passos-assistente">
+        <li>
+          <strong>{t("email.assistente.passo1")}</strong>
+          <span className="pequeno suave">{t("email.assistente.passo1Dica")}</span>
+          <button type="button" className="botao" onClick={() => abrirContaGoogle("verificacao", endereco)}>
+            {t("email.assistente.abrirVerificacao")}
+          </button>
+        </li>
+        <li>
+          <strong>{t("email.assistente.passo2")}</strong>
+          <span className="pequeno suave">{t("email.assistente.passo2Dica")}</span>
+          <button type="button" className="botao" onClick={() => abrirContaGoogle("senhasDeApp", endereco)}>
+            {t("email.assistente.abrirSenhas")}
+          </button>
+        </li>
+        <li>
+          <strong>{t("email.assistente.passo3")}</strong>
+          <form className="formulario" onSubmit={enviar}>
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="abcd efgh ijkl mnop"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label={t("email.assistente.senha")}
+            />
+            <span className="pequeno suave">
+              {letras.length === 16 ? t("email.assistente.ok16") : t("email.assistente.contagem", { count: letras.length })}
+            </span>
+            {erro && <p className="aviso">{erro}</p>}
+            <div className="acoes">
+              <button type="submit" className="botao primario" disabled={letras.length !== 16 || testando}>
+                {testando ? t("email.assistente.testando") : t("email.assistente.conectar")}
+              </button>
+              <button type="button" className="link pequeno" onClick={aoTrocar}>
+                {t("email.trocar")}
+              </button>
+            </div>
+          </form>
+        </li>
+      </ol>
+      <p className="pequeno suave">{t("email.assistente.seguranca")}</p>
+    </section>
+  );
 }
 
 function ConfigurarEmail({
@@ -105,27 +224,73 @@ function ConfigurarEmail({
   );
 }
 
-function CaixaEntrada({ endereco, aoTrocar }: { endereco: string; aoTrocar: () => void }) {
+type Sincronia = { estado: "parado" } | { estado: "buscando" } | { estado: "ok"; novos: number } | { estado: "erro"; mensagem: string };
+
+function CaixaEntrada({
+  endereco,
+  aoTrocar,
+  aoDesconectar,
+}: {
+  endereco: string;
+  aoTrocar: () => void;
+  aoDesconectar?: () => void;
+}) {
   const { t } = useTranslation();
+  const { banco } = useApp();
   const [emails, setEmails] = useState<EmailT[]>([]);
   const [exemplo, setExemplo] = useState(false);
   const [pasta, setPasta] = useState<Pasta>("entrada");
   const [categoria, setCategoria] = useState<CategoriaEmail>("principal");
   const [busca, setBusca] = useState("");
   const [abertoId, setAbertoId] = useState<string | null>(null);
+  const [sincronia, setSincronia] = useState<Sincronia>({ estado: "parado" });
+  const conectado = conexaoDisponivel();
+
+  const recarregar = useCallback(async () => {
+    setEmails(await repoEmails.listar(banco, endereco));
+  }, [banco, endereco]);
+
+  // Uma busca de cada vez: evita abrir duas conexões IMAP ao mesmo tempo
+  // (o React, em desenvolvimento, roda os efeitos duas vezes de propósito).
+  const buscando = useRef(false);
+
+  /** Busca o que é novo no Gmail e mostra a cópia local atualizada. */
+  const atualizar = useCallback(async () => {
+    if (buscando.current) return;
+    buscando.current = true;
+    setSincronia({ estado: "buscando" });
+    try {
+      const novos = await sincronizar(banco, endereco);
+      await recarregar();
+      setSincronia({ estado: "ok", novos });
+    } catch (erro) {
+      setSincronia({ estado: "erro", mensagem: String(erro) });
+    } finally {
+      buscando.current = false;
+    }
+  }, [banco, endereco, recarregar]);
 
   useEffect(() => {
-    // Exemplos só no modo navegador de desenvolvimento (não vão para o instalador).
-    if (!isTauri() && import.meta.env.DEV) {
+    if (conectado) {
+      // Mostra na hora o que já está guardado e, em paralelo, busca os novos
+      // (só enquanto o app está aberto: princípio de não rodar em segundo plano).
+      void recarregar().then(atualizar);
+    } else if (import.meta.env.DEV) {
+      // Exemplos só no modo navegador de desenvolvimento (não vão para o instalador).
       void import("../email/exemplos").then(({ emailsDeExemplo }) => {
         setEmails(emailsDeExemplo());
         setExemplo(true);
       });
     }
-  }, []);
+  }, [conectado, recarregar, atualizar]);
 
   function alterar(id: string, mudanca: Partial<EmailT>) {
     setEmails((lista) => lista.map((e) => (e.id === id ? { ...e, ...mudanca } : e)));
+    // No app, a marca fica guardada na cópia local (o Gmail é só leitura).
+    if (conectado) {
+      if (mudanca.lido !== undefined) void repoEmails.marcar(banco, id, "lido", mudanca.lido);
+      if (mudanca.estrela !== undefined) void repoEmails.marcar(banco, id, "estrela", mudanca.estrela);
+    }
   }
 
   function abrir(email: EmailT) {
@@ -152,6 +317,17 @@ function CaixaEntrada({ endereco, aoTrocar }: { endereco: string; aoTrocar: () =
             <button type="button" className="link pequeno" onClick={aoTrocar}>
               {t("email.trocar")}
             </button>
+            {aoDesconectar && (
+              <button
+                type="button"
+                className="link pequeno"
+                onClick={() => {
+                  if (window.confirm(t("email.confirmarDesconectar"))) aoDesconectar();
+                }}
+              >
+                {t("email.desconectar")}
+              </button>
+            )}
           </div>
         </div>
         <nav className="email-pastas">
@@ -184,9 +360,26 @@ function CaixaEntrada({ endereco, aoTrocar }: { endereco: string; aoTrocar: () =
               setAbertoId(null);
             }}
           />
+          {conectado && (
+            <div className="email-sincronia">
+              <span className="pequeno suave" role="status">
+                {sincronia.estado === "buscando"
+                  ? t("email.buscando")
+                  : sincronia.estado === "ok"
+                    ? t("email.novos", { count: sincronia.novos })
+                    : ""}
+              </span>
+              <button type="button" className="botao" onClick={atualizar} disabled={sincronia.estado === "buscando"}>
+                {t("email.atualizar")}
+              </button>
+            </div>
+          )}
         </div>
 
         {exemplo && <p className="email-aviso pequeno">{t("email.avisoExemplo")}</p>}
+        {sincronia.estado === "erro" && (
+          <p className="email-aviso erro pequeno">{t("email.erroBusca", { mensagem: sincronia.mensagem })}</p>
+        )}
 
         {aberto ? (
           <LeituraEmail email={aberto} aoVoltar={() => setAbertoId(null)} aoEstrela={() => alterar(aberto.id, { estrela: !aberto.estrela })} />
@@ -215,8 +408,14 @@ function CaixaEntrada({ endereco, aoTrocar }: { endereco: string; aoTrocar: () =
 
             {emails.length === 0 ? (
               <div className="email-vazio">
-                <h2>{t("email.naoConectadoTitulo")}</h2>
-                <p className="suave">{t("email.naoConectado")}</p>
+                {conectado ? (
+                  <p className="suave">{sincronia.estado === "buscando" ? t("email.primeiraBusca") : t("email.pastaVazia")}</p>
+                ) : (
+                  <>
+                    <h2>{t("email.naoConectadoTitulo")}</h2>
+                    <p className="suave">{t("email.naoConectado")}</p>
+                  </>
+                )}
               </div>
             ) : filtrados.length === 0 ? (
               <p className="email-vazio suave">{busca ? t("email.nadaEncontrado") : t("email.pastaVazia")}</p>

@@ -1,6 +1,35 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buscarEmails, emailValido, iniciais, type Email } from "./email.ts";
+import { buscarEmails, classificarEmail, emailValido, iniciais, trechoDe, type Email } from "./email.ts";
+
+describe("classificarEmail", () => {
+  it("mensagens automáticas vão para Atualizações", () => {
+    assert.equal(classificarEmail("sistema@nao-responda.exemplo.edu.br", "Notas lançadas"), "atualizacoes");
+    assert.equal(classificarEmail("nao-responda@exemplo.edu.br", "Aviso"), "atualizacoes");
+    assert.equal(classificarEmail("no-reply@accounts.google.com", "Alerta de segurança"), "atualizacoes");
+    assert.equal(classificarEmail("moodle@exemplo.edu.br", "Nova tarefa"), "atualizacoes");
+    assert.equal(classificarEmail("noreply@moodle.exemplo.edu.br", "Fórum"), "atualizacoes");
+  });
+
+  it("comunicação e eventos vão para Divulgação", () => {
+    assert.equal(classificarEmail("comunicacao@exemplo.edu.br", "Programação da semana"), "divulgacao");
+    assert.equal(classificarEmail("extensao@exemplo.edu.br", "Bolsas"), "divulgacao");
+    assert.equal(classificarEmail("coordenacao@exemplo.edu.br", "Inscrições abertas para a Semana Acadêmica"), "divulgacao");
+  });
+
+  it("pessoas (professores, coordenação) ficam em Principal", () => {
+    assert.equal(classificarEmail("fulana.souza@exemplo.edu.br", "Prova remarcada"), "principal");
+    assert.equal(classificarEmail("professor.exemplo@gmail.com", "Material da aula"), "principal");
+    assert.equal(classificarEmail("coordenacao@exemplo.edu.br", "Prazo de trancamento"), "principal");
+  });
+});
+
+describe("trechoDe", () => {
+  it("junta as linhas e corta com reticências", () => {
+    assert.equal(trechoDe("Olá,\n\nturma!"), "Olá, turma!");
+    assert.equal(trechoDe("a".repeat(300), 10), "aaaaaaaaa…");
+  });
+});
 
 describe("e-mail", () => {
   it("valida o formato do endereço", () => {
