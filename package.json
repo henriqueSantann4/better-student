@@ -10,6 +10,7 @@
     "dev:web": "pnpm --filter @better-student/desktop dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "testar:suap": "node scripts/testar-suap.mjs"
+    "testar:suap": "node scripts/testar-suap.mjs",
+    "testar:gmail": "node scripts/testar-gmail.mjs"
   }
 }
