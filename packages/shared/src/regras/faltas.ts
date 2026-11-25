@@ -53,3 +53,19 @@ export function encontrosRestantes(aulasRestantes: number, aulasPorEncontro: num
   if (aulasPorEncontro <= 0) return 0;
   return Math.floor(aulasRestantes / aulasPorEncontro);
 }
+
+export type NivelFaltas = "ok" | "atencao" | "reprovado";
+
+/**
+ * Nível de alerta das faltas, para a interface:
+ * - "reprovado": passou do limite;
+ * - "atencao": já usou 75% do limite, ou mais uma falta de um encontro
+ *   (`aulasPorEncontro`) estoura o limite;
+ * - "ok": o resto.
+ */
+export function nivelFaltas(resumo: ResumoFaltas, aulasPorEncontro = 0): NivelFaltas {
+  if (resumo.reprovadoPorFalta) return "reprovado";
+  if (resumo.faltas >= resumo.limite * 0.75) return "atencao";
+  if (aulasPorEncontro > 0 && resumo.restantes < aulasPorEncontro) return "atencao";
+  return "ok";
+}

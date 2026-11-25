@@ -31,7 +31,9 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ O app abre no Windows com `pnpm dev`, e o banco é criado em `%APPDATA%\io.github.betterstudent.app\better-student.db` com a migration 0001 aplicada.
 - ✅ Modelo de dados do SQLite: migration `packages/shared/src/banco/migrations/0001_inicial.sql`, carregada pelo `tauri-plugin-sql` (o Rust só roda as migrations; as consultas vêm do TypeScript).
 - ✅ Regras de média, faltas e situação (com IFA) em `packages/shared/src/regras/`, com testes (`node:test`, sem dependência extra).
-- ⏭️ **Próximo passo:** camada de acesso ao banco no desktop (repositórios TypeScript sobre `@tauri-apps/plugin-sql`) e as primeiras telas (Grade e Faltas).
+- ✅ Camada de acesso: repositórios em `packages/shared/src/banco/` sobre a interface `Banco` (desktop usa `@tauri-apps/plugin-sql`; testes usam `node:sqlite`).
+- ✅ Telas de **Grade** (disciplinas + semana) e **Faltas** (aulas de hoje com "Faltei", resumo por disciplina, lançamento manual, histórico). Criação do primeiro semestre.
+- ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA) e edição do semestre/regras.
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 
@@ -64,6 +66,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - Colunas em `snake_case` no SQLite, `camelCase` nos tipos TS. Datas em TEXT ISO, booleanos em INTEGER 0/1.
 - Valores derivados (média, situação, faltas restantes) **não** são guardados; são calculados em `shared/regras`.
 - Migration publicada nunca é editada: mudanças viram `0002_...sql` e uma nova entrada em `migrations()` no `lib.rs`.
+- Parâmetros SQL sempre com `?` (posicional): funciona no plugin do Tauri, no `node:sqlite` e no sql.js.
 - Imports dentro de `packages/shared` usam a extensão `.ts` (permite rodar os testes direto no Node 24).
 
 ## Comandos
@@ -71,7 +74,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 ```bash
 pnpm install      # dependências
 pnpm dev          # abre o app (Tauri + Vite)
-pnpm dev:web      # só a interface no navegador
+pnpm dev:web      # só a interface no navegador (banco sql.js no localStorage, só em dev)
 pnpm typecheck    # checa os tipos de todos os pacotes
 pnpm test         # roda os testes (regras e migrations)
 pnpm build        # gera o instalador para Windows

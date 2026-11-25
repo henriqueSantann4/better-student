@@ -6,6 +6,12 @@
   --texto: #1c1f24;
   --suave: #6b7280;
   --destaque: #3b5bdb;
+  --borda: color-mix(in srgb, var(--suave) 22%, transparent);
+  --borda-forte: color-mix(in srgb, var(--suave) 45%, transparent);
+  --ok: #2b8a3e;
+  --atencao: #f59f00;
+  --atencao-texto: #a86700;
+  --perigo: #e03131;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,6 +21,9 @@
     --texto: #e8eaed;
     --suave: #9aa0a6;
     --destaque: #748ffc;
+    --ok: #51cf66;
+    --atencao-texto: #ffc94d;
+    --perigo: #ff6b6b;
   }
 }
 
@@ -71,4 +80,346 @@ body {
   margin-top: 32px;
   color: var(--suave);
   font-size: 0.85rem;
+}
+
+/* ---------- Menu ---------- */
+
+.menu-semestre {
+  padding: 0 10px 12px;
+  margin-top: -12px;
+  font-size: 0.85rem;
+}
+
+.menu-item.ativo {
+  background: color-mix(in srgb, var(--destaque) 18%, transparent);
+  color: var(--destaque);
+  font-weight: 600;
+}
+
+.menu-rodape {
+  margin-top: auto;
+  padding: 0 10px;
+  font-size: 0.75rem;
+}
+
+.menu {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* ---------- Estrutura ---------- */
+
+.conteudo {
+  max-width: 1100px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 16px;
+}
+
+.cabecalho h1 {
+  margin: 0;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.cartao {
+  margin: 0 0 16px;
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: var(--painel);
+  border: 1px solid var(--borda);
+}
+
+.cartao.estreito {
+  max-width: 520px;
+}
+
+.suave {
+  color: var(--suave);
+}
+
+.pequeno {
+  font-size: 0.85rem;
+}
+
+/* ---------- Formulários ---------- */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subformulario {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borda);
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.formulario label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.formulario label.largo {
+  flex: 1 1 220px;
+}
+
+input,
+select {
+  padding: 7px 9px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+}
+
+input[type="color"] {
+  width: 48px;
+  height: 36px;
+  padding: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 1px;
+}
+
+.acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.alinhar-base {
+  align-self: flex-end;
+}
+
+/* ---------- Botões ---------- */
+
+.botao {
+  padding: 7px 14px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.botao:hover {
+  background: color-mix(in srgb, var(--texto) 6%, transparent);
+}
+
+.botao.primario {
+  border-color: var(--destaque);
+  background: var(--destaque);
+  color: #fff;
+}
+
+.botao.primario:hover {
+  background: color-mix(in srgb, var(--destaque) 85%, #000);
+}
+
+.botao.perigo {
+  color: var(--perigo);
+}
+
+.botao-icone {
+  border: 0;
+  background: transparent;
+  color: var(--suave);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.botao-icone:hover {
+  color: var(--perigo);
+}
+
+/* ---------- Listas ---------- */
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.item:last-child {
+  border-bottom: 0;
+}
+
+.item-texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bolinha {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--suave);
+}
+
+/* ---------- Grade semanal ---------- */
+
+.semana {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dia-nome {
+  font-size: 0.9rem;
+}
+
+.aula {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 24px 8px 10px;
+  border-left: 4px solid var(--destaque);
+  border-radius: 6px;
+  background: var(--fundo);
+}
+
+.aula .botao-icone {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+/* ---------- Faltas ---------- */
+
+.grade-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--borda);
+  border-top: 4px solid var(--destaque);
+  border-radius: 8px;
+}
+
+.resumo-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.barra {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.barra > div {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--ok);
+}
+
+.barra.atencao > div {
+  background: var(--atencao);
+}
+
+.barra.reprovado > div {
+  background: var(--perigo);
+}
+
+.etiqueta {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 15%, transparent);
+}
+
+.etiqueta.atencao {
+  color: var(--atencao-texto);
+  background: color-mix(in srgb, var(--atencao) 20%, transparent);
+}
+
+.etiqueta.reprovado {
+  color: var(--perigo);
+  background: color-mix(in srgb, var(--perigo) 15%, transparent);
+}
+
+/* ---------- Avisos ---------- */
+
+.aviso {
+  margin: 0;
+  color: var(--perigo);
+}
+
+.aviso.faixa {
+  /* Fixa no topo ao rolar: o erro aparece mesmo quando o botão clicado está lá embaixo. */
+  position: sticky;
+  top: 12px;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--perigo) 14%, var(--painel));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
 }

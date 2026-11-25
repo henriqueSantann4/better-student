@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { REGRAS_PADRAO_IFSP, type Avaliacao, type Falta } from "../tipos.ts";
 import { calcularMedia } from "./notas.ts";
-import { encontrosRestantes, resumirFaltas } from "./faltas.ts";
+import { encontrosRestantes, nivelFaltas, resumirFaltas } from "./faltas.ts";
 import { calcularSituacao, type EntradaSituacao } from "./situacao.ts";
 
 const registro = { criadoEm: "", atualizadoEm: "", excluidoEm: null };
@@ -92,6 +92,17 @@ describe("encontrosRestantes", () => {
   it("encontro sem aulas não divide por zero", () => {
     assert.equal(encontrosRestantes(25, 0), 0);
   });
+});
+
+describe("nivelFaltas", () => {
+  const d = { totalAulas: 100, frequenciaMinima: null };
+  const nivel = (aulas: number, porEncontro = 0) =>
+    nivelFaltas(resumirFaltas(d, aulas ? [falta(aulas)] : [], REGRAS_PADRAO_IFSP), porEncontro);
+
+  it("tranquilo com poucas faltas", () => assert.equal(nivel(8, 4), "ok"));
+  it("atenção a partir de 75% do limite", () => assert.equal(nivel(19), "atencao"));
+  it("atenção se mais um encontro estoura o limite", () => assert.equal(nivel(16, 10), "atencao"));
+  it("reprovado depois do limite", () => assert.equal(nivel(26), "reprovado"));
 });
 
 describe("calcularSituacao", () => {

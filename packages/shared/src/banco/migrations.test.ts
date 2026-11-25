@@ -4,26 +4,16 @@
  */
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
-import { DatabaseSync } from "node:sqlite";
+import type { DatabaseSync } from "node:sqlite";
+import { sqliteEmMemoria } from "./memoria.ts";
 
-const pasta = new URL("./migrations/", import.meta.url);
 const agora = "2026-11-24T12:00:00-03:00";
-
-function bancoNovo(): DatabaseSync {
-  const db = new DatabaseSync(":memory:");
-  db.exec("PRAGMA foreign_keys = ON;");
-  for (const arquivo of readdirSync(pasta).filter((f) => f.endsWith(".sql")).sort()) {
-    db.exec(readFileSync(new URL(arquivo, pasta), "utf8"));
-  }
-  return db;
-}
 
 describe("migrations", () => {
   let db: DatabaseSync;
 
   beforeEach(() => {
-    db = bancoNovo();
+    db = sqliteEmMemoria();
     db.prepare(
       "INSERT INTO semestre (id, nome, inicio, fim, criado_em, atualizado_em) VALUES ('s1', '2026.2', '2026-08-01', '2026-12-20', ?, ?)",
     ).run(agora, agora);
