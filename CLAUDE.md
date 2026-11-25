@@ -66,6 +66,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 4. **Sem competição entre pessoas.** Nada de rankings; a única comparação é do usuário consigo mesmo.
 5. **Nada fixo do IFSP no código.** Regras configuráveis; SUAP e Moodle como adaptadores.
 6. **O núcleo Rust fica fino.** Regras de negócio ficam em TypeScript, em `packages/shared`.
+7. **A instituição preenche tudo.** No primeiro acesso o app pergunta só a faculdade (IFSP já vem marcado) e o campus; dali saem regras acadêmicas (médias, IFA, frequência), endereço do SUAP, Moodle, calendário e o resto. O aluno **nunca** precisa digitar um valor que a instituição já define (ex.: nota mínima do IFA). Tudo pode ser trocado depois na tela **Configurações**, que também reúne notificações, tema e demais preferências. Toda funcionalidade nova que dependa de um valor institucional deve lê-lo do perfil da instituição, não pedir ao usuário nem fixar no código.
 
 ## Como trabalhar com o Antonio
 
