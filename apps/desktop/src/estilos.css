@@ -1320,6 +1320,54 @@ textarea {
   color: var(--destaque);
 }
 
+.notas-suap-botao {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notas-suap-botao:hover dd {
+  color: var(--destaque);
+}
+
+.notas-ver {
+  align-self: flex-start;
+}
+
+.notas-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--suave) 8%, transparent);
+}
+
+.notas-etapa {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.notas-legenda {
+  margin: 0 0 4px;
+  padding-left: 18px;
+}
+
+.notas-tabela td {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.notas-conta {
+  margin: 6px 0 0;
+}
+
 .notas-subtitulo {
   margin: 10px 0 0;
   font-weight: 600;

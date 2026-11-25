@@ -22,6 +22,7 @@ interface LinhaDisciplina extends LinhaRegistro {
   suap_mfd: number | null;
   suap_atualizado_em: string | null;
   suap_importado_em: string | null;
+  suap_detalhe: string | null;
 }
 
 function lerSuap(l: LinhaDisciplina): DadosSuap | null {
@@ -39,6 +40,7 @@ function lerSuap(l: LinhaDisciplina): DadosSuap | null {
     mfd: l.suap_mfd,
     atualizadoEm: l.suap_atualizado_em,
     importadoEm: l.suap_importado_em,
+    detalhe: l.suap_detalhe ? (JSON.parse(l.suap_detalhe) as DadosSuap["detalhe"]) : null,
   };
 }
 
@@ -99,13 +101,22 @@ export const disciplinas = {
     );
   },
 
+  /** Grava o "Detalhar" do SUAP da disciplina (substitui o anterior). */
+  async gravarDetalheSuap(banco: Banco, id: string, detalhe: DadosSuap["detalhe"]): Promise<void> {
+    await banco.executar("UPDATE disciplina SET suap_detalhe = ?, atualizado_em = ? WHERE id = ?", [
+      detalhe ? JSON.stringify(detalhe) : null,
+      agora(),
+      id,
+    ]);
+  },
+
   /** Nota tirada no IFA (`null` = não fez). */
   async gravarNotaIfa(banco: Banco, id: string, nota: number | null): Promise<void> {
     await banco.executar("UPDATE disciplina SET nota_ifa = ?, atualizado_em = ? WHERE id = ?", [nota, agora(), id]);
   },
 
   /** Grava o retrato do SUAP (última importação) na disciplina. */
-  async gravarSuap(banco: Banco, id: string, dados: Omit<DadosSuap, "importadoEm">): Promise<void> {
+  async gravarSuap(banco: Banco, id: string, dados: Omit<DadosSuap, "importadoEm" | "detalhe">): Promise<void> {
     const momento = agora();
     await banco.executar(
       `UPDATE disciplina SET suap_codigo = ?, suap_diario = ?, suap_aulas_cumpridas = ?, suap_faltas = ?,

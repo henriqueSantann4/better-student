@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  aplicarDetalhesSuap,
   aplicarImportacao,
   calendario as repoCalendario,
   estimarDatas,
@@ -16,7 +17,7 @@ import {
 import { useApp } from "../contexto";
 import { CORES } from "../cores";
 import { formatarDataCompleta } from "../formatos";
-import { EntradaBoletim, mesmoPeriodo, PreviaHorarios, PreviaImportacao, type ExtrasSuap } from "./ImportarSuap";
+import { EntradaBoletim, mesmoPeriodo, PreviaHorarios, PreviaImportacao, SEM_EXTRAS, type ExtrasSuap } from "./ImportarSuap";
 
 /**
  * Primeiro acesso. Dois caminhos:
@@ -46,7 +47,7 @@ function ComecarPeloSuap() {
   const { t } = useTranslation();
   const { banco, acao, instituicao } = useApp();
   const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
-  const [extras, setExtras] = useState<ExtrasSuap>({ horarios: null, calendario: null });
+  const [extras, setExtras] = useState<ExtrasSuap>(SEM_EXTRAS);
 
   if (!boletim) {
     return (
@@ -80,6 +81,7 @@ function ComecarPeloSuap() {
       const semestre = await semestres.criar(banco, { ...novo, regras: instituicao?.perfil.regras });
       await aplicarImportacao(banco, semestre.id, boletim, plano, CORES);
       if (horarios) await importarHorarios(banco, semestre.id, horarios);
+      if (extras.detalhes.length > 0) await aplicarDetalhesSuap(banco, semestre.id, extras.detalhes);
       if (doCalendario) await repoCalendario.aplicarPacote(banco, semestre, "suap", doCalendario);
     });
   }

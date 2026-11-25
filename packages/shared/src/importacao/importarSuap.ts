@@ -4,6 +4,7 @@ import { disciplinas as repoDisciplinas } from "../banco/disciplinas.ts";
 import type { NovoSemestre } from "../banco/semestres.ts";
 import { estimarDatas, nomeDoPeriodo, periodoDaData, periodoDoNome } from "../regras/semestre.ts";
 import { normalizar, type BoletimSuap, type DisciplinaSuap } from "./boletimSuap.ts";
+import type { DetalheNotasSuap } from "./detalheNotasSuap.ts";
 
 export interface ItemImportacao {
   suap: DisciplinaSuap;
@@ -115,3 +116,31 @@ export async function aplicarImportacao(
   }
   return resultado;
 }
+
+/** Um "Detalhar" lido, com o número do diário da linha do boletim de onde veio. */
+export interface DetalheDoDiario {
+  diario: string;
+  detalhe: DetalheNotasSuap;
+}
+
+/**
+ * Grava o detalhamento das notas em cada disciplina do semestre, casando pelo
+ * número do diário (gravado pela importação do boletim). Devolve quantas
+ * disciplinas receberam o detalhamento.
+ */
+export async function aplicarDetalhesSuap(
+  banco: Banco,
+  semestreId: string,
+  detalhes: readonly DetalheDoDiario[],
+): Promise<number> {
+  const lista = await repoDisciplinas.listar(banco, semestreId);
+  let gravados = 0;
+  for (const { diario, detalhe } of detalhes) {
+    const disciplina = lista.find((d) => d.suap?.diario === diario);
+    if (!disciplina) continue;
+    await repoDisciplinas.gravarDetalheSuap(banco, disciplina.id, detalhe);
+    gravados++;
+  }
+  return gravados;
+}
+

@@ -2,8 +2,8 @@
 //
 // Ele não lê nem guarda a senha: o login é feito pelo próprio usuário, na
 // página real do SUAP (onde o reCAPTCHA funciona normalmente). Depois do
-// login, ele busca o boletim, os horários de aula e o calendário acadêmico do
-// mesmo jeito que o site faz ao clicar nas abas, e entrega o HTML ao app pelo
+// login, ele busca o boletim, os horários de aula, o calendário acadêmico e o
+// "Detalhar" de cada disciplina do mesmo jeito que o site faz ao clicar, e entrega o HTML ao app pelo
 // único comando que esta janela pode chamar: `entregar_suap`.
 (function () {
   "use strict";
@@ -62,14 +62,20 @@
       };
       var horarios = await buscarHorarios(matricula).catch(nada);
       var calendario = await buscarCalendario(periodoDoBoletim(html)).catch(nada);
+      aviso("buscando o detalhamento das notas…");
+      var detalhes = await buscarDetalhes(html).catch(function () {
+        return [];
+      });
       var achados = ["boletim"];
       if (horarios) achados.push("horários");
       if (calendario) achados.push("calendário");
+      if (detalhes.length) achados.push("notas detalhadas");
       aviso(achados.join(", ").replace(/, ([^,]*)$/, " e $1") + " encontrados! Voltando para o app…", "ok");
       await window.__TAURI_INTERNALS__.invoke("entregar_suap", {
         boletim: html,
         horarios: horarios,
         calendario: calendario,
+        detalhes: detalhes,
       });
     } catch (erro) {
       aviso("não consegui buscar o boletim: " + (erro && erro.message ? erro.message : erro), "erro");
@@ -87,6 +93,26 @@
     });
     var html = await resposta.text();
     return resposta.ok && /data-hint|Segunda/.test(html) ? html : null;
+  }
+
+  /**
+   * O "Detalhar" de cada disciplina do boletim (as avaliações de cada etapa).
+   * O número do diário, na primeira coluna da linha, diz de qual disciplina é.
+   */
+  async function buscarDetalhes(htmlBoletim) {
+    var pagina = new DOMParser().parseFromString(htmlBoletim, "text/html");
+    var links = pagina.querySelectorAll('a[href*="/edu/detalhar_matricula_diario_boletim/"]');
+    var detalhes = [];
+    for (var i = 0; i < links.length && i < 40; i++) {
+      var linha = links[i].closest("tr");
+      var diario = linha && linha.cells[0] ? linha.cells[0].textContent.trim() : "";
+      if (!/^\d+$/.test(diario)) continue;
+      var caminho = new URL(links[i].getAttribute("href"), location.origin).pathname;
+      var resposta = await fetch(caminho, { credentials: "same-origin" });
+      var html = await resposta.text();
+      if (resposta.ok && html.indexOf("Detalhamento das Notas") >= 0) detalhes.push({ diario: diario, html: html });
+    }
+    return detalhes;
   }
 
   /** Período do boletim, ex.: { ano: "2026", periodo: "2" }. */

@@ -14,7 +14,7 @@ function suap(dados: Partial<DadosSuap>): DadosSuap {
   return {
     codigo: null, diario: null, aulasCumpridas: null, faltas: null, frequencia: null, situacao: null,
     etapas: [{ numero: 1, nota: null, faltas: null }], media: null, naf: null, mfd: null,
-    atualizadoEm: null, importadoEm: "2026-11-25T10:00", ...dados,
+    atualizadoEm: null, importadoEm: "2026-11-25T10:00", detalhe: null, ...dados,
   };
 }
 

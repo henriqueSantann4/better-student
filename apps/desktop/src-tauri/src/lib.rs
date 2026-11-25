@@ -61,13 +61,25 @@ async fn abrir_suap(app: AppHandle, servidor: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Página do "Detalhar" de uma disciplina, com o número do diário da linha
+/// do boletim de onde ela veio (é por ele que o app acha a disciplina).
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct DetalheSuap {
+    diario: String,
+    html: String,
+}
+
+/// Limite de "Detalhar" aceitos de uma vez (um por disciplina).
+const MAXIMO_DETALHES: usize = 40;
+
 /// O que a janela do SUAP entrega: o boletim e, se achou, os horários de
-/// aula e o calendário acadêmico.
+/// aula, o calendário acadêmico e o detalhamento das notas.
 #[derive(Clone, serde::Serialize)]
 struct PacoteSuap {
     boletim: String,
     horarios: Option<String>,
     calendario: Option<String>,
+    detalhes: Vec<DetalheSuap>,
 }
 
 /// Recebido da janela do SUAP: repassa o boletim (e horários/calendário, se vieram)
@@ -80,15 +92,22 @@ fn entregar_suap(
     boletim: String,
     horarios: Option<String>,
     calendario: Option<String>,
+    detalhes: Option<Vec<DetalheSuap>>,
 ) -> Result<(), String> {
     if janela.label() != JANELA_SUAP {
         return Err("comando exclusivo da janela do SUAP".into());
     }
     let grande = |texto: &str| texto.len() > TAMANHO_MAXIMO_BOLETIM;
-    if grande(&boletim) || horarios.as_deref().is_some_and(grande) || calendario.as_deref().is_some_and(grande) {
+    let detalhes = detalhes.unwrap_or_default();
+    if grande(&boletim)
+        || horarios.as_deref().is_some_and(grande)
+        || calendario.as_deref().is_some_and(grande)
+        || detalhes.len() > MAXIMO_DETALHES
+        || detalhes.iter().any(|d| grande(&d.html) || d.diario.len() > 32)
+    {
         return Err("página do SUAP grande demais".into());
     }
-    app.emit_to("main", "suap:boletim", PacoteSuap { boletim, horarios, calendario })
+    app.emit_to("main", "suap:boletim", PacoteSuap { boletim, horarios, calendario, detalhes })
         .map_err(|e| e.to_string())?;
     if let Some(principal) = app.get_webview_window("main") {
         let _ = principal.set_focus();
@@ -136,6 +155,12 @@ fn migrations() -> Vec<Migration> {
             version: 6,
             description: "origem da tarefa",
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0006_tarefa_origem.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 7,
+            description: "detalhamento das notas do suap",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0007_suap_detalhe.sql"),
             kind: MigrationKind::Up,
         },
     ]

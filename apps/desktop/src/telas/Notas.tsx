@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  explicarEtapa,
   tarefas as repoTarefas,
   textosRecuperacao,
+  type DetalheNotasSuap,
   type Disciplina,
+  type EtapaDetalhe,
   type Tarefa,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
-import { formatarDataHora, formatarNota, formatarPrazo } from "../formatos";
+import { formatarData, formatarDataHora, formatarNota, formatarPrazo } from "../formatos";
 import { ImportarSuap } from "./ImportarSuap";
 
 /** Tipos de tarefa da Agenda que costumam valer nota. */
@@ -97,6 +100,8 @@ function CartaoNotas({
   const { instituicao } = useSemestre();
   const recuperacao = textosRecuperacao(instituicao.perfil);
   const suap = disciplina.suap;
+  const detalhe = suap?.detalhe ?? null;
+  const [aberto, setAberto] = useState(false);
 
   // Só o que o SUAP já tem; nada calculado pelo app.
   const notas: { rotulo: string; valor: number; destaque?: boolean }[] = [];
@@ -117,17 +122,23 @@ function CartaoNotas({
       </div>
 
       {notas.length > 0 ? (
-        <dl className="notas-suap">
-          {notas.map((n) => (
-            <div key={n.rotulo} className={n.destaque ? "destaque" : undefined}>
-              <dt className="pequeno suave">{n.rotulo}</dt>
-              <dd>{formatarNota(n.valor)}</dd>
-            </div>
-          ))}
-        </dl>
+        // Com o detalhamento, clicar nas notas mostra de onde elas vieram.
+        detalhe ? (
+          <button type="button" className="notas-suap-botao" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+            <ListaNotas notas={notas} />
+          </button>
+        ) : (
+          <ListaNotas notas={notas} />
+        )
       ) : (
         <p className="pequeno suave">{suap ? t("notas.semNotaSuap") : t("notas.semSuap")}</p>
       )}
+      {detalhe && (
+        <button type="button" className="link pequeno notas-ver" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+          {aberto ? t("notas.esconderDetalhe") : t("notas.verDetalhe")}
+        </button>
+      )}
+      {detalhe && aberto && <DetalheDaNota detalhe={detalhe} />}
 
       <h3 className="pequeno suave notas-subtitulo">{t("notas.proximas")}</h3>
       {pendentes.length > 0 ? (
@@ -153,3 +164,94 @@ function CartaoNotas({
     </article>
   );
 }
+
+function ListaNotas({ notas }: { notas: { rotulo: string; valor: number; destaque?: boolean }[] }) {
+  return (
+    <dl className="notas-suap">
+      {notas.map((n) => (
+        <div key={n.rotulo} className={n.destaque ? "destaque" : undefined}>
+          <dt className="pequeno suave">{n.rotulo}</dt>
+          <dd>{formatarNota(n.valor)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * O "Detalhar" do SUAP: as avaliações de cada etapa e a conta que o SUAP faz.
+ * A etapa final (a prova de recuperação) só aparece se já tiver nota.
+ */
+function DetalheDaNota({ detalhe }: { detalhe: DetalheNotasSuap }) {
+  const etapas = detalhe.etapas.filter((e) => e.numero !== null || e.avaliacoes.some((a) => a.nota !== null));
+  return (
+    <div className="notas-detalhe">
+      {etapas.map((etapa, i) => (
+        <EtapaDaNota key={i} etapa={etapa} />
+      ))}
+    </div>
+  );
+}
+
+function EtapaDaNota({ etapa }: { etapa: EtapaDetalhe }) {
+  const { t } = useTranslation();
+  const { instituicao } = useSemestre();
+  const explicacao = explicarEtapa(etapa);
+  const titulo =
+    etapa.numero === null
+      ? t("notas.etapaFinal", textosRecuperacao(instituicao.perfil))
+      : t("notas.etapa", { numero: etapa.numero });
+  // Na conta, só as notas que somam algo (zeros de ponto extra não ajudam a ler).
+  const parcelas = explicacao.parcelas.filter((n) => n !== 0);
+
+  return (
+    <section>
+      <h4 className="notas-etapa">
+        {titulo} <span className="suave">· {etapa.forma}</span>
+      </h4>
+      {etapa.legenda.length > 0 && (
+        <ul className="pequeno suave notas-legenda">
+          {etapa.legenda.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+      )}
+      <table className="tabela notas-tabela">
+        <tbody>
+          {etapa.avaliacoes.map((a, i) => (
+            <tr key={`${a.sigla}-${i}`}>
+              <td className="sem-quebra">
+                <strong>{a.sigla}</strong>
+              </td>
+              <td>
+                {a.descricao ?? a.tipo}
+                {a.tipo && a.descricao && a.tipo !== a.descricao && <span className="pequeno suave"> · {a.tipo}</span>}
+              </td>
+              <td className="pequeno suave sem-quebra">{a.data ? formatarData(a.data) : ""}</td>
+              <td className="numero">{a.nota === null ? <span className="suave pequeno">{t("notas.semNota")}</span> : formatarNota(a.nota)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="pequeno notas-conta">
+        {explicacao.resultado !== null && explicacao.conta === "soma" &&
+          t("notas.conta.soma", {
+            parcelas: parcelas.length > 0 ? parcelas.map((n) => formatarNota(n)).join(" + ") : "0",
+            resultado: formatarNota(explicacao.resultado),
+          })}
+        {explicacao.resultado !== null && explicacao.conta === "media" &&
+          t("notas.conta.media", {
+            parcelas: explicacao.parcelas.map((n) => formatarNota(n)).join(" + "),
+            quantidade: explicacao.parcelas.length,
+            resultado: formatarNota(explicacao.resultado),
+          })}
+        {explicacao.resultado !== null && explicacao.conta === "media_ponderada" &&
+          t("notas.conta.ponderada", { resultado: formatarNota(explicacao.resultado) })}
+        {explicacao.conta === "desconhecida" && t("notas.conta.formula")}
+        {explicacao.pendentes.length > 0 &&
+          ` ${t("notas.conta.pendentes", { siglas: explicacao.pendentes.map((a) => a.sigla).join(", ") })}`}
+      </p>
+    </section>
+  );
+}
+

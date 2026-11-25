@@ -22,6 +22,8 @@ export interface PacoteSuap {
   boletim: string;
   horarios: string | null;
   calendario: string | null;
+  /** "Detalhar" de cada disciplina, com o número do diário. */
+  detalhes: { diario: string; html: string }[];
 }
 
 /**

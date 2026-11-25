@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  aplicarDetalhesSuap,
   aplicarImportacao,
   ErroBoletim,
   calendario as repoCalendario,
   importarHorarios,
   lerBoletimSuap,
   lerCalendarioSuap,
+  lerDetalheNotasSuap,
   lerHorariosSuap,
   periodoConfere,
   periodoDoNome,
   planejarImportacao,
   type BoletimSuap,
+  type DetalheDoDiario,
   type HorariosSuap,
   type ItemImportacao,
   type ResultadoImportacao,
@@ -27,9 +30,11 @@ import { formatarDataHora, formatarNota, nomeDia } from "../formatos";
 export interface ExtrasSuap {
   horarios: HorariosSuap | null;
   calendario: SemestrePacote | null;
+  /** "Detalhar" de cada disciplina (as avaliações e a forma de cálculo). */
+  detalhes: DetalheDoDiario[];
 }
 
-const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null };
+export const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null, detalhes: [] };
 
 type Periodo = { ano: number; periodo: number } | null;
 
@@ -70,6 +75,8 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
       saida.resultado = await aplicarImportacao(banco, semestre.id, boletim, plano, cores);
       // Depois das disciplinas: os horários precisam delas já criadas para casar.
       if (horarios) saida.horarios = await importarHorarios(banco, semestre.id, horarios);
+      // O detalhamento casa pelo número do diário, gravado logo acima pelo boletim.
+      if (extras.detalhes.length > 0) await aplicarDetalhesSuap(banco, semestre.id, extras.detalhes);
       if (calendarioServe) await repoCalendario.aplicarPacote(banco, semestre, "suap", calendario!);
     });
     if (ok && saida.resultado) {
@@ -95,6 +102,9 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
           {confere === false && <p className="aviso">{t("importar.periodoDiferente", { semestre: semestre.nome })}</p>}
           <PreviaImportacao boletim={boletim} plano={plano} />
           {horarios && <PreviaHorarios horarios={horarios} />}
+          {extras.detalhes.length > 0 && (
+            <p className="pequeno sucesso">{t("importar.detalhesJunto", { count: extras.detalhes.length })}</p>
+          )}
           {calendarioServe && <p className="pequeno sucesso">{t("importar.calendarioJunto", { periodo: calendario!.periodo })}</p>}
           <div className="acoes">
             <button type="button" className="botao primario" onClick={importar}>
@@ -176,7 +186,12 @@ export function EntradaBoletim({
     return () => pararEspera.current?.();
   }, [banco, automatico]);
 
-  function ler(html: string, htmlHorarios: string | null = null, htmlCalendario: string | null = null) {
+  function ler(
+    html: string,
+    htmlHorarios: string | null = null,
+    htmlCalendario: string | null = null,
+    paginasDetalhe: { diario: string; html: string }[] = [],
+  ) {
     try {
       const boletim = lerBoletimSuap(html);
       setAviso(null);
@@ -184,6 +199,10 @@ export function EntradaBoletim({
       aoLer(boletim, {
         horarios: htmlHorarios ? tentar(() => lerHorariosSuap(htmlHorarios)) : null,
         calendario: htmlCalendario ? tentar(() => lerCalendarioSuap(htmlCalendario)) : null,
+        detalhes: paginasDetalhe.flatMap(({ diario, html: pagina }) => {
+          const detalhe = tentar(() => lerDetalheNotasSuap(pagina));
+          return detalhe && detalhe.etapas.length > 0 ? [{ diario, detalhe }] : [];
+        }),
       });
     } catch (erro) {
       setAviso(erro instanceof ErroBoletim ? t(`importar.erro.${erro.motivo}`) : String(erro));
@@ -198,7 +217,7 @@ export function EntradaBoletim({
       await gravarServidorSuap(banco, servidor);
       pararEspera.current = await buscarBoletimNoSuap(servidor, (pacote) => {
         setAguardando(false);
-        ler(pacote.boletim, pacote.horarios, pacote.calendario);
+        ler(pacote.boletim, pacote.horarios, pacote.calendario, pacote.detalhes ?? []);
       });
     } catch (erro) {
       setAguardando(false);

@@ -185,7 +185,9 @@
     "horariosExplicacao": "Os horários vêm da aba \"Locais e Horários de Aula\" do SUAP e substituem os que estiverem cadastrados para essas disciplinas. Cada encontro vale a quantidade de aulas do quadro: faltar no dia conta todas elas.",
     "horariosGravados_one": "{{count}} horário de aula gravado.",
     "horariosGravados_other": "{{count}} horários de aula gravados.",
-    "horariosSemDisciplina": "Sem disciplina correspondente, ficaram de fora os horários de: {{nomes}}."
+    "horariosSemDisciplina": "Sem disciplina correspondente, ficaram de fora os horários de: {{nomes}}.",
+    "detalhesJunto_one": "O detalhamento das notas de {{count}} disciplina veio junto (as avaliações de cada etapa).",
+    "detalhesJunto_other": "O detalhamento das notas de {{count}} disciplinas veio junto (as avaliações de cada etapa)."
   },
   "calendario": {
     "titulo": "Calendário acadêmico",
@@ -403,7 +405,18 @@
     "proximas": "Próximas provas e trabalhos",
     "semData": "sem data",
     "nadaMarcado": "Nada marcado.",
-    "marcar": "Marcar na Agenda"
+    "marcar": "Marcar na Agenda",
+    "verDetalhe": "Ver como a nota foi feita",
+    "esconderDetalhe": "Esconder o detalhamento",
+    "etapaFinal": "Avaliação final ({{recuperacao}})",
+    "semNota": "sem nota",
+    "conta": {
+      "soma": "Soma das notas: {{parcelas}} = {{resultado}}.",
+      "media": "Média das notas: ({{parcelas}}) ÷ {{quantidade}} = {{resultado}}.",
+      "ponderada": "Média ponderada pelos pesos: {{resultado}}.",
+      "formula": "O professor usa uma fórmula própria para esta etapa, e o SUAP não mostra qual é.",
+      "pendentes": "Ainda sem nota: {{siglas}}."
+    }
   },
   "instituicao": {
     "boasVindas": "Bem-vindo ao Better Student!",

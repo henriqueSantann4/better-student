@@ -1,3 +1,5 @@
+import type { DetalheNotasSuap } from "./importacao/detalheNotasSuap.ts";
+
 /**
  * Tipos de domínio do Better Student.
  *
@@ -102,6 +104,8 @@ export interface DadosSuap {
   atualizadoEm: string | null;
   /** Quando o app fez a importação. */
   importadoEm: DataHoraIso;
+  /** O "Detalhar" do boletim (avaliações de cada etapa), se veio na importação. */
+  detalhe: DetalheNotasSuap | null;
 }
 
 export type DiaSemana = 0 | 1 | 2 | 3 | 4 | 5 | 6;

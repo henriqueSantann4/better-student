@@ -4,6 +4,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ## [1.1.0] (em elaboração)
 
+### Novo
+
+- **Notas detalhadas:** o "Atualizar do SUAP" também traz o "Detalhar" de cada disciplina. Na tela de Notas, clicar na nota mostra as avaliações de cada etapa (sigla, descrição, data e nota) e a conta que o SUAP faz: a soma, na "Soma Simples", ou a média. Na "Fórmula", o app avisa que o SUAP não publica qual é.
+
 ### Mudou
 
 - **Notas mais simples:** a tela mostra as notas que já saíram no SUAP (etapas, recuperação e média final) e as próximas provas e trabalhos de cada disciplina, vindos da Agenda. O app deixou de prever a média e se o aluno vai para a recuperação: para isso precisaria saber quanto vale cada prova, e cada professor calcula de um jeito.

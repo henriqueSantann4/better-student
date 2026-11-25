@@ -10,7 +10,7 @@ const registro = { criadoEm: "", atualizadoEm: "", excluidoEm: null };
 function disciplina(id: string, nome: string, codigo: string | null = null): Disciplina {
   return {
     ...registro, id, semestreId: "s", nome, sigla: null, professor: null, totalAulas: 80, frequenciaMinima: null, cor: null, notaIfa: null,
-    suap: codigo ? { codigo, diario: null, aulasCumpridas: null, faltas: null, frequencia: null, situacao: null, etapas: [], media: null, naf: null, mfd: null, atualizadoEm: null, importadoEm: "" } : null,
+    suap: codigo ? { codigo, diario: null, aulasCumpridas: null, faltas: null, frequencia: null, situacao: null, etapas: [], media: null, naf: null, mfd: null, atualizadoEm: null, importadoEm: "", detalhe: null } : null,
   };
 }
 function aula(disciplinaId: string, diaSemana: DiaSemana, inicio: string): HorarioAula {
