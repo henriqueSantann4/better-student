@@ -35,9 +35,9 @@ export function formatarDataHora(dataHora: string): string {
   return hora ? `${formatarDataCompleta(data!)} ${hora.slice(0, 5)}` : formatarDataCompleta(data!);
 }
 
-/** Ex.: 0.925 → "92,5%" */
-export function formatarPercentual(valor: number): string {
-  return new Intl.NumberFormat(i18n.language, { style: "percent", maximumFractionDigits: 1 }).format(valor);
+/** Ex.: 0.925 → "92,5%". Com `casas = 2`, igual ao SUAP: 0.7778 → "77,78%". */
+export function formatarPercentual(valor: number, casas = 1): string {
+  return new Intl.NumberFormat(i18n.language, { style: "percent", maximumFractionDigits: casas }).format(valor);
 }
 
 /** Ex.: 5.4 → "5,4"; null → "–" */

@@ -11,21 +11,32 @@ import {
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import { formatarData, formatarDataHora, formatarPercentual } from "../formatos";
+import { ImportarSuap } from "./ImportarSuap";
 
 export function Faltas() {
   const { t } = useTranslation();
-  const { disciplinas } = useSemestre();
+  const { disciplinas, faltas } = useSemestre();
+  const [importando, setImportando] = useState(false);
+  // Quem usa o SUAP não precisa anotar nada: a parte manual fica recolhida.
+  // Ela abre sozinha só para quem não importou nada ou já anota faltas no app.
+  const usaSuap = disciplinas.some((d) => d.suap !== null);
+  const manualAberto = !usaSuap || faltas.length > 0;
 
   return (
     <>
       <header className="cabecalho">
         <h1>{t("faltas.titulo")}</h1>
+        {disciplinas.length > 0 && !importando && (
+          <button type="button" className="botao empurrar-direita" onClick={() => setImportando(true)}>
+            {t("faltas.atualizarSuap")}
+          </button>
+        )}
       </header>
+      {importando && <ImportarSuap aoFechar={() => setImportando(false)} />}
       {disciplinas.length === 0 ? (
         <p className="cartao suave">{t("faltas.semDisciplinas")}</p>
       ) : (
         <>
-          <AulasDeHoje />
           <section className="cartao">
             <h2>{t("faltas.porDisciplina")}</h2>
             <div className="grade-cartoes">
@@ -34,8 +45,15 @@ export function Faltas() {
               ))}
             </div>
           </section>
-          <FormFalta />
-          <Historico />
+          <details className="cartao recolhivel" open={manualAberto}>
+            <summary>
+              <strong>{t("faltas.anotarTitulo")}</strong>
+              <span className="pequeno suave"> {t("faltas.anotarDica")}</span>
+            </summary>
+            <AulasDeHoje />
+            <FormFalta />
+            <Historico />
+          </details>
         </>
       )}
     </>
@@ -148,14 +166,29 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
             })})`}
         </span>
       )}
-      <span className="pequeno suave">{t("faltas.frequencia", { valor: formatarPercentual(resumo.frequencia) })}</span>
-      {resumo.oficiais !== null && (
+      {disciplina.suap?.frequencia != null ? (
+        <>
+          {/* A mesma frequência do site do SUAP: sobre as aulas já dadas. */}
+          <span className="pequeno">
+            {t("faltas.frequenciaAtual", {
+              valor: formatarPercentual(disciplina.suap.frequencia, 2),
+              aulas: disciplina.suap.aulasCumpridas ?? "?",
+            })}
+          </span>
+          <span className="pequeno suave">{t("faltas.frequenciaFinal", { valor: formatarPercentual(resumo.frequencia) })}</span>
+        </>
+      ) : (
+        <span className="pequeno suave">{t("faltas.frequenciaFinal", { valor: formatarPercentual(resumo.frequencia) })}</span>
+      )}
+      {disciplina.suap && (
         <span className="pequeno suave">
-          {t(resumo.fonte === "suap" ? "faltas.fonteSuap" : "faltas.fonteApp", {
-            registradas: resumo.registradas,
-            oficiais: resumo.oficiais,
-          })}
-          {disciplina.suap?.atualizadoEm && ` ${t("faltas.suapEm", { data: formatarDataHora(disciplina.suap.atualizadoEm) })}`}
+          {resumo.registradas > 0
+            ? t(resumo.fonte === "suap" ? "faltas.fonteSuap" : "faltas.fonteApp", {
+                registradas: resumo.registradas,
+                oficiais: resumo.oficiais,
+              })
+            : t("faltas.fonteSoSuap")}
+          {disciplina.suap.atualizadoEm && ` ${t("faltas.suapEm", { data: formatarDataHora(disciplina.suap.atualizadoEm) })}`}
         </span>
       )}
     </article>

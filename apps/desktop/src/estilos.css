@@ -509,3 +509,19 @@ button:focus-visible {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Seção recolhível: os cartões de dentro perdem a moldura própria. */
+.recolhivel > summary {
+  cursor: pointer;
+  list-style-position: outside;
+  margin-left: 16px;
+}
+
+.recolhivel > .cartao {
+  margin: 16px 0 0;
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--borda);
+  border-radius: 0;
+  background: none;
+}

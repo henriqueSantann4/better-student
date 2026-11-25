@@ -93,7 +93,6 @@
     "podeFaltar_other": "Pode faltar mais {{count}} aulas",
     "encontros_one": "≈ {{count}} encontro de {{aulas}} aulas",
     "encontros_other": "≈ {{count}} encontros de {{aulas}} aulas",
-    "frequencia": "Frequência: {{valor}}",
     "nivel": {
       "ok": "Tranquilo",
       "atencao": "Atenção",
@@ -114,7 +113,13 @@
     "fonteSuap": "Usando o SUAP: {{oficiais}} faltas lá, {{registradas}} anotadas aqui.",
     "fonteApp": "SUAP: {{oficiais}} faltas (você anotou {{registradas}}; o professor pode não ter lançado todas).",
     "suapEm": "(SUAP atualizado em {{data}})",
-    "noLimite": "No limite: mais uma falta reprova."
+    "noLimite": "No limite: mais uma falta reprova.",
+    "frequenciaAtual": "Frequência hoje: {{valor}} (a mesma do SUAP, sobre as {{aulas}} aulas já dadas)",
+    "frequenciaFinal": "No fim do semestre, se não faltar mais: {{valor}}",
+    "fonteSoSuap": "Faltas vindas do SUAP.",
+    "atualizarSuap": "Atualizar do SUAP",
+    "anotarTitulo": "Anotar faltas no app (opcional)",
+    "anotarDica": "Serve para saber antes de o professor lançar no SUAP. Se você só usa o SUAP, pode ignorar."
   },
   "importar": {
     "botao": "Importar do SUAP",
