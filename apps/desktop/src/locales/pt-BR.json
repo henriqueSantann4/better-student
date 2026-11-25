@@ -183,6 +183,11 @@
       "prazo": "Prazo",
       "evento": "Evento",
       "outro": "Outro"
-    }
+    },
+    "doSuap": "Trazer do SUAP (recomendado)",
+    "doSuapDica": "É o mais atualizado: muda quando sai uma portaria nova. No SUAP, abra o calendário acadêmico do seu curso e salve a página (Ctrl+S, \"somente HTML\") ou copie tudo (Ctrl+A, Ctrl+C) e cole ao lado.",
+    "embutidos": "Ou use um calendário que já vem com o app",
+    "outroPeriodo": "Esse calendário é de {{periodo}}, mas o semestre atual é {{semestre}}.",
+    "suapInvalido": "Não reconheci essa página como o calendário acadêmico do SUAP."
   }
 }

@@ -10,6 +10,7 @@ import { faltas } from "../banco/faltas.ts";
 import { calendario } from "../banco/calendario.ts";
 import { lerPacoteCalendario, semestreDoPacote } from "../calendario/pacote.ts";
 import { lerBoletimSuap } from "./boletimSuap.ts";
+import { lerCalendarioSuap } from "./calendarioSuap.ts";
 import { aplicarImportacao, periodoConfere, planejarImportacao, semestreDoBoletim } from "./importarSuap.ts";
 
 const boletim = lerBoletimSuap(readFileSync(new URL("./fixtures/boletim-suap.html", import.meta.url), "utf8"));
@@ -107,5 +108,12 @@ describe("importação do boletim do SUAP", () => {
     assert.deepEqual([atual?.inicio, atual?.fim, atual?.datasEstimadas], ["2026-07-28", "2026-12-17", false]);
     assert.equal(eventos.find((e) => e.dataInicio === "2026-11-14")?.segueDiaSemana, 1);
     assert.equal(eventos.find((e) => e.titulo === "Finados")?.suspendeAulas, true);
+
+    // Trocar pelo calendário do SUAP substitui o anterior, sem duplicar.
+    const doSuap = lerCalendarioSuap(readFileSync(new URL("./fixtures/calendario-suap.html", import.meta.url), "utf8"));
+    await calendario.aplicarPacote(b, (await semestres.atual(b))!, "suap", doSuap);
+    const depois = await calendario.listar(b, s.id);
+    assert.equal(depois.length, doSuap.eventos.length);
+    assert.ok(depois.every((e) => e.origem === "suap"));
   });
 });

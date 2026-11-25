@@ -44,15 +44,16 @@ export const calendario = {
 
   /**
    * Aplica um semestre de um pacote de calendário: troca os eventos que
-   * vieram antes do mesmo pacote (reimportar não duplica) e acerta as datas
-   * do semestre, que deixam de ser estimadas. Eventos criados pelo usuário
-   * (origem NULL) não são tocados.
+   * vieram de QUALQUER importação anterior (reimportar, ou trocar o pacote
+   * embutido pelo do SUAP, não duplica) e acerta as datas do semestre, que
+   * deixam de ser estimadas. Eventos criados pelo usuário (origem NULL) não
+   * são tocados.
    */
   async aplicarPacote(banco: Banco, semestre: Semestre, origem: string, dados: SemestrePacote): Promise<number> {
     const momento = agora();
     await banco.executar(
-      "UPDATE evento_calendario SET excluido_em = ?, atualizado_em = ? WHERE semestre_id = ? AND origem = ? AND excluido_em IS NULL",
-      [momento, momento, semestre.id, origem],
+      "UPDATE evento_calendario SET excluido_em = ?, atualizado_em = ? WHERE semestre_id = ? AND origem IS NOT NULL AND excluido_em IS NULL",
+      [momento, momento, semestre.id],
     );
     for (const e of dados.eventos) {
       await banco.executar(

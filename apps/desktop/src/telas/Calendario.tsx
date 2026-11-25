@@ -1,15 +1,18 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   calendario as repoCalendario,
+  ErroCalendarioSuap,
   ErroPacote,
   hojeIso,
+  lerCalendarioSuap,
   lerPacoteCalendario,
   periodoDoNome,
   proximosEventos,
   semestreDoPacote,
   type EventoCalendario,
   type PacoteCalendario,
+  type SemestrePacote,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import i18n from "../i18n";
@@ -63,7 +66,8 @@ export function Calendario() {
           <section className="cartao">
             <h2>{t("calendario.proximos")}</h2>
             <ul className="lista">
-              {proximosEventos(eventos, hoje).map((e) => (
+              {/* Reuniões e prazos internos (tipo "outro") não interessam aos alunos aqui. */}
+              {proximosEventos(eventos.filter((e) => e.tipo !== "outro"), hoje).map((e) => (
                 <ItemEvento key={e.id} evento={e} />
               ))}
             </ul>
@@ -75,7 +79,7 @@ export function Calendario() {
                 <h3 className="mes-nome">{nomeMes(mes)}</h3>
                 <ul className="lista">
                   {doMes.map((e) => (
-                    <ItemEvento key={e.id} evento={e} passado={e.dataFim < hoje} />
+                    <ItemEvento key={e.id} evento={e} passado={e.dataFim < hoje || e.tipo === "outro"} />
                   ))}
                 </ul>
               </div>
@@ -114,14 +118,45 @@ function EscolherCalendario({ aoTerminar }: { aoTerminar: () => void }) {
   const [aviso, setAviso] = useState<string | null>(null);
   const periodo = periodoDoNome(semestre.nome);
 
+  async function aplicarSemestre(origem: string, dados: SemestrePacote) {
+    const doPacote = periodoDoNome(dados.periodo);
+    if (!periodo || !doPacote || doPacote.ano !== periodo.ano || doPacote.periodo !== periodo.periodo) {
+      setAviso(t("calendario.outroPeriodo", { periodo: dados.periodo, semestre: semestre.nome }));
+      return;
+    }
+    const ok = await acao(() => repoCalendario.aplicarPacote(banco, semestre, origem, dados));
+    if (ok) aoTerminar();
+  }
+
   async function aplicar(pacote: PacoteCalendario) {
     const dados = periodo ? semestreDoPacote(pacote, periodo) : null;
     if (!dados) {
       setAviso(t("calendario.semPeriodo", { semestre: semestre.nome }));
       return;
     }
-    const ok = await acao(() => repoCalendario.aplicarPacote(banco, semestre, pacote.id, dados));
-    if (ok) aoTerminar();
+    await aplicarSemestre(pacote.id, dados);
+  }
+
+  /** Página do calendário do SUAP, salva (Ctrl+S) ou colada (Ctrl+V). */
+  async function lerDoSuap(html: string) {
+    try {
+      await aplicarSemestre("suap", lerCalendarioSuap(html));
+    } catch (erro) {
+      setAviso(erro instanceof ErroCalendarioSuap ? t("calendario.suapInvalido") : String(erro));
+    }
+  }
+
+  async function abrirPaginaSuap(e: ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (arquivo) await lerDoSuap(await arquivo.text());
+  }
+
+  function colarPaginaSuap(e: ClipboardEvent<HTMLTextAreaElement>) {
+    e.preventDefault();
+    const html = e.clipboardData.getData("text/html");
+    if (html) void lerDoSuap(html);
+    else setAviso(t("importar.erro.semHtml"));
   }
 
   async function abrirArquivo(e: ChangeEvent<HTMLInputElement>) {
@@ -146,6 +181,23 @@ function EscolherCalendario({ aoTerminar }: { aoTerminar: () => void }) {
         )}
       </div>
       <p className="pequeno suave">{t("calendario.explicacao")}</p>
+      <h3>{t("calendario.doSuap")}</h3>
+      <p className="pequeno suave">{t("calendario.doSuapDica")}</p>
+      <div className="linha importar-entradas">
+        <label className="botao primario">
+          {t("importar.abrirArquivo")}
+          <input type="file" accept=".html,.htm,text/html" onChange={abrirPaginaSuap} hidden />
+        </label>
+        <textarea
+          className="area-colar"
+          placeholder={t("importar.colarAqui")}
+          onPaste={colarPaginaSuap}
+          value=""
+          onChange={() => undefined}
+          rows={2}
+        />
+      </div>
+      <h3 className="separador">{t("calendario.embutidos")}</h3>
       <ul className="lista">
         {EMBUTIDOS.map((p) => {
           const temPeriodo = periodo !== null && semestreDoPacote(p, periodo) !== null;

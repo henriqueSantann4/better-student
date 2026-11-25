@@ -4,7 +4,7 @@
   "instituicao": "IFSP – Campus Votuporanga",
   "cursos": "Cursos superiores (semestrais)",
   "fonte": "https://vtp.ifsp.edu.br/images/Calendarios/2026/ifsp_votuporanga_calendario_letivo_cursos_superiores_2026.pdf",
-  "observacao": "Transcrito à mão do PDF oficial do campus (que é uma imagem). Em caso de dúvida, vale o PDF.",
+  "observacao": "Transcrito do PDF oficial do campus e conferido com o calendário do SUAP em 25/11/2026 (o PDF ainda trazia o sábado letivo de 15/08, que o SUAP mudou para 05/09). Em caso de dúvida, vale o SUAP: ele é atualizado quando sai uma portaria nova.",
   "semestres": [
     {
       "periodo": "2026/1",
@@ -38,10 +38,10 @@
       "fim": "2026-12-17",
       "eventos": [
         { "tipo": "inicio_aulas", "titulo": "Retorno das aulas", "inicio": "2026-07-28" },
-        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-08-15", "segueDiaSemana": 1 },
         { "tipo": "prazo", "titulo": "Data limite para certificação e aproveitamento de estudos", "inicio": "2026-08-28" },
         { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de quarta-feira)", "inicio": "2026-08-29", "segueDiaSemana": 3 },
         { "tipo": "evento", "titulo": "IX Semana Internacional da Física", "inicio": "2026-08-31", "fim": "2026-09-04" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-09-05", "segueDiaSemana": 1 },
         { "tipo": "feriado", "titulo": "Independência do Brasil", "inicio": "2026-09-07" },
         { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de sexta-feira)", "inicio": "2026-09-19", "segueDiaSemana": 5 },
         { "tipo": "evento", "titulo": "Simpósio de Inclusão", "inicio": "2026-09-22", "fim": "2026-09-23" },
