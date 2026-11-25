@@ -204,9 +204,15 @@ try {
     code_challenge: desafio,
     code_challenge_method: "S256",
     state: estado,
-    prompt: "consent",
+    // Sempre mostra a escolha de conta: sem isso, o Google entra direto com a
+    // conta que já está aberta no navegador (que pode ser a institucional).
+    prompt: "select_account consent",
   }).toString();
 
+  if (opcoes.institucional) {
+    console.log("IMPORTANTE: na tela do Google, escolha a sua conta PESSOAL (a que recebe o");
+    console.log("encaminhamento), e não a institucional, que o IFSP bloqueia.\n");
+  }
   console.log("Abrindo a página de login do Google no seu navegador…");
   console.log("Se não abrir, copie este endereço no navegador:\n");
   console.log(`  ${autorizacao}\n`);
