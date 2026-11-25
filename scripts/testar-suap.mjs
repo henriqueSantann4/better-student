@@ -59,6 +59,13 @@ const CANDIDATOS = [
   "/api/ensino/periodos/",
   `/api/ensino/boletim/${ANO}/${PERIODO}/`,
   `/api/ensino/turmas-virtuais/${ANO}/${PERIODO}/`,
+  // API nova (usada pela biblioteca suapy, 2025+):
+  `/api/ensino/meu-boletim/${ANO}/${PERIODO}/`,
+  "/api/ensino/meus-periodos-letivos/",
+  "/api/ensino/meus-diarios/",
+  `/api/ensino/minhas-turmas-virtuais/${ANO}/${PERIODO}/`,
+  "/api/ensino/minhas-proximas-avaliacoes/",
+  "/api/ensino/requisitos-conclusao/",
   "/api/comum/minhas-informacoes/",
   "/api/rh/eu/",
 ];

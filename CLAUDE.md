@@ -86,6 +86,7 @@ pnpm build        # gera o instalador para Windows
 2. Meta e categorias das horas complementares do curso de SI (consultar o PPC).
 3. Quais funções ficam fora do app do celular (decidir na fase 3).
 4. O que a API do SUAP do IFSP expõe; se o Moodle do campus aceita o app oficial do Moodle.
+   - *Testado em 25/11/2026 (`pnpm testar:suap`):* o login de aluno funciona (`POST /api/v2/autenticacao/token/` devolve `token`, `access` e `refresh`), mas **nenhum endpoint de dados de aluno existe** no SUAP do IFSP: nem os da API v2 clássica (`/api/v2/minhas-informacoes/...`) nem os da API nova (`/api/ensino/...`, usados pela biblioteca suapy). `/api/eu/` responde 500 para aluno. Falta perguntar ao IFSP se há API de aluno.
 5. Se o Workspace do IFSP permite OAuth de apps não verificados (Gmail API).
 6. Se as notificações agendadas do Windows funcionam com o instalador do Tauri.
 7. O modo de treino de idiomas: em discussão, sem prioridade.
