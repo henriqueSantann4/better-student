@@ -14,16 +14,40 @@ const ENTIDADES: Record<string, string> = {
   gt: ">",
   quot: '"',
   apos: "'",
+  ccedil: "ç",
+  Ccedil: "Ç",
+  ordm: "º",
+  ordf: "ª",
+  deg: "°",
+  ndash: "–",
+  mdash: "—",
+  hellip: "…",
+  laquo: "«",
+  raquo: "»",
+  ldquo: "“",
+  rdquo: "”",
+  lsquo: "‘",
+  rsquo: "’",
 };
 
-/** Troca entidades HTML (&amp;, &nbsp;, &#233;, &#xE9;) pelo caractere. */
+// Vogais acentuadas (&aacute; &Atilde; &ecirc; ...): monta a letra juntando a
+// vogal com o acento e normalizando (NFC), em vez de listar uma por uma.
+const ACENTOS: Record<string, string> = { acute: "́", grave: "̀", circ: "̂", tilde: "̃", uml: "̈" };
+for (const vogal of "aeiouAEIOU") {
+  for (const [nome, marca] of Object.entries(ACENTOS)) {
+    ENTIDADES[`${vogal}${nome}`] = (vogal + marca).normalize("NFC");
+  }
+}
+
+/** Troca entidades HTML (&amp;, &ccedil;, &#233;, &#xE9;) pelo caractere. */
 export function decodificarEntidades(texto: string): string {
   return texto.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (inteira, nome: string) => {
     if (nome[0] === "#") {
       const codigo = nome[1] === "x" || nome[1] === "X" ? parseInt(nome.slice(2), 16) : parseInt(nome.slice(1), 10);
       return Number.isFinite(codigo) ? String.fromCodePoint(codigo) : inteira;
     }
-    return ENTIDADES[nome.toLowerCase()] ?? inteira;
+    // Maiúscula importa (&Aacute; é "Á"); para as básicas, aceita qualquer caixa (&AMP;).
+    return ENTIDADES[nome] ?? ENTIDADES[nome.toLowerCase()] ?? inteira;
   });
 }
 

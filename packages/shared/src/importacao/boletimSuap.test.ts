@@ -92,3 +92,13 @@ describe("boletim real (amostras-privadas)", { skip: !existsSync(amostraReal) &&
     }
   });
 });
+
+import { decodificarEntidades } from "./html.ts";
+
+describe("decodificarEntidades", () => {
+  it("entende os acentos do português, respeitando maiúsculas", () => {
+    assert.equal(decodificarEntidades("Programa&ccedil;&atilde;o"), "Programação");
+    assert.equal(decodificarEntidades("&Aacute;rea &eacute; &Ecirc;xito &AMP; 1&ordm;"), "Área é Êxito & 1º");
+    assert.equal(decodificarEntidades("&#233; &#xE9; &desconhecida;"), "é é &desconhecida;");
+  });
+});

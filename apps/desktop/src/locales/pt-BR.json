@@ -13,7 +13,8 @@
     "notas": "Notas",
     "materiais": "Materiais",
     "calendario": "Calendário",
-    "email": "E-mail"
+    "email": "E-mail",
+    "moodle": "Moodle"
   },
   "emBreve": "Esta seção chega nas próximas versões.",
   "comum": {
@@ -271,6 +272,40 @@
       "conectar": "Testar e conectar",
       "testando": "Testando…",
       "seguranca": "O app só LÊ os e-mails: nada é apagado, movido nem marcado como lido no Gmail. Para cortar o acesso, apague a senha de app no Google ou use \"Desconectar\"."
+    }
+  },
+  "moodle": {
+    "titulo": "Moodle",
+    "soNoApp": "A conexão com o Moodle só funciona no app (não no modo navegador de desenvolvimento).",
+    "descricao": "Conecte o Moodle do campus para ver as suas disciplinas e as atividades com prazo (tarefas, questionários, fóruns) aqui no app.",
+    "passo1": "Clique em \"Entrar no Moodle\": abre uma janela com a página do próprio Moodle.",
+    "passo2": "Entre como de costume, pelo botão \"SUAP IFSP\".",
+    "passo3": "Pronto: a janela fecha sozinha e o app recebe uma chave de acesso, guardada no cofre do Windows.",
+    "entrar": "Entrar no Moodle",
+    "aguardando": "Esperando o login na janela do Moodle…",
+    "outroSite": "Outro Moodle?",
+    "endereco": "Endereço do Moodle",
+    "seguranca": "O app nunca vê a sua senha (o login é na página do SUAP). Ele só LÊ o Moodle. Para cortar o acesso, use \"Desconectar\" ou, no Moodle, Preferências → Chaves de segurança.",
+    "atualizar": "Atualizar",
+    "carregando": "Carregando…",
+    "desconectar": "Desconectar",
+    "confirmarDesconectar": "Desconectar o Moodle? A chave de acesso sai do cofre do Windows.",
+    "chaveInvalida": "O Moodle não aceitou mais a chave de acesso (ela pode ter sido revogada). Use \"Desconectar\" e entre de novo.",
+    "proximas": "Próximas atividades",
+    "semAtividades": "Nenhuma atividade com prazo pela frente.",
+    "disciplinas_one": "{{count}} disciplina no Moodle",
+    "disciplinas_other": "{{count}} disciplinas no Moodle",
+    "progresso": "{{valor}}% concluído",
+    "abrir": "Abrir no Moodle",
+    "tipos": {
+      "assign": "Tarefa",
+      "quiz": "Questionário",
+      "forum": "Fórum",
+      "lesson": "Lição",
+      "workshop": "Laboratório",
+      "choice": "Escolha",
+      "feedback": "Pesquisa",
+      "outro": "Atividade"
     }
   }
 }

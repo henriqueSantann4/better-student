@@ -13,9 +13,13 @@
     "allow-email-conectado",
     "allow-email-desconectar",
     "allow-email-buscar",
+    "allow-moodle-conectar",
+    "allow-moodle-conectado",
+    "allow-moodle-chave",
+    "allow-moodle-desconectar",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://myaccount.google.com/*" }]
+      "allow": [{ "url": "https://myaccount.google.com/*" }, { "url": "https://*.edu.br/*" }]
     }
   ]
 }

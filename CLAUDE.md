@@ -40,6 +40,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ App abre maximizado.
 - ✅ Calendário com visão de **mês** (padrão, como no SUAP: grade pintada pela legenda + eventos ao lado) e de **lista**.
 - 🧪 **E-mail por IMAP** (precisa testar no app): assistente de conexão (abre as páginas da conta Google e testa a senha de app), senha no cofre do Windows (`keyring`), busca incremental só leitura no núcleo Rust (`src-tauri/src/email.rs`: `imap` + `mail-parser`), cópia local na tabela `email` (migration 0005) e classificação nas abas em `shared/email`. No modo navegador, e-mails de exemplo inventados.
+- 🧪 **Moodle** (precisa testar no app): login pelo SUAP no mesmo fluxo do app oficial (`admin/tool/mobile/launch.php`); a janela intercepta `betterstudent://token=…`, confere o md5 e guarda a chave no cofre (`src-tauri/src/moodle.rs`). A interface chama a API REST direto (o Moodle libera CORS; a CSP libera `https://*.edu.br`). Tela "Moodle" com disciplinas e próximas atividades. Próximo: virar tarefas da Agenda.
 - ✅ Rust instalado na máquina de desenvolvimento: `cargo check` em `apps/desktop/src-tauri` valida o núcleo.
 - ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
 
@@ -99,6 +100,7 @@ pnpm build        # gera o instalador para Windows
 2. Meta e categorias das horas complementares do curso de SI (consultar o PPC).
 3. Quais funções ficam fora do app do celular (decidir na fase 3).
 4. O que a API do SUAP do IFSP expõe; se o Moodle do campus aceita o app oficial do Moodle.
+   - *Moodle (25/11/2026):* `ead.vtp.ifsp.edu.br` ("MOODLE DO IFSP") tem `enablemobilewebservice = 1` e login pelo provedor OAuth "SUAP IFSP": **aceita o fluxo do app oficial**.
    - *Testado em 25/11/2026 (`pnpm testar:suap`):* o login de aluno funciona (`POST /api/v2/autenticacao/token/` devolve `token`, `access` e `refresh`), mas **nenhum endpoint de dados de aluno existe** no SUAP do IFSP: nem os da API v2 clássica (`/api/v2/minhas-informacoes/...`) nem os da API nova (`/api/ensino/...`, usados pela biblioteca suapy). `/api/eu/` responde 500 para aluno. Falta perguntar ao IFSP se há API de aluno.
 5. Se o Workspace do IFSP permite OAuth de apps não verificados (Gmail API).
    - *Testado em 25/11/2026 (`pnpm testar:gmail`):* **não permite.** O login com a conta @aluno.ifsp.edu.br dá `Erro 400: access_not_configured` ("o admin da sua instituição precisa analisar o app"), mesmo com o usuário de teste cadastrado. Caminhos: pedir ao IFSP para liberar o app (botão "Solicitar acesso"), ou encaminhar os e-mails institucionais para uma conta pessoal e ler essa conta.

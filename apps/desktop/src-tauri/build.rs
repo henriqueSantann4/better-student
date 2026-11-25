@@ -12,6 +12,10 @@ fn main() {
             "email_conectado",
             "email_desconectar",
             "email_buscar",
+            "moodle_conectar",
+            "moodle_conectado",
+            "moodle_chave",
+            "moodle_desconectar",
         ]),
     ))
     .expect("erro ao preparar o build do Tauri");

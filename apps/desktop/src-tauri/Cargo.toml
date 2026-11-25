@@ -28,6 +28,10 @@ imap = "2.4"
 native-tls = "0.2"
 mail-parser = "1"
 keyring = "4"
+# Login do Moodle (mesmo fluxo do app oficial): decodificar e conferir a chave.
+base64 = "0.22"
+md-5 = "0.10"
+getrandom = "0.3"
 
 [profile.release]
 # Prioriza um executável pequeno, de acordo com a proposta de app leve.

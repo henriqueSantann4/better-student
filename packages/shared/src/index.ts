@@ -5,3 +5,4 @@ export * from "./datas.ts";
 export * from "./importacao/index.ts";
 export * from "./calendario/index.ts";
 export * from "./email/email.ts";
+export * from "./moodle/moodle.ts";

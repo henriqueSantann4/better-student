@@ -10,8 +10,9 @@ import { CriarSemestre } from "./telas/CriarSemestre";
 import { Email } from "./telas/Email";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
+import { Moodle } from "./telas/Moodle";
 
-const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "email"] as const;
+const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email"] as const;
 type Secao = (typeof SECOES)[number];
 
 export function App() {
@@ -98,6 +99,8 @@ function Layout() {
           <Calendario />
         ) : secaoAtiva === "email" ? (
           <Email />
+        ) : secaoAtiva === "moodle" ? (
+          <Moodle />
         ) : (
           <>
             <h1>{t(`menu.${secaoAtiva}`)}</h1>
