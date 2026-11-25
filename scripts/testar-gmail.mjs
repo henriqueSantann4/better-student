@@ -27,7 +27,12 @@ import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 
+// O pnpm 10 repassa o "--" de "pnpm script -- --opcao" para o script, e o
+// parseArgs entende "--" como "acabaram as opções". Por isso ele sai daqui.
+const argumentos = process.argv.slice(2).filter((a, i) => !(i === 0 && a === "--"));
+
 const { values: opcoes } = parseArgs({
+  args: argumentos,
   options: {
     credenciais: { type: "string" },
     // Só para testar o próprio script contra um servidor falso local.

@@ -22,7 +22,12 @@ import { createInterface } from "node:readline";
 import { Writable } from "node:stream";
 import { parseArgs } from "node:util";
 
+// O pnpm 10 repassa o "--" de "pnpm script -- --opcao" para o script, e o
+// parseArgs entende "--" como "acabaram as opções". Por isso ele sai daqui.
+const argumentos = process.argv.slice(2).filter((a, i) => !(i === 0 && a === "--"));
+
 const { values: opcoes } = parseArgs({
+  args: argumentos,
   options: {
     servidor: { type: "string", default: "https://suap.ifsp.edu.br" },
     ano: { type: "string" },
