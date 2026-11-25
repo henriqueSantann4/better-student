@@ -166,7 +166,7 @@ try {
   imap = await abrirConexao();
   // LOGIN com a senha entre aspas. A senha nunca vai para a saída.
   await imap.comando(`LOGIN ${aspas(usuario)} ${aspas(senha)}`);
-  console.log("\n✔ Login aceito: o IFSP permite IMAP com senha de app.");
+  console.log("\nOK: Login aceito: o IFSP permite IMAP com senha de app.");
 
   const pastas = await imap.comando('LIST "" "*"');
   const nomes = [...pastas.matchAll(/^\* LIST \(([^)]*)\) "[^"]*" (.+)$/gm)].map((m) => ({
@@ -174,16 +174,16 @@ try {
     nome: m[2].replace(/^"|"$/g, ""),
   }));
   const especiais = nomes.filter((p) => /\\(All|Sent|Drafts|Trash|Junk|Important|Flagged)/i.test(p.marcas));
-  console.log(`✔ ${nomes.length} pastas (${especiais.length} especiais do Gmail)`);
+  console.log(`OK: ${nomes.length} pastas (${especiais.length} especiais do Gmail)`);
 
   // EXAMINE = abrir só para leitura (SELECT marcaria mensagens como lidas ao abrir).
   const caixa = await imap.comando("EXAMINE INBOX");
   const total = Number(/^\* (\d+) EXISTS/im.exec(caixa)?.[1] ?? 0);
-  console.log(`✔ Caixa de entrada: ${total} mensagens`);
+  console.log(`OK: Caixa de entrada: ${total} mensagens`);
 
   const naoLidas = await imap.comando("SEARCH UNSEEN");
   const qtdNaoLidas = (/^\* SEARCH ?(.*)$/im.exec(naoLidas)?.[1] ?? "").trim().split(/\s+/).filter(Boolean).length;
-  console.log(`✔ Não lidas: ${qtdNaoLidas}`);
+  console.log(`OK: Não lidas: ${qtdNaoLidas}`);
 
   if (total > 0) {
     const inicio = Math.max(1, total - 19);
@@ -194,7 +194,7 @@ try {
       const d = dom.toLowerCase();
       dominios.set(d, (dominios.get(d) ?? 0) + 1);
     }
-    console.log(`✔ Últimas ${total - inicio + 1} mensagens, domínios dos remetentes:`);
+    console.log(`OK: Últimas ${total - inicio + 1} mensagens, domínios dos remetentes:`);
     console.log(`  ${[...dominios].map(([d, n]) => `${d} (${n})`).join(", ") || "nenhum"}`);
   }
 
@@ -203,7 +203,7 @@ try {
 } catch (erro) {
   // A mensagem do servidor nunca contém a senha; mesmo assim, por garantia, ela é removida.
   const mensagem = String(erro?.message ?? erro).split(senha).join("***");
-  console.error(`\n✖ ${mensagem}`);
+  console.error(`\nERRO: ${mensagem}`);
   const dica = explicar(mensagem);
   if (dica) console.error(`\n${dica}`);
   process.exitCode = 1;

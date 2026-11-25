@@ -432,7 +432,7 @@ function CaixaEntrada({
                       aria-pressed={e.estrela}
                       onClick={() => alterar(e.id, { estrela: !e.estrela })}
                     >
-                      {e.estrela ? "★" : "☆"}
+                      <IconeEstrela cheia={e.estrela} />
                     </button>
                     <button type="button" className="email-linha-conteudo" onClick={() => abrir(e)}>
                       <span className="email-remetente">{e.de.nome}</span>
@@ -482,11 +482,26 @@ function LeituraEmail({ email, aoVoltar, aoEstrela }: { email: EmailT; aoVoltar:
           aria-pressed={email.estrela}
           onClick={aoEstrela}
         >
-          {email.estrela ? "★" : "☆"}
+          <IconeEstrela cheia={email.estrela} />
         </button>
       </div>
       {/* Texto puro: o React escapa tudo, então nada do e-mail é interpretado como HTML. */}
       <div className="email-corpo">{email.corpo}</div>
     </article>
+  );
+}
+
+/** Estrela desenhada (cheia ou só o contorno), na cor do texto do botão. */
+function IconeEstrela({ cheia }: { cheia: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true">
+      <path
+        d="M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.35L12 17.36l-5.7 3 1.09-6.35-4.62-4.5 6.38-.93z"
+        fill={cheia ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

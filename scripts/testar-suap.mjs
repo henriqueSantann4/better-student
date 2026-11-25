@@ -207,20 +207,20 @@ let token;
 try {
   const resultado = await obterToken(usuario, senha);
   token = resultado.token;
-  console.log(`\n✔ Login aceito. Campos devolvidos pelo login: ${resultado.formato}`);
+  console.log(`\nOK: Login aceito. Campos devolvidos pelo login: ${resultado.formato}`);
 } catch (erro) {
-  console.error(`\n✖ ${erro.message}`);
+  console.error(`\nERRO: ${erro.message}`);
   console.error("Se a senha estiver certa, o SUAP pode exigir login pelo gov.br ou outro método:");
   console.error("anote a mensagem acima, ela ajuda a decidir o próximo passo.");
   process.exit(1);
 }
 if (!token) {
-  console.error("✖ O login não devolveu um token reconhecível.");
+  console.error("ERRO: O login não devolveu um token reconhecível.");
   process.exit(1);
 }
 
 const cabecalho = await escolherCabecalho(token);
-console.log(`✔ Formato de autenticação: ${cabecalho.split(" ")[0]} <token>\n`);
+console.log(`OK: Formato de autenticação: ${cabecalho.split(" ")[0]} <token>\n`);
 
 const fila = [...CANDIDATOS];
 const visitados = new Set();

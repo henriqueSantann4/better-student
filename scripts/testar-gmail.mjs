@@ -228,15 +228,15 @@ try {
     code_verifier: verificador,
   });
   token = resposta.access_token;
-  console.log(`✔ Login aceito. Permissões concedidas: ${resposta.scope}`);
+  console.log(`OK: Login aceito. Permissões concedidas: ${resposta.scope}`);
 
   const perfil = await gmail("profile", token);
   const dominio = String(perfil.emailAddress ?? "").split("@")[1] ?? "?";
-  console.log(`✔ Conta do domínio ${dominio}: ${perfil.messagesTotal} mensagens, ${perfil.threadsTotal} conversas`);
+  console.log(`OK: Conta do domínio ${dominio}: ${perfil.messagesTotal} mensagens, ${perfil.threadsTotal} conversas`);
 
   const { labels = [] } = await gmail("labels", token);
   const sistema = labels.filter((l) => l.type === "system").map((l) => l.id).sort();
-  console.log(`✔ ${labels.length} marcadores (${labels.length - sistema.length} criados por você)`);
+  console.log(`OK: ${labels.length} marcadores (${labels.length - sistema.length} criados por você)`);
   console.log(`  Do sistema: ${sistema.join(", ")}`);
 
   // Com --institucional, só as mensagens entregues àquele endereço (as
@@ -247,7 +247,7 @@ try {
   if (institucional) {
     const total = await gmail(`messages?maxResults=500&q=${encodeURIComponent(busca)}`, token);
     const qtd = total.resultSizeEstimate ?? (total.messages ?? []).length;
-    console.log(`✔ Mensagens encaminhadas do e-mail institucional: ${qtd}${total.nextPageToken ? " ou mais" : ""}`);
+    console.log(`OK: Mensagens encaminhadas do e-mail institucional: ${qtd}${total.nextPageToken ? " ou mais" : ""}`);
     if (qtd === 0) {
       console.log("  Nenhuma ainda. O encaminhamento só vale para e-mails que chegarem DEPOIS de ativado.");
     }
@@ -276,7 +276,7 @@ try {
     dominios.set(dom, (dominios.get(dom) ?? 0) + 1);
     for (const l of m.labelIds ?? []) if (l.startsWith("CATEGORY_")) categorias.set(l, (categorias.get(l) ?? 0) + 1);
   }
-  console.log(`✔ Últimas ${ids.length} mensagens ${institucional ? "vindas do institucional" : "da caixa de entrada"}:`);
+  console.log(`OK: Últimas ${ids.length} mensagens ${institucional ? "vindas do institucional" : "da caixa de entrada"}:`);
   console.log(`  Domínios dos remetentes: ${[...dominios].map(([d, n]) => `${d} (${n})`).join(", ") || "nenhum"}`);
   if (ids.length > 0) {
     console.log(`  Categorias do Gmail: ${[...categorias].map(([c, n]) => `${c} (${n})`).join(", ") || "nenhuma (abas desativadas)"}`);
@@ -284,7 +284,7 @@ try {
   console.log("\nFuncionou! Cole a saída a partir de \"Login aceito\" na conversa: não há conteúdo de e-mails nela.");
 } catch (erro) {
   const mensagem = String(erro?.message ?? erro);
-  console.error(`\n✖ ${mensagem}`);
+  console.error(`\nERRO: ${mensagem}`);
   const dica = explicar(mensagem);
   if (dica) console.error(`\n${dica}`);
   process.exitCode = 1;
@@ -292,7 +292,7 @@ try {
   if (token) {
     // Revoga o acesso: o teste não deixa nenhuma permissão ativa para trás.
     await postarFormulario(`${opcoes["base-token"]}/revoke`, { token })
-      .then(() => console.log("✔ Acesso revogado no Google."))
+      .then(() => console.log("OK: Acesso revogado no Google."))
       .catch(() => console.log("Não consegui revogar sozinho: remova em myaccount.google.com → Segurança → Apps de terceiros."));
   }
 }

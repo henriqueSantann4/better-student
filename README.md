@@ -9,19 +9,19 @@
   Agenda, grade horária, faltas, notas, materiais e uma ponte direta entre o celular e o PC.
 </p>
 
-> 🚧 **Em desenvolvimento inicial.** Ainda não existe versão utilizável.
+> **Em desenvolvimento inicial.** Ainda não existe versão utilizável.
 
 ## O que o app vai fazer
 
-- 📅 **Agenda** de provas, trabalhos e tarefas, com lembretes configuráveis
-- 🕒 **Grade horária**, com a próxima aula e a sala
-- ✅ **Controle de faltas** calculado pela carga horária de cada disciplina
-- 🧮 **Calculadora de notas**: quanto preciso tirar para passar?
-- 📁 **Materiais organizados por disciplina**, automaticamente
-- 📸 **Foto do quadro**: tire no celular e ela cai na pasta certa do PC
-- ✉️ **E-mail institucional** com prioridade para avisos de professores e detecção de prazos
-- 🔌 **Integração com SUAP e Moodle**
-- 🃏 **Flashcards** com repetição espaçada
+- **Agenda** de provas, trabalhos e tarefas, com lembretes configuráveis
+- **Grade horária**, com a próxima aula e a sala
+- **Controle de faltas** calculado pela carga horária de cada disciplina
+- **Calculadora de notas**: quanto preciso tirar para passar?
+- **Materiais organizados por disciplina**, automaticamente
+- **Foto do quadro**: tire no celular e ela cai na pasta certa do PC
+- **E-mail institucional** com prioridade para avisos de professores e detecção de prazos
+- **Integração com SUAP e Moodle**
+- **Flashcards** com repetição espaçada
 
 Mais detalhes em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
