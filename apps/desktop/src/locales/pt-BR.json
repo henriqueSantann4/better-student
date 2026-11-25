@@ -216,7 +216,8 @@
       "sabado_letivo": "Sábado letivo",
       "prova_final": "Prova final",
       "fechamento": "Fechamento",
-      "hoje": "Hoje"
+      "hoje": "Hoje",
+      "tarefa": "Prova / entrega"
     }
   },
   "email": {
@@ -360,6 +361,19 @@
       "hora": "Hora",
       "prioridade": "Prioridade",
       "descricao": "Anotações"
+    },
+    "pendentes_zero": "nenhuma pendente",
+    "frase": {
+      "dica": "Escreva do seu jeito: \"prova de POO quinta 19h\", \"lista de BD dia 12\", \"trabalho amanhã\"…",
+      "maisOpcoes": "Mais opções",
+      "daGrade": "(pela grade)",
+      "qualDisciplina": "Qual disciplina?",
+      "semData": "sem prazo",
+      "avisos": {
+        "semAulaNoDia": "Você não tem aula nesse dia: confira a data.",
+        "dataNoPassado": "Essa data já passou.",
+        "disciplinaSemAulaNoDia": "Essa disciplina não tem aula nesse dia: o prazo fica até o fim do dia (ou escreva a hora na frase)."
+      }
     }
   }
 }

@@ -1190,3 +1190,90 @@ textarea {
   font-weight: 400;
   resize: vertical;
 }
+
+/* ---------- Entrada rápida da Agenda ---------- */
+
+.entrada-rapida {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campo-frase {
+  flex: 1 1 320px;
+  padding: 10px 12px;
+  font-size: 1rem;
+}
+
+.previa-frase {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--destaque) 16%, transparent);
+}
+
+.chip.vazio {
+  background: color-mix(in srgb, var(--suave) 14%, transparent);
+  color: var(--suave);
+}
+
+.da-grade {
+  color: var(--suave);
+  font-size: 0.75rem;
+}
+
+.opcoes-disciplina {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.botao.pequeno {
+  padding: 3px 10px;
+  font-size: 0.85rem;
+}
+
+.aviso-frase {
+  color: var(--atencao-texto);
+}
+
+/* Tarefas no calendário */
+
+.marca-tarefa {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--destaque);
+}
+
+.marca-tarefa.prova {
+  background: var(--perigo);
+}
+
+.etiqueta.tarefa-prova {
+  color: var(--perigo);
+  background: color-mix(in srgb, var(--perigo) 14%, transparent);
+}
+
+.etiqueta.tarefa-entrega {
+  color: var(--destaque);
+  background: color-mix(in srgb, var(--destaque) 14%, transparent);
+}
+
+.amostra-tarefa {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--perigo);
+}

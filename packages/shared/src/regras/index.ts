@@ -5,3 +5,4 @@ export * from "./semestre.ts";
 export * from "./calendario.ts";
 export * from "./encontros.ts";
 export * from "./agenda.ts";
+export * from "./frase.ts";

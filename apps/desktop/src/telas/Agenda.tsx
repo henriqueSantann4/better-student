@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import {
   agruparTarefas,
   casarDisciplinaMoodle,
+  lerFrase,
   ORDEM_GRUPOS,
   paraDataIso,
+  prazoDaFrase,
   subtarefas as repoSubtarefas,
   tarefas as repoTarefas,
   type DadosTarefa,
@@ -32,7 +34,8 @@ export function Agenda() {
   const { banco, acao, disciplinas } = useSemestre();
   const [lista, setLista] = useState<Tarefa[]>([]);
   const [subs, setSubs] = useState<Subtarefa[]>([]);
-  const [criando, setCriando] = useState(false);
+  // Rascunho aberto no formulário completo ("Mais opções"); null = fechado.
+  const [rascunho, setRascunho] = useState<Partial<Tarefa> | null>(null);
   const [moodle, setMoodle] = useState<Sincronia>({ estado: "parado" });
   const [moodleConectado, setMoodleConectado] = useState(false);
   const sincronizando = useRef(false);
@@ -96,29 +99,32 @@ export function Agenda() {
               {moodle.estado === "buscando" ? t("agenda.buscandoMoodle") : t("agenda.atualizarMoodle")}
             </button>
           )}
-          {!criando && (
-            <button type="button" className="botao primario" onClick={() => setCriando(true)}>
-              {t("agenda.nova")}
-            </button>
-          )}
         </div>
       </header>
+
+      {!rascunho && (
+        <EntradaRapida
+          aoCriar={(dados) => alterar(() => repoTarefas.criar(banco, dados))}
+          aoMaisOpcoes={(dados) => setRascunho(dados)}
+        />
+      )}
 
       {moodle.estado === "ok" && moodle.novas > 0 && <p className="sucesso">{t("agenda.novasMoodle", { count: moodle.novas })}</p>}
       {moodle.estado === "erro" && <p className="aviso faixa">{t("agenda.erroMoodle", { mensagem: moodle.mensagem })}</p>}
 
-      {criando && (
+      {rascunho && (
         <FormTarefa
+          tarefa={rascunho}
           disciplinas={disciplinas}
           aoSalvar={async (dados) => {
             const ok = await alterar(() => repoTarefas.criar(banco, dados));
-            if (ok) setCriando(false);
+            if (ok) setRascunho(null);
           }}
-          aoCancelar={() => setCriando(false)}
+          aoCancelar={() => setRascunho(null)}
         />
       )}
 
-      {lista.length === 0 && !criando && <p className="cartao suave">{t("agenda.vazia")}</p>}
+      {lista.length === 0 && !rascunho && <p className="cartao suave">{t("agenda.vazia")}</p>}
 
       {ORDEM_GRUPOS.filter((g) => g !== "concluidas" && grupos[g].length > 0).map((g) => (
         <section key={g} className={`cartao grupo-agenda grupo-${g}`}>
@@ -304,7 +310,8 @@ function FormTarefa({
   aoSalvar,
   aoCancelar,
 }: {
-  tarefa?: Tarefa;
+  /** Tarefa existente (editar) ou rascunho vindo da frase (criar). */
+  tarefa?: Partial<Tarefa>;
   disciplinas: Disciplina[];
   aoSalvar: (dados: DadosTarefa) => Promise<void>;
   aoCancelar: () => void;
@@ -334,7 +341,7 @@ function FormTarefa({
 
   return (
     <section className="cartao">
-      <h2>{tarefa ? t("agenda.editar") : t("agenda.nova")}</h2>
+      <h2>{tarefa?.id ? t("agenda.editar") : t("agenda.nova")}</h2>
       <form className="formulario" onSubmit={enviar}>
         <label>
           {t("agenda.campos.titulo")}
@@ -399,5 +406,120 @@ function FormTarefa({
         </div>
       </form>
     </section>
+  );
+}
+
+/**
+ * Campo único: o usuário escreve "prova de POO quinta 19h" e o leitor de
+ * frases (shared/regras/frase.ts, sem IA) preenche o resto. A prévia mostra
+ * o que foi entendido e marca o que veio da grade.
+ */
+function EntradaRapida({
+  aoCriar,
+  aoMaisOpcoes,
+}: {
+  aoCriar: (dados: DadosTarefa) => Promise<boolean>;
+  aoMaisOpcoes: (rascunho: Partial<Tarefa>) => void;
+}) {
+  const { t } = useTranslation();
+  const { disciplinas, horarios, eventos } = useSemestre();
+  const [frase, setFrase] = useState("");
+  // Escolha do usuário quando a frase deixa dúvida (vence a dedução).
+  const [escolhida, setEscolhida] = useState<string | null>(null);
+
+  const lida = frase.trim() ? lerFrase(frase, { agora: new Date(), disciplinas, horarios, eventos }) : null;
+  const disciplinaId = escolhida ?? lida?.disciplinaId ?? null;
+  const nomeDe = (id: string) => disciplinas.find((d) => d.id === id)?.nome ?? "";
+
+  function dados(): DadosTarefa | null {
+    if (!lida) return null;
+    return {
+      titulo: lida.titulo,
+      tipo: lida.tipo,
+      disciplinaId,
+      prazo: prazoDaFrase(lida),
+      // Prova já nasce com prioridade alta.
+      prioridade: lida.tipo === "prova" ? "alta" : "media",
+    };
+  }
+
+  async function criar(e: FormEvent) {
+    e.preventDefault();
+    const d = dados();
+    if (!d) return;
+    if (await aoCriar(d)) {
+      setFrase("");
+      setEscolhida(null);
+    }
+  }
+
+  const daGrade = <span className="da-grade">{t("agenda.frase.daGrade")}</span>;
+
+  return (
+    <form className="cartao entrada-rapida" onSubmit={criar}>
+      <div className="linha">
+        <input
+          className="campo-frase"
+          value={frase}
+          onChange={(e) => {
+            setFrase(e.target.value);
+            setEscolhida(null);
+          }}
+          placeholder={t("agenda.frase.dica")}
+          aria-label={t("agenda.nova")}
+        />
+        <button type="submit" className="botao primario" disabled={!lida}>
+          {t("comum.adicionar")}
+        </button>
+        <button
+          type="button"
+          className="botao"
+          onClick={() => {
+            const d = dados();
+            aoMaisOpcoes(d ? { ...d, prazo: d.prazo ?? null } : {});
+          }}
+        >
+          {t("agenda.frase.maisOpcoes")}
+        </button>
+      </div>
+
+      {lida && (
+        <div className="previa-frase pequeno">
+          <span className="chip">
+            {t(`agenda.tipos.${lida.tipo}`)}
+          </span>
+          {disciplinaId ? (
+            <span className="chip">
+              {nomeDe(disciplinaId)} {lida.disciplinaOrigem === "grade" && !escolhida && daGrade}
+            </span>
+          ) : lida.opcoesDisciplina.length > 0 ? (
+            <span className="opcoes-disciplina">
+              {t("agenda.frase.qualDisciplina")}
+              {lida.opcoesDisciplina.map((id) => (
+                <button key={id} type="button" className="botao pequeno" onClick={() => setEscolhida(id)}>
+                  {nomeDe(id)}
+                </button>
+              ))}
+            </span>
+          ) : (
+            <span className="chip vazio">{t("agenda.semDisciplina")}</span>
+          )}
+          {lida.data ? (
+            <span className="chip">
+              {formatarDataEmail(prazoDaFrase(lida)!, true)} {(lida.dataOrigem === "grade" || lida.horaOrigem === "grade") && daGrade}
+            </span>
+          ) : (
+            <span className="chip vazio">{t("agenda.frase.semData")}</span>
+          )}
+          {lida.avisos
+            .filter((a) => a !== "variasAulasNoDia" && a !== "variasDisciplinas")
+            .map((a) => (
+              <span key={a} className="aviso-frase">
+                {t(`agenda.frase.avisos.${a}`)}
+              </span>
+            ))}
+        </div>
+      )}
+    </form>
   );
 }

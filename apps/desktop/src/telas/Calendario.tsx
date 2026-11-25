@@ -12,13 +12,15 @@ import {
   periodoDoNome,
   proximosEventos,
   semestreDoPacote,
+  tarefas as repoTarefas,
   type EventoCalendario,
+  type Tarefa,
   type PacoteCalendario,
   type SemestrePacote,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import i18n from "../i18n";
-import { formatarData, formatarDataCompleta, nomeDia } from "../formatos";
+import { formatarData, formatarDataCompleta, formatarDataEmail, nomeDia } from "../formatos";
 
 /**
  * Pacotes de calendário que já vêm com o app: os arquivos JSON da pasta
@@ -47,9 +49,23 @@ function visaoSalva(): Visao {
   }
 }
 
+/** Tarefas pendentes com prazo, para aparecerem no calendário. */
+function useTarefasComPrazo(): Tarefa[] {
+  const { banco } = useSemestre();
+  const [lista, setLista] = useState<Tarefa[]>([]);
+  useEffect(() => {
+    void repoTarefas.listar(banco).then((todas) => setLista(todas.filter((t) => t.prazo && !t.concluidaEm)));
+  }, [banco]);
+  return lista;
+}
+
+/** Data local (YYYY-MM-DD) do prazo de uma tarefa. */
+const diaDoPrazo = (t: Tarefa) => paraDataIso(new Date(t.prazo!));
+
 export function Calendario() {
   const { t } = useTranslation();
   const { semestre, eventos } = useSemestre();
+  const tarefasComPrazo = useTarefasComPrazo();
   const [escolhendo, setEscolhendo] = useState(false);
   const [visao, setVisao] = useState<Visao>(visaoSalva);
   const hoje = hojeIso();
@@ -100,7 +116,7 @@ export function Calendario() {
 
       {mostrarEscolha && <EscolherCalendario aoTerminar={() => setEscolhendo(false)} />}
 
-      {eventos.length > 0 && visao === "mes" && <VisaoMes />}
+      {eventos.length > 0 && visao === "mes" && <VisaoMes tarefas={tarefasComPrazo} />}
 
       {eventos.length > 0 && visao === "lista" && (
         <>
@@ -108,6 +124,12 @@ export function Calendario() {
             <h2>{t("calendario.proximos")}</h2>
             <ul className="lista">
               {/* Reuniões e prazos internos (tipo "outro") não interessam aos alunos aqui. */}
+              {tarefasComPrazo
+                .filter((x) => diaDoPrazo(x) >= hoje)
+                .slice(0, 5)
+                .map((x) => (
+                  <ItemTarefaCalendario key={x.id} tarefa={x} />
+                ))}
               {proximosEventos(eventos.filter((e) => e.tipo !== "outro"), hoje).map((e) => (
                 <ItemEvento key={e.id} evento={e} />
               ))}
@@ -151,7 +173,7 @@ const LEGENDA = ["letivo", "sem_aula", "sabado_letivo", "prova_final", "fechamen
  * Visão de mês, como a página do SUAP: a grade do mês com os dias pintados
  * pela legenda e, ao lado, os eventos daquele mês. Abre já no mês atual.
  */
-function VisaoMes() {
+function VisaoMes({ tarefas }: { tarefas: Tarefa[] }) {
   const { t } = useTranslation();
   const { semestre, eventos } = useSemestre();
   const hoje = hojeIso();
@@ -173,6 +195,10 @@ function VisaoMes() {
         <span>
           <i className="amostra dia-hoje" />
           {t("calendario.legenda.hoje")}
+        </span>
+        <span>
+          <i className="amostra amostra-tarefa" />
+          {t("calendario.legenda.tarefa")}
         </span>
       </div>
       {mesesEntre(semestre.inicio, semestre.fim).map((mes) => {
@@ -205,14 +231,18 @@ function VisaoMes() {
                       {semana.map((data, i) => {
                         if (!data) return <td key={`vazio-${i}`} />;
                         const marcacao = marcarDia(data, eventos, semestre);
+                        const doDia = tarefas.filter((x) => diaDoPrazo(x) === data);
+                        const temProva = doDia.some((x) => x.tipo === "prova");
+                        const titulos = [...marcacao.eventos.map((e) => e.titulo), ...doDia.map((x) => x.titulo)];
                         return (
                           <td
                             key={data}
                             className={`dia-${marcacao.tipo}${data === hoje ? " dia-hoje" : ""}`}
-                            title={marcacao.eventos.map((e) => e.titulo).join(" · ") || undefined}
+                            title={titulos.join(" · ") || undefined}
                           >
                             <span>{Number(data.slice(8))}</span>
                             {marcacao.eventos.length > 0 && <i className="ponto" />}
+                            {doDia.length > 0 && <i className={`marca-tarefa ${temProva ? "prova" : ""}`} />}
                           </td>
                         );
                       })}
@@ -222,7 +252,14 @@ function VisaoMes() {
               </table>
             </div>
             <ul className="lista mes-eventos">
-              {doMes.length === 0 && <li className="pequeno suave">{t("calendario.semEventos")}</li>}
+              {tarefas
+                .filter((x) => diaDoPrazo(x).slice(0, 7) === mes)
+                .map((x) => (
+                  <ItemTarefaCalendario key={x.id} tarefa={x} />
+                ))}
+              {doMes.length === 0 && !tarefas.some((x) => diaDoPrazo(x).slice(0, 7) === mes) && (
+                <li className="pequeno suave">{t("calendario.semEventos")}</li>
+              )}
               {doMes.map((e) => (
                 <ItemEvento key={e.id} evento={e} passado={e.dataFim < hoje || e.tipo === "outro"} />
               ))}
@@ -231,6 +268,24 @@ function VisaoMes() {
         );
       })}
     </>
+  );
+}
+
+/** Uma tarefa da Agenda (prova, trabalho, atividade do Moodle) na lista do calendário. */
+function ItemTarefaCalendario({ tarefa }: { tarefa: Tarefa }) {
+  const { t } = useTranslation();
+  const { disciplinas } = useSemestre();
+  const disciplina = disciplinas.find((d) => d.id === tarefa.disciplinaId);
+  return (
+    <li className="item">
+      <span className={`etiqueta tarefa-${tarefa.tipo === "prova" ? "prova" : "entrega"}`}>{t(`agenda.tipos.${tarefa.tipo}`)}</span>
+      <div className="item-texto">
+        <strong>{tarefa.titulo}</strong>
+        <span className="pequeno suave">
+          {[disciplina?.nome, formatarDataEmail(tarefa.prazo!, true)].filter(Boolean).join(" · ")}
+        </span>
+      </div>
+    </li>
   );
 }
 
