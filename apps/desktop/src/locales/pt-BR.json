@@ -393,7 +393,7 @@
   },
   "notas": {
     "titulo": "Notas",
-    "explicacao": "Anote suas avaliações (provas, trabalhos) para acompanhar a média durante o semestre. Quando o professor lança a nota no SUAP, ela passa a valer no lugar da sua conta.",
+    "explicacao": "Anote suas avaliações dizendo quanto cada uma vale (ex.: prova de 7 e trabalho de 3). Assim o app faz a conta do jeito do professor, seja soma de pontos, média ou fórmula, e diz quanto falta. Quando a etapa fecha no SUAP, a nota de lá passa a valer.",
     "suap": "SUAP:",
     "etapa": "Etapa {{numero}}",
     "naf": "{{Recuperacao}} (NAF)",
@@ -401,7 +401,6 @@
     "atualizado": "atualizado em {{data}}",
     "fonteSuap": "nota oficial do SUAP",
     "fonteApp": "pelas suas avaliações",
-    "fonteAppParcial": "parcial, pelas avaliações que já têm nota",
     "semNota": "ainda sem nota",
     "situacao": {
       "em_andamento": "Em andamento",
@@ -414,9 +413,9 @@
     },
     "dica": {
       "vazio": "Nenhuma nota ainda. Adicione as avaliações da disciplina para ver quanto precisa tirar.",
-      "precisa": "Para passar direto (média {{aprovacao}}), você precisa de média {{media}} nas avaliações que faltam.",
+      "precisa": "Ainda valem {{emJogo}} pontos nas avaliações que faltam. Para passar direto (média {{aprovacao}}), você precisa de {{faltam}} deles.",
       "garantido": "Aprovação direta garantida, mesmo tirando zero no que falta.",
-      "impossivel": "Não dá mais para passar direto. Com média a partir de {{minimo}}, você ainda vai {{paraRec}}.",
+      "impossivel": "Mesmo tirando tudo o que falta, não dá para passar direto. Com média a partir de {{minimo}}, você ainda vai {{paraRec}}.",
       "ifa": "Você vai {{paraRec}}. Precisa tirar {{minimo}} para passar, e a média final fica limitada a {{teto}}.",
       "falta": "Reprovado por falta: a frequência ficou abaixo do mínimo, independentemente da nota."
     },
@@ -425,7 +424,7 @@
     "data": "Data",
     "peso": "Peso",
     "nota": "Nota",
-    "valeAte": "Vale até",
+    "valeAte": "Vale (pontos)",
     "notaDica": "se já saiu",
     "nomeDica": "Ex.: Prova 1, Trabalho final",
     "notaDe": "Nota de {{nome}}",
@@ -433,7 +432,10 @@
     "adicionar": "Adicionar avaliação",
     "daAgenda": "Da Agenda:",
     "invalido": "Confira os números: use valores como 7,5, e a nota não pode passar do valor máximo.",
-    "regrasEmConfig": "As regras de aprovação (média, recuperação, frequência) vêm da sua faculdade e podem ser ajustadas em Configurações."
+    "regrasEmConfig": "As regras de aprovação (média, recuperação, frequência) vêm da sua faculdade e podem ser ajustadas em Configurações.",
+    "fonteSuapParcial": "pontos já lançados no SUAP; a etapa ainda não fechou",
+    "fontePontos": "pontos garantidos, de 10",
+    "pesoDica": "= valor"
   },
   "instituicao": {
     "boasVindas": "Bem-vindo ao Better Student!",

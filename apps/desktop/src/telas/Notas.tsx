@@ -113,38 +113,25 @@ function CartaoNotas({ disciplina, tarefas }: { disciplina: Disciplina; tarefas:
       </div>
 
       <div className="notas-media">
-        <strong className="notas-numero">{formatarNota(nota.mediaFinal ?? nota.media)}</strong>
+        <strong className="notas-numero">
+          {formatarNota(nota.pontos ? arredondar(nota.pontos.garantidos) : (nota.mediaFinal ?? nota.media))}
+        </strong>
         <span className="pequeno suave">
           {nota.fonte === "suap"
             ? t("notas.fonteSuap")
-            : nota.fonte === "app"
-              ? nota.completa
-                ? t("notas.fonteApp")
-                : t("notas.fonteAppParcial")
-              : t("notas.semNota")}
+            : nota.fonte === "suap_parcial"
+              ? t("notas.fonteSuapParcial")
+              : nota.pontos
+                ? t("notas.fontePontos")
+                : nota.fonte === "app"
+                  ? t("notas.fonteApp")
+                  : t("notas.semNota")}
         </span>
       </div>
       <Orientacao disciplina={disciplina} nota={nota} regras={semestre} />
 
       {minhas.length > 0 && (
-        <div className="tabela-rolagem">
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>{t("notas.avaliacao")}</th>
-                <th>{t("notas.data")}</th>
-                <th className="numero">{t("notas.peso")}</th>
-                <th className="numero">{t("notas.nota")}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {minhas.map((a) => (
-                <LinhaAvaliacao key={a.id} avaliacao={a} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TabelaAvaliacoes avaliacoes={minhas} />
       )}
 
       {sugestoes.length > 0 && (
@@ -162,6 +149,8 @@ function CartaoNotas({ disciplina, tarefas }: { disciplina: Disciplina; tarefas:
                     nome: x.titulo,
                     data: x.prazo ? x.prazo.slice(0, 10) : null,
                     tarefaId: x.id,
+                    notaMaxima: 10,
+                    peso: 10,
                   }),
                 )
               }
@@ -227,11 +216,12 @@ function Orientacao({
     );
   }
 
-  if (nota.precisa === null) {
+  const { pontos } = nota;
+  if (!pontos) {
     return nota.fonte === null ? <p className="pequeno suave">{t("notas.dica.vazio")}</p> : null;
   }
-  if (nota.precisa <= 0) return <p className="pequeno texto-ok">{t("notas.dica.garantido")}</p>;
-  if (nota.precisa > 10) {
+  if (pontos.faltam <= 1e-9) return <p className="pequeno texto-ok">{t("notas.dica.garantido")}</p>;
+  if (pontos.faltam > pontos.emJogo + 1e-9) {
     return (
       <p className="pequeno texto-perigo">
         {t("notas.dica.impossivel", { minimo: formatarNota(regras.mediaMinimaIfa), ...recuperacao })}
@@ -240,12 +230,48 @@ function Orientacao({
   }
   return (
     <p className="pequeno">
-      {t("notas.dica.precisa", { media: formatarNota(Math.ceil(nota.precisa * 10) / 10), aprovacao: formatarNota(regras.mediaAprovacao) })}
+      {t("notas.dica.precisa", {
+        emJogo: formatarNota(arredondar(pontos.emJogo)),
+        // Para cima: 0,55 vira 0,6, porque é o mínimo que precisa tirar.
+        faltam: formatarNota(Math.ceil(pontos.faltam * 10 - 1e-9) / 10),
+        aprovacao: formatarNota(regras.mediaAprovacao),
+      })}
     </p>
   );
 }
 
-function LinhaAvaliacao({ avaliacao }: { avaliacao: Avaliacao }) {
+/** Duas casas, para não aparecer 3,9500000001. */
+function arredondar(valor: number): number {
+  return Math.round(valor * 100) / 100;
+}
+
+/** As avaliações anotadas. A coluna de peso só aparece se alguma usa peso diferente do valor. */
+function TabelaAvaliacoes({ avaliacoes }: { avaliacoes: Avaliacao[] }) {
+  const { t } = useTranslation();
+  const comPeso = avaliacoes.some((a) => a.peso !== a.notaMaxima);
+  return (
+    <div className="tabela-rolagem">
+      <table className="tabela">
+        <thead>
+          <tr>
+            <th>{t("notas.avaliacao")}</th>
+            <th>{t("notas.data")}</th>
+            {comPeso && <th className="numero">{t("notas.peso")}</th>}
+            <th className="numero">{t("notas.nota")}</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          {avaliacoes.map((a) => (
+            <LinhaAvaliacao key={a.id} avaliacao={a} comPeso={comPeso} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function LinhaAvaliacao({ avaliacao, comPeso }: { avaliacao: Avaliacao; comPeso: boolean }) {
   const { t } = useTranslation();
   const { banco, acao } = useSemestre();
   const [texto, setTexto] = useState(avaliacao.nota !== null ? formatarNota(avaliacao.nota) : "");
@@ -267,7 +293,7 @@ function LinhaAvaliacao({ avaliacao }: { avaliacao: Avaliacao }) {
     <tr>
       <td>{avaliacao.nome}</td>
       <td className="suave">{avaliacao.data ? formatarData(avaliacao.data) : "–"}</td>
-      <td className="numero">{formatarNota(avaliacao.peso)}</td>
+      {comPeso && <td className="numero">{formatarNota(avaliacao.peso)}</td>}
       <td className="numero sem-quebra">
         <input
           className={`campo-nota ${invalida ? "invalido" : ""}`}
@@ -300,7 +326,7 @@ function NovaAvaliacao({ disciplinaId }: { disciplinaId: string }) {
   const { banco, acao } = useSemestre();
   const [aberto, setAberto] = useState(false);
   const [nome, setNome] = useState("");
-  const [peso, setPeso] = useState("1");
+  const [peso, setPeso] = useState("");
   const [maxima, setMaxima] = useState("10");
   const [nota, setNota] = useState("");
   const [data, setData] = useState("");
@@ -318,8 +344,9 @@ function NovaAvaliacao({ disciplinaId }: { disciplinaId: string }) {
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    const valorPeso = lerNota(peso);
     const valorMaxima = lerNota(maxima);
+    // Sem peso informado, a avaliação pesa o quanto vale (P1 de 7 pesa 7, trabalho de 3 pesa 3).
+    const valorPeso = peso.trim() === "" ? valorMaxima : lerNota(peso);
     const valorNota = lerNota(nota);
     if (!valorPeso || !valorMaxima || valorNota === undefined || (valorNota !== null && valorNota > valorMaxima)) {
       setAviso(t("notas.invalido"));
@@ -356,12 +383,12 @@ function NovaAvaliacao({ disciplinaId }: { disciplinaId: string }) {
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </label>
         <label>
-          {t("notas.peso")}
-          <input className="campo-nota" inputMode="decimal" value={peso} onChange={(e) => setPeso(e.target.value)} />
-        </label>
-        <label>
           {t("notas.valeAte")}
           <input className="campo-nota" inputMode="decimal" value={maxima} onChange={(e) => setMaxima(e.target.value)} />
+        </label>
+        <label>
+          {t("notas.peso")}
+          <input className="campo-nota" inputMode="decimal" value={peso} onChange={(e) => setPeso(e.target.value)} placeholder={t("notas.pesoDica")} />
         </label>
         <label>
           {t("notas.nota")}

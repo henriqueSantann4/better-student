@@ -27,6 +27,7 @@ function lerAvaliacao(l: LinhaAvaliacao): Avaliacao {
 export interface DadosAvaliacao {
   disciplinaId: string;
   nome: string;
+  /** Peso na média. Se omitido, igual a `notaMaxima` (a avaliação pesa o quanto vale). */
   peso?: number;
   nota?: number | null;
   notaMaxima?: number;
@@ -54,7 +55,7 @@ export const avaliacoes = {
     await banco.executar(
       `INSERT INTO avaliacao (id, disciplina_id, nome, peso, nota, nota_maxima, data, tarefa_id, criado_em, atualizado_em)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, dados.disciplinaId, dados.nome, dados.peso ?? 1, dados.nota ?? null, dados.notaMaxima ?? 10,
+      [id, dados.disciplinaId, dados.nome, dados.peso ?? dados.notaMaxima ?? 10, dados.nota ?? null, dados.notaMaxima ?? 10,
         dados.data ?? null, dados.tarefaId ?? null, momento, momento],
     );
     return id;
@@ -65,7 +66,7 @@ export const avaliacoes = {
       `UPDATE avaliacao SET disciplina_id = ?, nome = ?, peso = ?, nota = ?, nota_maxima = ?, data = ?, tarefa_id = ?,
          atualizado_em = ?
        WHERE id = ?`,
-      [dados.disciplinaId, dados.nome, dados.peso ?? 1, dados.nota ?? null, dados.notaMaxima ?? 10,
+      [dados.disciplinaId, dados.nome, dados.peso ?? dados.notaMaxima ?? 10, dados.nota ?? null, dados.notaMaxima ?? 10,
         dados.data ?? null, dados.tarefaId ?? null, agora(), id],
     );
   },

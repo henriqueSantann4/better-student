@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import { REGRAS_PADRAO_IFSP, type Avaliacao, type DadosSuap } from "../tipos.ts";
-import { mediaNecessaria, notaDaDisciplina } from "./notas.ts";
+import { mediaNecessaria, notaDaDisciplina, pontosDasAvaliacoes } from "./notas.ts";
 
 const registro = { criadoEm: "", atualizadoEm: "", excluidoEm: null };
 
@@ -46,7 +46,7 @@ describe("notaDaDisciplina", () => {
     const r = notaDaDisciplina({ suap: suap({}), notaIfa: null }, [avaliacao(5), avaliacao(null)], regras, false);
     assert.equal(r.fonte, "app");
     assert.equal(r.media, 5);
-    assert.equal(r.precisa, 7);
+    assert.deepEqual(r.pontos, { garantidos: 2.5, emJogo: 5, faltam: 3.5 });
     assert.equal(r.situacao, "em_andamento");
   });
 
@@ -56,7 +56,7 @@ describe("notaDaDisciplina", () => {
     assert.equal(r.fonte, "suap");
     assert.equal(r.media, 5.4);
     assert.equal(r.situacao, "ifa");
-    assert.equal(r.precisa, null);
+    assert.equal(r.pontos, null);
   });
 
   it("IFA anotado no app aprova com média limitada ao teto", () => {
@@ -79,3 +79,32 @@ describe("notaDaDisciplina", () => {
     assert.equal(r.situacao, "reprovado_falta");
   });
 });
+
+describe("pontos e nota parcial do SUAP", () => {
+  const regras = REGRAS_PADRAO_IFSP;
+
+  it("soma simples no SUAP + trabalho que falta: deixa de ser IFA e vira em andamento", () => {
+    // Etapa com 5,4 já lançados e um trabalho de 2,5 pontos ainda por fazer.
+    const disciplina = { suap: suap({ etapas: [{ numero: 1, nota: 5.4, faltas: 12 }], media: 5.4 }), notaIfa: null };
+    const r = notaDaDisciplina(disciplina, [avaliacao(null, 2.5, 2.5)], regras, false);
+    assert.equal(r.fonte, "suap_parcial");
+    assert.equal(r.situacao, "em_andamento");
+    assert.equal(r.pontos?.garantidos, 5.4);
+    assert.equal(r.pontos?.emJogo, 2.5);
+    assert.ok(Math.abs(r.pontos!.faltam - 0.6) < 1e-9);
+  });
+
+  it("fórmula (P1+T1+P2+T2)/2, com provas de 7 e trabalhos de 3 (peso = valor)", () => {
+    const lista = [avaliacao(5, 7, 7), avaliacao(2.9, 3, 3), avaliacao(null, 7, 7), avaliacao(null, 3, 3)];
+    const p = pontosDasAvaliacoes(lista, 6)!;
+    assert.ok(Math.abs(p.garantidos - 3.95) < 1e-9, "(5 + 2,9) / 2");
+    assert.equal(p.emJogo, 5);
+    assert.ok(Math.abs(p.faltam - 2.05) < 1e-9);
+  });
+
+  it("sem avaliação pendente, a nota fechada do SUAP continua valendo", () => {
+    const disciplina = { suap: suap({ etapas: [{ numero: 1, nota: 5.4, faltas: 12 }], media: 5.4 }), notaIfa: null };
+    assert.equal(notaDaDisciplina(disciplina, [avaliacao(2, 2.5, 2.5)], regras, false).situacao, "ifa");
+  });
+});
+
