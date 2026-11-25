@@ -19,16 +19,22 @@ export async function gravarServidorSuap(banco: Banco, servidor: string): Promis
   await configuracao.gravar(banco, "suapServidor", servidor);
 }
 
+/** O que a janela do SUAP entrega: boletim e, se achou, o calendário acadêmico. */
+export interface PacoteSuap {
+  boletim: string;
+  calendario: string | null;
+}
+
 /**
- * Abre a janela do SUAP e espera o boletim. O núcleo Rust manda o HTML pelo
+ * Abre a janela do SUAP e espera o boletim. O núcleo Rust manda o pacote pelo
  * evento "suap:boletim" quando o script da janela consegue buscá-lo (depois
  * que o usuário entra no SUAP). Devolve uma função para desistir da espera.
  */
 export async function buscarBoletimNoSuap(
   servidor: string,
-  aoReceber: (html: string) => void,
+  aoReceber: (pacote: PacoteSuap) => void,
 ): Promise<UnlistenFn> {
-  const parar = await listen<string>("suap:boletim", (evento) => {
+  const parar = await listen<PacoteSuap>("suap:boletim", (evento) => {
     parar();
     aoReceber(evento.payload);
   });

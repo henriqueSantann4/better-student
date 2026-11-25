@@ -47,7 +47,8 @@
     "criarEImportar_other": "Criar semestre e importar {{count}} disciplinas",
     "estimadas": "Datas estimadas",
     "editar": "Editar semestre",
-    "editarTitulo": "Editar semestre"
+    "editarTitulo": "Editar semestre",
+    "datasDoCalendario": "As datas vêm do calendário acadêmico do SUAP, que veio junto com o boletim."
   },
   "grade": {
     "titulo": "Grade horária",
@@ -171,7 +172,8 @@
     "aguardandoSuap": "Esperando o boletim… Entre no SUAP na janela que abriu.",
     "outroInstituto": "Outro instituto?",
     "enderecoSuap": "Endereço do SUAP",
-    "ouManual": "Ou, se preferir, traga a página manualmente:"
+    "ouManual": "Ou, se preferir, traga a página manualmente:",
+    "calendarioJunto": "O calendário acadêmico de {{periodo}} veio junto e também será atualizado (datas do semestre, feriados e sábados letivos)."
   },
   "calendario": {
     "titulo": "Calendário acadêmico",

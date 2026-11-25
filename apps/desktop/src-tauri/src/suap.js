@@ -55,11 +55,54 @@
       if (!resposta.ok || html.indexOf("tabela_boletim") < 0) {
         throw new Error("o SUAP não devolveu o boletim (HTTP " + resposta.status + ")");
       }
-      aviso("boletim encontrado! Voltando para o app…", "ok");
-      await window.__TAURI_INTERNALS__.invoke("entregar_suap", { boletim: html });
+      aviso("boletim encontrado! Procurando o calendário acadêmico…");
+      // O calendário é um bônus: se não der para achar, o boletim vai do mesmo jeito.
+      var calendario = await buscarCalendario(periodoDoBoletim(html)).catch(function () {
+        return null;
+      });
+      aviso(calendario ? "boletim e calendário encontrados! Voltando para o app…" : "boletim encontrado! Voltando para o app…", "ok");
+      await window.__TAURI_INTERNALS__.invoke("entregar_suap", { boletim: html, calendario: calendario });
     } catch (erro) {
       aviso("não consegui buscar o boletim: " + (erro && erro.message ? erro.message : erro), "erro");
     }
+  }
+
+  /** Período do boletim, ex.: { ano: "2026", periodo: "2" }. */
+  function periodoDoBoletim(html) {
+    var titulo = /Boletim\s*-\s*(\d{4})\s*\/\s*(\d)/i.exec(html);
+    if (titulo) return { ano: titulo[1], periodo: titulo[2] };
+    var opcao = /<option\b(?=[^>]*\bselected\b)[^>]*value=["'](\d{4})_(\d)["']/i.exec(html);
+    return opcao ? { ano: opcao[1], periodo: opcao[2] } : null;
+  }
+
+  /**
+   * Faz o mesmo caminho que o aluno: abre o "Calendário de Eventos", procura
+   * os links para calendários acadêmicos e fica com o do período do boletim
+   * (preferindo o de cursos superiores, se houver mais de um).
+   */
+  async function buscarCalendario(periodo) {
+    if (!periodo) return null;
+    var resposta = await fetch("/eventos/calendario_eventos/", { credentials: "same-origin" });
+    if (!resposta.ok) return null;
+    var pagina = new DOMParser().parseFromString(await resposta.text(), "text/html");
+    var marcas = [periodo.ano + "/" + periodo.periodo, periodo.ano + "." + periodo.periodo];
+    var melhor = null;
+    var melhorNota = 0;
+    pagina.querySelectorAll('a[href*="/edu/calendarioacademico/"]').forEach(function (link) {
+      // O texto do link e o da linha/item em volta ("[6399] Cursos Superiores - 2026/2 ...").
+      var texto = (link.textContent + " " + ((link.closest("tr, li, div") || link).textContent || "")).toLowerCase();
+      var nota = 0;
+      if (marcas.some(function (m) { return texto.indexOf(m) >= 0; })) nota += 2;
+      if (texto.indexOf("superior") >= 0) nota += 1;
+      if (nota >= 2 && nota > melhorNota) {
+        melhorNota = nota;
+        melhor = link.getAttribute("href");
+      }
+    });
+    if (!melhor) return null;
+    var calendario = await fetch(new URL(melhor, location.origin).pathname, { credentials: "same-origin" });
+    var htmlCalendario = await calendario.text();
+    return calendario.ok && htmlCalendario.indexOf("calendario-referencia") >= 0 ? htmlCalendario : null;
   }
 
   if (document.readyState === "loading") {

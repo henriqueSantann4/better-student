@@ -61,18 +61,32 @@ async fn abrir_suap(app: AppHandle, servidor: String) -> Result<(), String> {
     Ok(())
 }
 
-/// Recebido da janela do SUAP: repassa o HTML do boletim para a janela
-/// principal (evento `suap:boletim`), fecha a janela do SUAP e volta ao app.
-/// O app só lê e mostra uma prévia: nada é gravado sem o usuário confirmar.
+/// O que a janela do SUAP entrega: o boletim e, se achou, o calendário acadêmico.
+#[derive(Clone, serde::Serialize)]
+struct PacoteSuap {
+    boletim: String,
+    calendario: Option<String>,
+}
+
+/// Recebido da janela do SUAP: repassa o boletim (e o calendário, se veio)
+/// para a janela principal (evento `suap:boletim`), fecha a janela do SUAP e
+/// volta ao app. O app mostra uma prévia: nada é gravado sem o usuário confirmar.
 #[tauri::command]
-fn entregar_suap(app: AppHandle, janela: WebviewWindow, boletim: String) -> Result<(), String> {
+fn entregar_suap(
+    app: AppHandle,
+    janela: WebviewWindow,
+    boletim: String,
+    calendario: Option<String>,
+) -> Result<(), String> {
     if janela.label() != JANELA_SUAP {
         return Err("comando exclusivo da janela do SUAP".into());
     }
-    if boletim.len() > TAMANHO_MAXIMO_BOLETIM {
-        return Err("boletim grande demais".into());
+    let grande = |texto: &str| texto.len() > TAMANHO_MAXIMO_BOLETIM;
+    if grande(&boletim) || calendario.as_deref().is_some_and(grande) {
+        return Err("página do SUAP grande demais".into());
     }
-    app.emit_to("main", "suap:boletim", boletim).map_err(|e| e.to_string())?;
+    app.emit_to("main", "suap:boletim", PacoteSuap { boletim, calendario })
+        .map_err(|e| e.to_string())?;
     if let Some(principal) = app.get_webview_window("main") {
         let _ = principal.set_focus();
     }

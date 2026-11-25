@@ -3,12 +3,16 @@ import { useTranslation } from "react-i18next";
 import {
   aplicarImportacao,
   ErroBoletim,
+  calendario as repoCalendario,
   lerBoletimSuap,
+  lerCalendarioSuap,
   periodoConfere,
+  periodoDoNome,
   planejarImportacao,
   type BoletimSuap,
   type ItemImportacao,
   type ResultadoImportacao,
+  type SemestrePacote,
 } from "@better-student/shared";
 import { useApp, useSemestre } from "../contexto";
 import { buscarBoletimNoSuap, gravarServidorSuap, lerServidorSuap, suapAutomaticoDisponivel } from "../suap";
@@ -24,7 +28,13 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
   const { t } = useTranslation();
   const { banco, acao, semestre, disciplinas } = useSemestre();
   const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
+  const [calendario, setCalendario] = useState<SemestrePacote | null>(null);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
+  // O calendário só é aplicado se for do mesmo período do semestre.
+  const periodoSemestre = periodoDoNome(semestre.nome);
+  const periodoCal = calendario ? periodoDoNome(calendario.periodo) : null;
+  const calendarioServe =
+    !!calendario && !!periodoSemestre && periodoCal?.ano === periodoSemestre.ano && periodoCal.periodo === periodoSemestre.periodo;
 
   const plano = boletim ? planejarImportacao(boletim, disciplinas) : [];
   const confere = boletim ? periodoConfere(boletim, semestre) : null;
@@ -36,6 +46,7 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
     const saida: { resultado?: ResultadoImportacao } = {};
     const ok = await acao(async () => {
       saida.resultado = await aplicarImportacao(banco, semestre.id, boletim, plano, cores);
+      if (calendarioServe) await repoCalendario.aplicarPacote(banco, semestre, "suap", calendario!);
     });
     if (ok && saida.resultado) {
       setResultado(saida.resultado);
@@ -58,6 +69,7 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
         <>
           {confere === false && <p className="aviso">{t("importar.periodoDiferente", { semestre: semestre.nome })}</p>}
           <PreviaImportacao boletim={boletim} plano={plano} />
+          {calendarioServe && <p className="pequeno sucesso">{t("importar.calendarioJunto", { periodo: calendario!.periodo })}</p>}
           <div className="acoes">
             <button type="button" className="botao primario" onClick={importar}>
               {t("importar.confirmar", { count: plano.length })}
@@ -69,9 +81,10 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
         </>
       ) : (
         <EntradaBoletim
-          aoLer={(b) => {
+          aoLer={(b, c) => {
             setResultado(null);
             setBoletim(b);
+            setCalendario(c);
           }}
           comPassos={!resultado}
         />
@@ -96,7 +109,14 @@ export function ResultadoImportacaoTexto({ resultado }: { resultado: ResultadoIm
  *  - colando a página copiada (Ctrl+A, Ctrl+C no navegador). Ao copiar, o
  *    navegador guarda também a versão HTML, e é ela que o app lê.
  */
-export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: BoletimSuap) => void; comPassos?: boolean }) {
+export function EntradaBoletim({
+  aoLer,
+  comPassos = true,
+}: {
+  /** `calendario` só vem pela busca automática (a página colada é só o boletim). */
+  aoLer: (boletim: BoletimSuap, calendario: SemestrePacote | null) => void;
+  comPassos?: boolean;
+}) {
   const { t } = useTranslation();
   const { banco } = useApp();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -111,11 +131,18 @@ export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: B
     return () => pararEspera.current?.();
   }, [banco, automatico]);
 
-  function ler(html: string) {
+  function ler(html: string, htmlCalendario: string | null = null) {
     try {
       const boletim = lerBoletimSuap(html);
       setAviso(null);
-      aoLer(boletim);
+      // O calendário é um bônus: se não der para ler, segue só com o boletim.
+      let calendario: SemestrePacote | null = null;
+      try {
+        calendario = htmlCalendario ? lerCalendarioSuap(htmlCalendario) : null;
+      } catch {
+        calendario = null;
+      }
+      aoLer(boletim, calendario);
     } catch (erro) {
       setAviso(erro instanceof ErroBoletim ? t(`importar.erro.${erro.motivo}`) : String(erro));
     }
@@ -127,9 +154,9 @@ export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: B
     setAguardando(true);
     try {
       await gravarServidorSuap(banco, servidor);
-      pararEspera.current = await buscarBoletimNoSuap(servidor, (html) => {
+      pararEspera.current = await buscarBoletimNoSuap(servidor, (pacote) => {
         setAguardando(false);
-        ler(html);
+        ler(pacote.boletim, pacote.calendario);
       });
     } catch (erro) {
       setAguardando(false);
