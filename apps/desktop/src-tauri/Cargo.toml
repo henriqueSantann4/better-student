@@ -1,0 +1,28 @@
+[package]
+name = "better-student"
+version = "0.1.0"
+description = "App de desktop leve para estudantes de graduação"
+authors = ["Antonio Barbieri e contribuidores"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+# O sufixo _lib evita conflito de nome com o binário no Windows.
+name = "better_student_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+# Prioriza um executável pequeno, de acordo com a proposta de app leve.
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

@@ -1,0 +1,16 @@
+{
+  "app": {
+    "nome": "Better Student",
+    "boasVindas": "Bem-vindo ao Better Student",
+    "subtitulo": "Sua vida acadêmica em um só lugar.",
+    "versaoNucleo": "Núcleo nativo: {{versao}}",
+    "nucleoIndisponivel": "Rodando fora do Tauri (modo navegador)."
+  },
+  "menu": {
+    "agenda": "Agenda",
+    "grade": "Grade horária",
+    "faltas": "Faltas",
+    "notas": "Notas",
+    "materiais": "Materiais"
+  }
+}

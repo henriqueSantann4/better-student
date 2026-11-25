@@ -1,0 +1,74 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  --fundo: #f6f7f9;
+  --painel: #ffffff;
+  --texto: #1c1f24;
+  --suave: #6b7280;
+  --destaque: #3b5bdb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #15171c;
+    --painel: #1d2027;
+    --texto: #e8eaed;
+    --suave: #9aa0a6;
+    --destaque: #748ffc;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+  background: var(--painel);
+  border-right: 1px solid color-mix(in srgb, var(--suave) 25%, transparent);
+}
+
+.logo {
+  padding: 0 10px 16px;
+  font-size: 1.1rem;
+}
+
+.menu-item {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: color-mix(in srgb, var(--destaque) 12%, transparent);
+}
+
+.conteudo {
+  padding: 32px 40px;
+}
+
+.rodape {
+  margin-top: 32px;
+  color: var(--suave);
+  font-size: 0.85rem;
+}

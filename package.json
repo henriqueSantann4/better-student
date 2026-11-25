@@ -1,0 +1,14 @@
+{
+  "name": "better-student",
+  "private": true,
+  "description": "App de desktop leve para estudantes de graduação: agenda, faltas, notas, materiais e ponte celular ↔ PC.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm --filter @better-student/desktop tauri dev",
+    "build": "pnpm --filter @better-student/desktop tauri build",
+    "dev:web": "pnpm --filter @better-student/desktop dev",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  }
+}
