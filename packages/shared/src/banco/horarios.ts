@@ -57,6 +57,14 @@ export const horarios = {
     return id;
   },
 
+  /** Muda quanto um encontro vale (ex.: ajustar pela contagem do calendário). */
+  async atualizarQuantidade(banco: Banco, id: string, quantidadeAulas: number): Promise<void> {
+    await banco.executar(
+      "UPDATE horario_aula SET quantidade_aulas = ?, atualizado_em = ? WHERE id = ?",
+      [quantidadeAulas, agora(), id],
+    );
+  },
+
   async excluir(banco: Banco, id: string): Promise<void> {
     const momento = agora();
     await banco.executar(

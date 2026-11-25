@@ -2,7 +2,9 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   disciplinas as repoDisciplinas,
+  hojeIso,
   horarios as repoHorarios,
+  planejarEncontros,
   semestres as repoSemestres,
   type DadosDisciplina,
   type DiaSemana,
@@ -119,17 +121,32 @@ function Semana() {
 
 function FormHorario() {
   const { t } = useTranslation();
-  const { banco, acao, disciplinas } = useSemestre();
+  const { banco, acao, disciplinas, horarios, eventos, semestre } = useSemestre();
   const [disciplinaId, setDisciplinaId] = useState(disciplinas[0]?.id ?? "");
   const [dia, setDia] = useState<DiaSemana>(1);
   const [inicio, setInicio] = useState("19:00");
   const [fim, setFim] = useState("22:30");
-  const [quantidade, setQuantidade] = useState(4);
+  // `null` = usa a sugestão do calendário; um número = o usuário digitou.
+  const [quantidadeManual, setQuantidadeManual] = useState<number | null>(null);
   const [sala, setSala] = useState("");
   const [aviso, setAviso] = useState<string | null>(null);
 
   // Se a disciplina escolhida foi excluída, volta para a primeira.
   const escolhida = disciplinas.some((d) => d.id === disciplinaId) ? disciplinaId : (disciplinas[0]?.id ?? "");
+  const disciplina = disciplinas.find((d) => d.id === escolhida);
+
+  // Conta os encontros da disciplina COM este novo horário, para sugerir
+  // quanto cada encontro vale: total de aulas ÷ encontros no semestre.
+  const plano = disciplina
+    ? planejarEncontros(
+        disciplina.totalAulas,
+        [...horarios.filter((h) => h.disciplinaId === escolhida), { diaSemana: dia, excluidoEm: null }],
+        eventos,
+        semestre,
+        hojeIso(),
+      )
+    : null;
+  const quantidade = quantidadeManual ?? plano?.sugestao ?? 4;
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -157,7 +174,13 @@ function FormHorario() {
         <div className="linha">
           <label className="largo">
             {t("grade.disciplina")}
-            <select value={escolhida} onChange={(e) => setDisciplinaId(e.target.value)}>
+            <select
+              value={escolhida}
+              onChange={(e) => {
+                setDisciplinaId(e.target.value);
+                setQuantidadeManual(null);
+              }}
+            >
               {disciplinas.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.nome}
@@ -167,7 +190,13 @@ function FormHorario() {
           </label>
           <label>
             {t("grade.dia")}
-            <select value={dia} onChange={(e) => setDia(Number(e.target.value) as DiaSemana)}>
+            <select
+              value={dia}
+              onChange={(e) => {
+                setDia(Number(e.target.value) as DiaSemana);
+                setQuantidadeManual(null);
+              }}
+            >
               {TODOS_DIAS.map((d) => (
                 <option key={d} value={d}>
                   {nomeDia(d)}
@@ -192,7 +221,7 @@ function FormHorario() {
               min={1}
               max={12}
               value={quantidade}
-              onChange={(e) => setQuantidade(Number(e.target.value))}
+              onChange={(e) => setQuantidadeManual(Number(e.target.value))}
               required
             />
           </label>
@@ -204,6 +233,17 @@ function FormHorario() {
             {t("comum.adicionar")}
           </button>
         </div>
+        {disciplina && plano && plano.aulasPorEncontro !== null && (
+          <p className="pequeno suave">
+            {t("grade.sugestaoEncontros", {
+              disciplina: disciplina.nome,
+              encontros: plano.total,
+              aulas: disciplina.totalAulas,
+              porEncontro: formatarNota(plano.aulasPorEncontro),
+            })}
+            {eventos.length === 0 && ` ${t("grade.semCalendario")}`}
+          </p>
+        )}
         {aviso && <p className="aviso">{aviso}</p>}
       </form>
     </section>
@@ -254,6 +294,7 @@ function ItemDisciplina({ disciplina, qtdHorarios }: { disciplina: Disciplina; q
               .join(" · ")}
           </span>
         )}
+        <EncontrosDisciplina disciplina={disciplina} />
       </div>
       <button type="button" className="botao" onClick={() => setEditando(true)}>
         {t("comum.editar")}
@@ -262,6 +303,49 @@ function ItemDisciplina({ disciplina, qtdHorarios }: { disciplina: Disciplina; q
         {t("comum.excluir")}
       </button>
     </li>
+  );
+}
+
+/**
+ * Quantos encontros a disciplina tem no semestre (pela grade e pelo
+ * calendário) e quanto cada um deveria valer. Se a grade diz outra coisa,
+ * oferece ajustar: é isso que deixa a conta de faltas certa.
+ */
+function EncontrosDisciplina({ disciplina }: { disciplina: Disciplina }) {
+  const { t } = useTranslation();
+  const { banco, acao, horarios, eventos, semestre } = useSemestre();
+  const daDisciplina = horarios.filter((h) => h.disciplinaId === disciplina.id);
+  if (daDisciplina.length === 0) return null;
+
+  const plano = planejarEncontros(disciplina.totalAulas, daDisciplina, eventos, semestre, hojeIso());
+  if (plano.aulasPorEncontro === null || plano.sugestao === null) return null;
+  const sugestao = plano.sugestao;
+  const diferentes = daDisciplina.filter((h) => h.quantidadeAulas !== sugestao);
+
+  return (
+    <span className="pequeno suave">
+      {t("grade.encontrosNoSemestre", {
+        count: plano.total,
+        porEncontro: formatarNota(plano.aulasPorEncontro),
+      })}
+      {diferentes.length > 0 && (
+        <>
+          {" · "}
+          <span className="texto-atencao">{t("grade.gradeDiferente", { atual: diferentes[0]!.quantidadeAulas, sugestao })}</span>{" "}
+          <button
+            type="button"
+            className="link"
+            onClick={() =>
+              acao(async () => {
+                for (const h of diferentes) await repoHorarios.atualizarQuantidade(banco, h.id, sugestao);
+              })
+            }
+          >
+            {t("grade.ajustar", { sugestao })}
+          </button>
+        </>
+      )}
+    </span>
   );
 }
 

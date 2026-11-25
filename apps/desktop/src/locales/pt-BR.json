@@ -79,7 +79,13 @@
     "fimAntesInicio": "O fim da aula precisa ser depois do início.",
     "removerHorario": "Remover esta aula da grade",
     "suapMedia": "média {{nota}}",
-    "suapMediaFinal": "média final {{nota}}"
+    "suapMediaFinal": "média final {{nota}}",
+    "sugestaoEncontros": "Pelo calendário, {{disciplina}} terá {{encontros}} encontros no semestre: {{aulas}} aulas ÷ {{encontros}} ≈ {{porEncontro}} aulas por encontro.",
+    "semCalendario": "(Sem calendário acadêmico, a conta não desconta feriados: escolha um em Calendário.)",
+    "encontrosNoSemestre_one": "{{count}} encontro no semestre (≈ {{porEncontro}} aulas cada)",
+    "encontrosNoSemestre_other": "{{count}} encontros no semestre (≈ {{porEncontro}} aulas cada)",
+    "gradeDiferente": "a grade diz {{atual}} aulas por encontro",
+    "ajustar": "Ajustar para {{sugestao}}"
   },
   "faltas": {
     "titulo": "Faltas",
@@ -123,7 +129,9 @@
     "anotarTitulo": "Anotar faltas no app (opcional)",
     "anotarDica": "Serve para saber antes de o professor lançar no SUAP. Se você só usa o SUAP, pode ignorar.",
     "hojeSemAula": "Hoje não tem aula: {{evento}}.",
-    "hojeSabadoLetivo": "Hoje é {{evento}}."
+    "hojeSabadoLetivo": "Hoje é {{evento}}.",
+    "encontrosRestantes_one": "Falta {{count}} encontro até o fim das aulas (de {{total}})",
+    "encontrosRestantes_other": "Faltam {{count}} encontros até o fim das aulas (de {{total}})"
   },
   "importar": {
     "botao": "Importar do SUAP",

@@ -7,6 +7,7 @@ import {
   faltas as repoFaltas,
   hojeIso,
   nivelFaltas,
+  planejarEncontros,
   resumirFaltas,
   type Disciplina,
 } from "@better-student/shared";
@@ -129,7 +130,15 @@ function AulasDeHoje() {
 
 function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
   const { t } = useTranslation();
-  const { semestre, horarios, faltas } = useSemestre();
+  const { semestre, horarios, faltas, eventos } = useSemestre();
+  // Encontros que ainda vão acontecer até o fim das aulas (pelo calendário).
+  const plano = planejarEncontros(
+    disciplina.totalAulas,
+    horarios.filter((h) => h.disciplinaId === disciplina.id),
+    eventos,
+    semestre,
+    hojeIso(),
+  );
 
   const resumo = resumirFaltas(
     disciplina,
@@ -173,6 +182,11 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
               count: encontrosRestantes(resumo.restantes, aulasPorEncontro),
               aulas: aulasPorEncontro,
             })})`}
+        </span>
+      )}
+      {plano.total > 0 && (
+        <span className="pequeno suave">
+          {t("faltas.encontrosRestantes", { count: plano.restantes, total: plano.total })}
         </span>
       )}
       {disciplina.suap?.frequencia != null ? (

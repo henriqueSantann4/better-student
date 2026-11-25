@@ -1003,3 +1003,7 @@ button:focus-visible {
 .conteudo:has(.email) {
   max-width: none;
 }
+
+.texto-atencao {
+  color: var(--atencao-texto);
+}
