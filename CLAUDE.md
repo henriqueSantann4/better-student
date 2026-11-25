@@ -44,7 +44,8 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Rust instalado na máquina de desenvolvimento: `cargo check` em `apps/desktop/src-tauri` valida o núcleo.
 - ✅ **Agenda:** tarefas com prazo, prioridade, disciplina e subtarefas, agrupadas (atrasadas, hoje, amanhã, 7 dias...). As atividades do Moodle entram sozinhas (migration 0006: `origem`/`origem_id`/`url`; reimportar atualiza, e o que some da linha do tempo antes do prazo é marcado como entregue).
 - ✅ **Leitor de frases** (`shared/regras/frase.ts`, sem IA): "prova de POO quinta 19h" → tipo, disciplina (iniciais, código, nome), data e hora; sem hora, usa o horário da aula do dia; sem data, fica sem prazo (não inventa). Campo único no topo da Agenda, com prévia. Tarefas aparecem no Calendário (marca vermelha = prova).
-- ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
+- 🧪 **SUAP num clique só** (precisa testar no app): a janela do SUAP traz **boletim + horários + calendário**. Horários vêm da aba "Locais e Horários de Aula" (`/edu/aluno/<m>/locais-aula/`, leitor em `shared/importacao/horariosSuap.ts`): aulas seguidas da mesma disciplina no mesmo dia viram um encontro, com sala e professor da lista de diários. Reimportar substitui os horários das disciplinas do quadro (`importarHorarios`). O calendário vem de `/eventos/calendario_eventos/` → link do calendário acadêmico do período.
+- ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: o "Relatório de Faltas do Período" (faltas por data).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 

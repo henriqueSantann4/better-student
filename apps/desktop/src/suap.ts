@@ -19,9 +19,10 @@ export async function gravarServidorSuap(banco: Banco, servidor: string): Promis
   await configuracao.gravar(banco, "suapServidor", servidor);
 }
 
-/** O que a janela do SUAP entrega: boletim e, se achou, o calendário acadêmico. */
+/** O que a janela do SUAP entrega: boletim e, se achou, horários de aula e calendário acadêmico. */
 export interface PacoteSuap {
   boletim: string;
+  horarios: string | null;
   calendario: string | null;
 }
 

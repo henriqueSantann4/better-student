@@ -4,20 +4,39 @@ import {
   aplicarImportacao,
   ErroBoletim,
   calendario as repoCalendario,
+  importarHorarios,
   lerBoletimSuap,
   lerCalendarioSuap,
+  lerHorariosSuap,
   periodoConfere,
   periodoDoNome,
   planejarImportacao,
   type BoletimSuap,
+  type HorariosSuap,
   type ItemImportacao,
   type ResultadoImportacao,
+  type ResultadoHorarios,
   type SemestrePacote,
 } from "@better-student/shared";
 import { useApp, useSemestre } from "../contexto";
 import { buscarBoletimNoSuap, gravarServidorSuap, lerServidorSuap, suapAutomaticoDisponivel } from "../suap";
 import { CORES } from "../cores";
-import { formatarDataHora, formatarNota } from "../formatos";
+import { formatarDataHora, formatarNota, nomeDia } from "../formatos";
+
+/** O que veio junto com o boletim na busca automática. */
+export interface ExtrasSuap {
+  horarios: HorariosSuap | null;
+  calendario: SemestrePacote | null;
+}
+
+const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null };
+
+type Periodo = { ano: number; periodo: number } | null;
+
+/** Mesmo período, ou não dá para saber (aí aceita). */
+export function mesmoPeriodo(a: Periodo, b: Periodo): boolean {
+  return !a || !b || (a.ano === b.ano && a.periodo === b.periodo);
+}
 
 /**
  * Importa o boletim do SUAP num semestre que já existe. As peças de baixo
@@ -28,13 +47,16 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
   const { t } = useTranslation();
   const { banco, acao, semestre, disciplinas } = useSemestre();
   const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
-  const [calendario, setCalendario] = useState<SemestrePacote | null>(null);
+  const [extras, setExtras] = useState<ExtrasSuap>(SEM_EXTRAS);
   const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
-  // O calendário só é aplicado se for do mesmo período do semestre.
+  const [resultadoHorarios, setResultadoHorarios] = useState<ResultadoHorarios | null>(null);
+  // Calendário e horários só são aplicados se forem do mesmo período do semestre.
   const periodoSemestre = periodoDoNome(semestre.nome);
+  const { calendario } = extras;
   const periodoCal = calendario ? periodoDoNome(calendario.periodo) : null;
   const calendarioServe =
     !!calendario && !!periodoSemestre && periodoCal?.ano === periodoSemestre.ano && periodoCal.periodo === periodoSemestre.periodo;
+  const horarios = extras.horarios && mesmoPeriodo(extras.horarios.periodo, periodoSemestre) ? extras.horarios : null;
 
   const plano = boletim ? planejarImportacao(boletim, disciplinas) : [];
   const confere = boletim ? periodoConfere(boletim, semestre) : null;
@@ -43,13 +65,16 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
     if (!boletim) return;
     // As cores novas continuam o rodízio a partir das disciplinas que já existem.
     const cores = [...CORES.slice(disciplinas.length % CORES.length), ...CORES];
-    const saida: { resultado?: ResultadoImportacao } = {};
+    const saida: { resultado?: ResultadoImportacao; horarios?: ResultadoHorarios } = {};
     const ok = await acao(async () => {
       saida.resultado = await aplicarImportacao(banco, semestre.id, boletim, plano, cores);
+      // Depois das disciplinas: os horários precisam delas já criadas para casar.
+      if (horarios) saida.horarios = await importarHorarios(banco, semestre.id, horarios);
       if (calendarioServe) await repoCalendario.aplicarPacote(banco, semestre, "suap", calendario!);
     });
     if (ok && saida.resultado) {
       setResultado(saida.resultado);
+      setResultadoHorarios(saida.horarios ?? null);
       setBoletim(null);
     }
   }
@@ -63,12 +88,13 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
         </button>
       </div>
 
-      {resultado && <ResultadoImportacaoTexto resultado={resultado} />}
+      {resultado && <ResultadoImportacaoTexto resultado={resultado} horarios={resultadoHorarios} />}
 
       {boletim ? (
         <>
           {confere === false && <p className="aviso">{t("importar.periodoDiferente", { semestre: semestre.nome })}</p>}
           <PreviaImportacao boletim={boletim} plano={plano} />
+          {horarios && <PreviaHorarios horarios={horarios} />}
           {calendarioServe && <p className="pequeno sucesso">{t("importar.calendarioJunto", { periodo: calendario!.periodo })}</p>}
           <div className="acoes">
             <button type="button" className="botao primario" onClick={importar}>
@@ -81,10 +107,10 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
         </>
       ) : (
         <EntradaBoletim
-          aoLer={(b, c) => {
+          aoLer={(b, e) => {
             setResultado(null);
             setBoletim(b);
-            setCalendario(c);
+            setExtras(e);
           }}
           comPassos={!resultado}
         />
@@ -93,14 +119,33 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
   );
 }
 
-export function ResultadoImportacaoTexto({ resultado }: { resultado: ResultadoImportacao }) {
+export function ResultadoImportacaoTexto({
+  resultado,
+  horarios = null,
+}: {
+  resultado: ResultadoImportacao;
+  horarios?: ResultadoHorarios | null;
+}) {
   const { t } = useTranslation();
   return (
     <p className="sucesso">
       {t("importar.concluido", { criadas: resultado.criadas, atualizadas: resultado.atualizadas })}
       {resultado.ignoradas.length > 0 && ` ${t("importar.ignoradas", { nomes: resultado.ignoradas.join(", ") })}`}
+      {horarios && ` ${t("importar.horariosGravados", { count: horarios.gravados })}`}
+      {horarios &&
+        horarios.semDisciplina.length > 0 &&
+        ` ${t("importar.horariosSemDisciplina", { nomes: horarios.semDisciplina.join(", ") })}`}
     </p>
   );
+}
+
+/** Executa um leitor; se ele falhar, devolve `null`. */
+function tentar<T>(ler: () => T): T | null {
+  try {
+    return ler();
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -113,8 +158,8 @@ export function EntradaBoletim({
   aoLer,
   comPassos = true,
 }: {
-  /** `calendario` só vem pela busca automática (a página colada é só o boletim). */
-  aoLer: (boletim: BoletimSuap, calendario: SemestrePacote | null) => void;
+  /** Os extras só vêm pela busca automática (a página colada é só o boletim). */
+  aoLer: (boletim: BoletimSuap, extras: ExtrasSuap) => void;
   comPassos?: boolean;
 }) {
   const { t } = useTranslation();
@@ -131,18 +176,15 @@ export function EntradaBoletim({
     return () => pararEspera.current?.();
   }, [banco, automatico]);
 
-  function ler(html: string, htmlCalendario: string | null = null) {
+  function ler(html: string, htmlHorarios: string | null = null, htmlCalendario: string | null = null) {
     try {
       const boletim = lerBoletimSuap(html);
       setAviso(null);
-      // O calendário é um bônus: se não der para ler, segue só com o boletim.
-      let calendario: SemestrePacote | null = null;
-      try {
-        calendario = htmlCalendario ? lerCalendarioSuap(htmlCalendario) : null;
-      } catch {
-        calendario = null;
-      }
-      aoLer(boletim, calendario);
+      // Horários e calendário são bônus: se não der para ler, segue só com o boletim.
+      aoLer(boletim, {
+        horarios: htmlHorarios ? tentar(() => lerHorariosSuap(htmlHorarios)) : null,
+        calendario: htmlCalendario ? tentar(() => lerCalendarioSuap(htmlCalendario)) : null,
+      });
     } catch (erro) {
       setAviso(erro instanceof ErroBoletim ? t(`importar.erro.${erro.motivo}`) : String(erro));
     }
@@ -156,7 +198,7 @@ export function EntradaBoletim({
       await gravarServidorSuap(banco, servidor);
       pararEspera.current = await buscarBoletimNoSuap(servidor, (pacote) => {
         setAguardando(false);
-        ler(pacote.boletim, pacote.calendario);
+        ler(pacote.boletim, pacote.horarios, pacote.calendario);
       });
     } catch (erro) {
       setAguardando(false);
@@ -278,6 +320,44 @@ export function PreviaImportacao({ boletim, plano }: { boletim: BoletimSuap; pla
         </table>
       </div>
       <p className="pequeno suave">{t("importar.explicacao")}</p>
+    </>
+  );
+}
+
+/** Encontros da grade que vieram do SUAP, um por linha, na ordem da semana. */
+export function PreviaHorarios({ horarios }: { horarios: HorariosSuap }) {
+  const { t } = useTranslation();
+  if (horarios.encontros.length === 0) return null;
+  return (
+    <>
+      <h3>{t("importar.horariosTitulo")}</h3>
+      <div className="tabela-rolagem">
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>{t("importar.dia")}</th>
+              <th>{t("importar.horario")}</th>
+              <th>{t("importar.disciplina")}</th>
+              <th className="numero">{t("importar.aulas")}</th>
+              <th>{t("importar.sala")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {horarios.encontros.map((e) => (
+              <tr key={`${e.diaSemana}-${e.inicio}-${e.codigo ?? e.nome}`}>
+                <td>{nomeDia(e.diaSemana)}</td>
+                <td>
+                  {e.inicio}–{e.fim}
+                </td>
+                <td>{e.nome}</td>
+                <td className="numero">{e.quantidadeAulas}</td>
+                <td className="suave">{e.sala ?? "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="pequeno suave">{t("importar.horariosExplicacao")}</p>
     </>
   );
 }

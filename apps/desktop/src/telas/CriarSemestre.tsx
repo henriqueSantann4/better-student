@@ -4,6 +4,7 @@ import {
   aplicarImportacao,
   calendario as repoCalendario,
   estimarDatas,
+  importarHorarios,
   nomeDoPeriodo,
   periodoDaData,
   periodoDoNome,
@@ -11,12 +12,11 @@ import {
   semestreDoBoletim,
   semestres,
   type BoletimSuap,
-  type SemestrePacote,
 } from "@better-student/shared";
 import { useApp } from "../contexto";
 import { CORES } from "../cores";
 import { formatarDataCompleta } from "../formatos";
-import { EntradaBoletim, PreviaImportacao } from "./ImportarSuap";
+import { EntradaBoletim, mesmoPeriodo, PreviaHorarios, PreviaImportacao, type ExtrasSuap } from "./ImportarSuap";
 
 /**
  * Primeiro acesso. Dois caminhos:
@@ -46,16 +46,16 @@ function ComecarPeloSuap() {
   const { t } = useTranslation();
   const { banco, acao } = useApp();
   const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
-  const [calendario, setCalendario] = useState<SemestrePacote | null>(null);
+  const [extras, setExtras] = useState<ExtrasSuap>({ horarios: null, calendario: null });
 
   if (!boletim) {
     return (
       <>
         <h2>{t("semestre.comecarSuap")}</h2>
         <EntradaBoletim
-          aoLer={(b, c) => {
+          aoLer={(b, e) => {
             setBoletim(b);
-            setCalendario(c);
+            setExtras(e);
           }}
         />
       </>
@@ -63,6 +63,8 @@ function ComecarPeloSuap() {
   }
 
   const estimado = semestreDoBoletim(boletim);
+  const { calendario } = extras;
+  const horarios = extras.horarios && mesmoPeriodo(extras.horarios.periodo, boletim.periodo) ? extras.horarios : null;
   // Com o calendário do SUAP do mesmo período, o semestre já nasce com as datas reais.
   const doCalendario =
     calendario && periodoDoNome(calendario.periodo) && nomeDoPeriodo(periodoDoNome(calendario.periodo)!) === estimado.nome
@@ -76,6 +78,7 @@ function ComecarPeloSuap() {
     await acao(async () => {
       const semestre = await semestres.criar(banco, novo);
       await aplicarImportacao(banco, semestre.id, boletim, plano, CORES);
+      if (horarios) await importarHorarios(banco, semestre.id, horarios);
       if (doCalendario) await repoCalendario.aplicarPacote(banco, semestre, "suap", doCalendario);
     });
   }
@@ -91,6 +94,7 @@ function ComecarPeloSuap() {
       </p>
       <p className="pequeno suave">{doCalendario ? t("semestre.datasDoCalendario") : t("semestre.datasEstimadasDica")}</p>
       <PreviaImportacao boletim={boletim} plano={plano} />
+      {horarios && <PreviaHorarios horarios={horarios} />}
       <div className="acoes">
         <button type="button" className="botao primario" onClick={confirmar}>
           {t("semestre.criarEImportar", { count: plano.length })}

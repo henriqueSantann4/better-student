@@ -167,13 +167,21 @@
       "sem_disciplinas": "O boletim não tem nenhuma disciplina.",
       "semHtml": "O que foi colado não veio como página. Copie direto do navegador, com a página do boletim aberta."
     },
-    "buscarNoSuap": "Entrar no SUAP e buscar o boletim",
-    "buscarNoSuapDica": "Abre o SUAP numa janela do app. Você entra com seu usuário e senha na própria página do SUAP (o app não vê a senha) e o boletim é trazido sozinho. O login fica salvo nessa janela enquanto o SUAP mantiver a sessão.",
+    "buscarNoSuap": "Entrar no SUAP e buscar tudo",
+    "buscarNoSuapDica": "Abre o SUAP numa janela do app. Você entra com seu usuário e senha na própria página do SUAP (o app não vê a senha) e o boletim, os horários de aula e o calendário acadêmico são trazidos sozinhos. O login fica salvo nessa janela enquanto o SUAP mantiver a sessão.",
     "aguardandoSuap": "Esperando o boletim… Entre no SUAP na janela que abriu.",
     "outroInstituto": "Outro instituto?",
     "enderecoSuap": "Endereço do SUAP",
     "ouManual": "Ou, se preferir, traga a página manualmente:",
-    "calendarioJunto": "O calendário acadêmico de {{periodo}} veio junto e também será atualizado (datas do semestre, feriados e sábados letivos)."
+    "calendarioJunto": "O calendário acadêmico de {{periodo}} veio junto e também será atualizado (datas do semestre, feriados e sábados letivos).",
+    "horariosTitulo": "Horários de aula",
+    "dia": "Dia",
+    "horario": "Horário",
+    "sala": "Sala",
+    "horariosExplicacao": "Os horários vêm da aba \"Locais e Horários de Aula\" do SUAP e substituem os que estiverem cadastrados para essas disciplinas. Cada encontro vale a quantidade de aulas do quadro: faltar no dia conta todas elas.",
+    "horariosGravados_one": "{{count}} horário de aula gravado.",
+    "horariosGravados_other": "{{count}} horários de aula gravados.",
+    "horariosSemDisciplina": "Sem disciplina correspondente, ficaram de fora os horários de: {{nomes}}."
   },
   "calendario": {
     "titulo": "Calendário acadêmico",

@@ -2,8 +2,8 @@
 //
 // Ele não lê nem guarda a senha: o login é feito pelo próprio usuário, na
 // página real do SUAP (onde o reCAPTCHA funciona normalmente). Depois do
-// login, ele busca o boletim do mesmo jeito que o site faz ao clicar na aba
-// (endereço /edu/aluno/<matrícula>/boletins/) e entrega o HTML ao app pelo
+// login, ele busca o boletim, os horários de aula e o calendário acadêmico do
+// mesmo jeito que o site faz ao clicar nas abas, e entrega o HTML ao app pelo
 // único comando que esta janela pode chamar: `entregar_suap`.
 (function () {
   "use strict";
@@ -55,16 +55,38 @@
       if (!resposta.ok || html.indexOf("tabela_boletim") < 0) {
         throw new Error("o SUAP não devolveu o boletim (HTTP " + resposta.status + ")");
       }
-      aviso("boletim encontrado! Procurando o calendário acadêmico…");
-      // O calendário é um bônus: se não der para achar, o boletim vai do mesmo jeito.
-      var calendario = await buscarCalendario(periodoDoBoletim(html)).catch(function () {
+      aviso("boletim encontrado! Procurando seus horários de aula e o calendário acadêmico…");
+      // Horários e calendário são bônus: se não der para achar, o boletim vai do mesmo jeito.
+      var nada = function () {
         return null;
+      };
+      var horarios = await buscarHorarios(matricula).catch(nada);
+      var calendario = await buscarCalendario(periodoDoBoletim(html)).catch(nada);
+      var achados = ["boletim"];
+      if (horarios) achados.push("horários");
+      if (calendario) achados.push("calendário");
+      aviso(achados.join(", ").replace(/, ([^,]*)$/, " e $1") + " encontrados! Voltando para o app…", "ok");
+      await window.__TAURI_INTERNALS__.invoke("entregar_suap", {
+        boletim: html,
+        horarios: horarios,
+        calendario: calendario,
       });
-      aviso(calendario ? "boletim e calendário encontrados! Voltando para o app…" : "boletim encontrado! Voltando para o app…", "ok");
-      await window.__TAURI_INTERNALS__.invoke("entregar_suap", { boletim: html, calendario: calendario });
     } catch (erro) {
       aviso("não consegui buscar o boletim: " + (erro && erro.message ? erro.message : erro), "erro");
     }
+  }
+
+  /**
+   * Aba "Locais e Horários de Aula", buscada como o site faz ao clicar nela
+   * (o quadro de horários por turno e a lista de diários com as salas).
+   */
+  async function buscarHorarios(matricula) {
+    var resposta = await fetch("/edu/aluno/" + encodeURIComponent(matricula) + "/locais-aula/", {
+      credentials: "same-origin",
+      headers: { "HX-Request": "true" },
+    });
+    var html = await resposta.text();
+    return resposta.ok && /data-hint|Segunda/.test(html) ? html : null;
   }
 
   /** Período do boletim, ex.: { ano: "2026", periodo: "2" }. */
