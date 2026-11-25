@@ -99,6 +99,11 @@ export const disciplinas = {
     );
   },
 
+  /** Nota tirada no IFA (`null` = não fez). */
+  async gravarNotaIfa(banco: Banco, id: string, nota: number | null): Promise<void> {
+    await banco.executar("UPDATE disciplina SET nota_ifa = ?, atualizado_em = ? WHERE id = ?", [nota, agora(), id]);
+  },
+
   /** Grava o retrato do SUAP (última importação) na disciplina. */
   async gravarSuap(banco: Banco, id: string, dados: Omit<DadosSuap, "importadoEm">): Promise<void> {
     const momento = agora();

@@ -7,6 +7,7 @@ import { semestres } from "./semestres.ts";
 import { disciplinas } from "./disciplinas.ts";
 import { horarios } from "./horarios.ts";
 import { faltas } from "./faltas.ts";
+import { REGRAS_PADRAO_IFSP } from "../tipos.ts";
 
 describe("repositórios", () => {
   let banco: Banco;
@@ -68,5 +69,33 @@ describe("repositórios", () => {
     // Depois de excluída, a mesma falta pode ser lançada de novo.
     await faltas.registrar(banco, falta);
     assert.equal((await faltas.listarDoSemestre(banco, semestreId)).length, 1);
+  });
+});
+
+describe("avaliações", () => {
+  it("cria, lança nota, lista por data e exclui", async () => {
+    const { avaliacoes } = await import("./avaliacoes.ts");
+    const banco = bancoEmMemoria();
+    const semestre = await semestres.criar(banco, { nome: "2026.2", inicio: "2026-08-03", fim: "2026-12-12" });
+    const d = await disciplinas.criar(banco, semestre.id, { nome: "POO", totalAulas: 80 });
+    const p2 = await avaliacoes.criar(banco, { disciplinaId: d, nome: "P2", peso: 2, data: "2026-12-01" });
+    await avaliacoes.criar(banco, { disciplinaId: d, nome: "P1", data: "2026-09-20" });
+    await avaliacoes.criar(banco, { disciplinaId: d, nome: "Trabalho", notaMaxima: 5 });
+    await avaliacoes.lancarNota(banco, p2, 7.5);
+
+    const lista = await avaliacoes.listarDoSemestre(banco, semestre.id);
+    assert.deepEqual(lista.map((a) => a.nome), ["P1", "P2", "Trabalho"]);
+    assert.equal(lista[1]?.nota, 7.5);
+    assert.equal(lista[1]?.peso, 2);
+    assert.equal(lista[2]?.notaMaxima, 5);
+
+    await avaliacoes.excluir(banco, p2);
+    assert.equal((await avaliacoes.listarDoSemestre(banco, semestre.id)).length, 2);
+
+    await disciplinas.gravarNotaIfa(banco, d, 6.5);
+    assert.equal((await disciplinas.listar(banco, semestre.id))[0]?.notaIfa, 6.5);
+
+    await semestres.atualizarRegras(banco, semestre.id, { ...REGRAS_PADRAO_IFSP, mediaAprovacao: 7 });
+    assert.equal((await semestres.atual(banco))?.mediaAprovacao, 7);
   });
 });

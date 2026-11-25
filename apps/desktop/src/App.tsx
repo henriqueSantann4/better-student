@@ -12,6 +12,7 @@ import { Email } from "./telas/Email";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
 import { Moodle } from "./telas/Moodle";
+import { Notas } from "./telas/Notas";
 
 const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email"] as const;
 type Secao = (typeof SECOES)[number];
@@ -98,6 +99,8 @@ function Layout() {
           <Grade />
         ) : secaoAtiva === "faltas" ? (
           <Faltas />
+        ) : secaoAtiva === "notas" ? (
+          <Notas />
         ) : secaoAtiva === "calendario" ? (
           <Calendario />
         ) : secaoAtiva === "email" ? (

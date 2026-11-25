@@ -385,5 +385,60 @@
         "disciplinaSemAulaNoDia": "Essa disciplina não tem aula nesse dia: o prazo fica até o fim do dia (ou escreva a hora na frase)."
       }
     }
+  },
+  "notas": {
+    "titulo": "Notas",
+    "explicacao": "Anote suas avaliações (provas, trabalhos) para acompanhar a média durante o semestre. Quando o professor lança a nota no SUAP, ela passa a valer no lugar da sua conta.",
+    "suap": "SUAP:",
+    "etapa": "Etapa {{numero}}",
+    "naf": "IFA (NAF)",
+    "mfd": "Média final",
+    "atualizado": "atualizado em {{data}}",
+    "fonteSuap": "nota oficial do SUAP",
+    "fonteApp": "pelas suas avaliações",
+    "fonteAppParcial": "parcial, pelas avaliações que já têm nota",
+    "semNota": "ainda sem nota",
+    "situacao": {
+      "em_andamento": "Em andamento",
+      "aprovado": "Aprovado",
+      "ifa": "IFA",
+      "aprovado_ifa": "Aprovado no IFA",
+      "reprovado_nota": "Reprovado por nota",
+      "reprovado_ifa": "Reprovado no IFA",
+      "reprovado_falta": "Reprovado por falta"
+    },
+    "dica": {
+      "vazio": "Nenhuma nota ainda. Adicione as avaliações da disciplina para ver quanto precisa tirar.",
+      "precisa": "Para passar direto (média {{aprovacao}}), você precisa de média {{media}} nas avaliações que faltam.",
+      "garantido": "Aprovação direta garantida, mesmo tirando zero no que falta.",
+      "impossivel": "Não dá mais para passar direto. Com média a partir de {{minimo}}, você ainda vai para o IFA.",
+      "ifa": "Você vai para o IFA. Precisa tirar {{minimo}} para passar, e a média final fica limitada a {{teto}}.",
+      "falta": "Reprovado por falta: a frequência ficou abaixo do mínimo, independentemente da nota."
+    },
+    "notaIfa": "Nota no IFA",
+    "avaliacao": "Avaliação",
+    "data": "Data",
+    "peso": "Peso",
+    "nota": "Nota",
+    "valeAte": "Vale até",
+    "notaDica": "se já saiu",
+    "nomeDica": "Ex.: Prova 1, Trabalho final",
+    "notaDe": "Nota de {{nome}}",
+    "excluir": "Excluir {{nome}}",
+    "adicionar": "Adicionar avaliação",
+    "daAgenda": "Da Agenda:",
+    "invalido": "Confira os números: use valores como 7,5, e a nota não pode passar do valor máximo.",
+    "regras": {
+      "titulo": "Regras de aprovação",
+      "dica": "padrão do IFSP; mude se o seu curso usar outras",
+      "frequenciaMinima": "Frequência mínima (%)",
+      "mediaAprovacao": "Média para aprovar",
+      "mediaMinimaIfa": "Média mínima para o IFA",
+      "notaMinimaIfa": "Nota para passar no IFA",
+      "tetoAposIfa": "Média máxima após o IFA",
+      "explicacao": "Valem só para este semestre: os semestres anteriores guardam as regras da época. A nota para passar no IFA ainda é uma estimativa (6); confira no regulamento do seu curso.",
+      "ordem": "A média mínima para o IFA não pode ser maior que a média para aprovar.",
+      "salvas": "Regras salvas."
+    }
   }
 }

@@ -88,4 +88,15 @@ export const semestres = {
       [dados.nome, dados.inicio, dados.fim, agora(), id],
     );
   },
+
+  /** Troca as regras acadêmicas do semestre (frequência, médias, IFA). */
+  async atualizarRegras(banco: Banco, id: string, regras: RegrasAcademicas): Promise<void> {
+    await banco.executar(
+      `UPDATE semestre SET frequencia_minima = ?, media_aprovacao = ?, media_minima_ifa = ?, nota_minima_ifa = ?,
+         teto_apos_ifa = ?, atualizado_em = ?
+       WHERE id = ?`,
+      [regras.frequenciaMinima, regras.mediaAprovacao, regras.mediaMinimaIfa, regras.notaMinimaIfa,
+        regras.tetoAposIfa, agora(), id],
+    );
+  },
 };

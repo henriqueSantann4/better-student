@@ -1277,3 +1277,73 @@ textarea {
   border-radius: 2px;
   background: var(--perigo);
 }
+
+/* ---------- Notas ---------- */
+
+.notas-cartao {
+  border-top: 4px solid var(--destaque);
+}
+
+.notas-cartao h2 {
+  margin: 0 0 2px;
+}
+
+.notas-media {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 8px 0 4px;
+}
+
+.notas-numero {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.notas-ifa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.notas-ifa label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notas-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sem-quebra {
+  white-space: nowrap;
+}
+
+.notas-nova {
+  margin-top: 10px;
+}
+
+.campo-nota {
+  width: 5.5em;
+  text-align: right;
+}
+
+.campo-nota.invalido {
+  border-color: var(--perigo);
+  outline-color: var(--perigo);
+}
+
+.etiqueta.neutra {
+  color: var(--suave);
+  background: color-mix(in srgb, var(--suave) 15%, transparent);
+}
+
+.texto-ok {
+  color: var(--ok);
+}
