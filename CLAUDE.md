@@ -100,6 +100,7 @@ pnpm build        # gera o instalador para Windows
 4. O que a API do SUAP do IFSP expõe; se o Moodle do campus aceita o app oficial do Moodle.
    - *Testado em 25/11/2026 (`pnpm testar:suap`):* o login de aluno funciona (`POST /api/v2/autenticacao/token/` devolve `token`, `access` e `refresh`), mas **nenhum endpoint de dados de aluno existe** no SUAP do IFSP: nem os da API v2 clássica (`/api/v2/minhas-informacoes/...`) nem os da API nova (`/api/ensino/...`, usados pela biblioteca suapy). `/api/eu/` responde 500 para aluno. Falta perguntar ao IFSP se há API de aluno.
 5. Se o Workspace do IFSP permite OAuth de apps não verificados (Gmail API).
+   - *Testado em 25/11/2026 (`pnpm testar:gmail`):* **não permite.** O login com a conta @aluno.ifsp.edu.br dá `Erro 400: access_not_configured` ("o admin da sua instituição precisa analisar o app"), mesmo com o usuário de teste cadastrado. Caminhos: pedir ao IFSP para liberar o app (botão "Solicitar acesso"), ou encaminhar os e-mails institucionais para uma conta pessoal e ler essa conta.
 6. Se as notificações agendadas do Windows funcionam com o instalador do Tauri.
 7. O modo de treino de idiomas: em discussão, sem prioridade.
 
