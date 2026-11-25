@@ -393,49 +393,17 @@
   },
   "notas": {
     "titulo": "Notas",
-    "explicacao": "Anote suas avaliações dizendo quanto cada uma vale (ex.: prova de 7 e trabalho de 3). Assim o app faz a conta do jeito do professor, seja soma de pontos, média ou fórmula, e diz quanto falta. Quando a etapa fecha no SUAP, a nota de lá passa a valer.",
-    "suap": "SUAP:",
+    "atualizado": "Notas do SUAP de {{data}}.",
     "etapa": "Etapa {{numero}}",
+    "media": "Média",
     "naf": "{{Recuperacao}} (NAF)",
     "mfd": "Média final",
-    "atualizado": "atualizado em {{data}}",
-    "fonteSuap": "nota oficial do SUAP",
-    "fonteApp": "pelas suas avaliações",
-    "semNota": "ainda sem nota",
-    "situacao": {
-      "em_andamento": "Em andamento",
-      "aprovado": "Aprovado",
-      "ifa": "{{Recuperacao}}",
-      "aprovado_ifa": "Aprovado {{noRec}}",
-      "reprovado_nota": "Reprovado por nota",
-      "reprovado_ifa": "Reprovado {{noRec}}",
-      "reprovado_falta": "Reprovado por falta"
-    },
-    "dica": {
-      "vazio": "Nenhuma nota ainda. Adicione as avaliações da disciplina para ver quanto precisa tirar.",
-      "precisa": "Ainda valem {{emJogo}} pontos nas avaliações que faltam. Para passar direto (média {{aprovacao}}), você precisa de {{faltam}} deles.",
-      "garantido": "Aprovação direta garantida, mesmo tirando zero no que falta.",
-      "impossivel": "Mesmo tirando tudo o que falta, não dá para passar direto. Com média a partir de {{minimo}}, você ainda vai {{paraRec}}.",
-      "ifa": "Você vai {{paraRec}}. Precisa tirar {{minimo}} para passar, e a média final fica limitada a {{teto}}.",
-      "falta": "Reprovado por falta: a frequência ficou abaixo do mínimo, independentemente da nota."
-    },
-    "notaIfa": "Nota {{noRec}}",
-    "avaliacao": "Avaliação",
-    "data": "Data",
-    "peso": "Peso",
-    "nota": "Nota",
-    "valeAte": "Vale (pontos)",
-    "notaDica": "se já saiu",
-    "nomeDica": "Ex.: Prova 1, Trabalho final",
-    "notaDe": "Nota de {{nome}}",
-    "excluir": "Excluir {{nome}}",
-    "adicionar": "Adicionar avaliação",
-    "daAgenda": "Da Agenda:",
-    "invalido": "Confira os números: use valores como 7,5, e a nota não pode passar do valor máximo.",
-    "regrasEmConfig": "As regras de aprovação (média, recuperação, frequência) vêm da sua faculdade e podem ser ajustadas em Configurações.",
-    "fonteSuapParcial": "pontos já lançados no SUAP; a etapa ainda não fechou",
-    "fontePontos": "pontos garantidos, de 10",
-    "pesoDica": "= valor"
+    "semNotaSuap": "Nenhuma nota lançada no SUAP ainda.",
+    "semSuap": "Sem dados do SUAP para esta disciplina.",
+    "proximas": "Próximas provas e trabalhos",
+    "semData": "sem data",
+    "nadaMarcado": "Nada marcado.",
+    "marcar": "Marcar na Agenda"
   },
   "instituicao": {
     "boasVindas": "Bem-vindo ao Better Student!",
@@ -445,7 +413,7 @@
     "escolhaCampus": "Escolha o campus…",
     "outra": "Outra instituição (não está na lista)",
     "outraDica": "Sem problema: o app usa regras comuns (média 6 e frequência mínima de 75%, que vale para todo o Brasil). Você ajusta o que for diferente em Configurações.",
-    "regras": "Aprovação com média {{aprovacao}} e {{frequencia}}% de frequência, com {{oRec}} para quem não atingir a média.",
+    "regras": "Frequência mínima de {{frequencia}}% para não reprovar por falta.",
     "comSuap": "Boletim, horários e calendário pelo SUAP.",
     "semSuap": "Sem SUAP: as disciplinas são cadastradas à mão.",
     "comMoodle": "Moodle: {{endereco}}",
@@ -459,19 +427,14 @@
     "instituicao": {
       "titulo": "Faculdade e campus",
       "dica": "Daqui saem as regras de aprovação e os endereços do SUAP e do Moodle.",
-      "aplicarRegras": "Usar também as regras de aprovação da nova instituição no semestre atual"
+      "aplicarRegras": "Usar também a frequência mínima da nova instituição no semestre atual"
     },
     "regras": {
-      "titulo": "Regras de aprovação ({{semestre}})",
-      "dica": "Preenchidas com o padrão da sua faculdade ({{instituicao}}). Só mude se o seu curso tiver regras diferentes. Valem só para este semestre: os anteriores guardam as regras da época.",
+      "titulo": "Frequência mínima ({{semestre}})",
+      "dica": "Preenchida com o padrão da sua faculdade ({{instituicao}}). É a base do limite de faltas. Vale só para este semestre.",
       "frequenciaMinima": "Frequência mínima (%)",
-      "mediaAprovacao": "Média para aprovar",
-      "mediaMinimaIfa": "Média mínima {{paraRec}}",
-      "notaMinimaIfa": "Nota para passar {{noRec}}",
-      "tetoAposIfa": "Média máxima após {{oRec}}",
       "restaurar": "Voltar ao padrão ({{instituicao}})",
-      "invalido": "Confira os números: use valores como 7,5, e a frequência vai até 100%.",
-      "ordem": "A média mínima {{paraRec}} não pode ser maior que a média para aprovar."
+      "invalido": "Use um número de 0 a 100 (ex.: 75)."
     },
     "contas": {
       "titulo": "Sistemas e contas",
@@ -537,7 +500,6 @@
       "reprovadoFalta": "{{nome}}: reprovado por falta",
       "noLimite": "{{nome}}: no limite de faltas",
       "pertoLimite": "{{nome}}: perto do limite de faltas",
-      "recuperacao": "{{nome}}: indo {{paraRec}}",
       "atrasadas_one": "{{count}} tarefa atrasada",
       "atrasadas_other": "{{count}} tarefas atrasadas",
       "evento": "{{quando}}: {{titulo}}",

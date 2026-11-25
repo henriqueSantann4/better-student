@@ -5,9 +5,7 @@ import {
   gravarEscolhaInstituicao,
   gravarLembretesPadrao,
   lerLembretesPadrao,
-  PERFIL_GENERICO,
   semestres,
-  textosRecuperacao,
   TIPOS_TAREFA,
   type EscolhaInstituicao,
   type LembretesPorTipo,
@@ -105,45 +103,37 @@ function Instituicao() {
   );
 }
 
-/** Regras do semestre atual. Começam iguais às da instituição; dá para ajustar. */
+/**
+ * Frequência mínima do semestre atual (vem da instituição; dá para ajustar).
+ * É a única regra que o app usa: ele não prevê média nem recuperação.
+ */
 function Regras({ semestre }: { semestre: Semestre }) {
   const { t } = useTranslation();
   const { banco, acao, instituicao } = useApp();
-  const recuperacao = textosRecuperacao(instituicao?.perfil ?? PERFIL_GENERICO);
-  const paraCampos = (r: RegrasAcademicas) => ({
-    frequenciaMinima: formatarNota(r.frequenciaMinima * 100),
-    mediaAprovacao: formatarNota(r.mediaAprovacao),
-    mediaMinimaIfa: formatarNota(r.mediaMinimaIfa),
-    notaMinimaIfa: formatarNota(r.notaMinimaIfa),
-    tetoAposIfa: formatarNota(r.tetoAposIfa),
-  });
-  const [campos, setCampos] = useState(() => paraCampos(semestre));
+  const paraCampo = (r: RegrasAcademicas) => formatarNota(r.frequenciaMinima * 100);
+  const [campo, setCampo] = useState(() => paraCampo(semestre));
   const [aviso, setAviso] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
-  const nomes = Object.keys(campos) as (keyof typeof campos)[];
 
-  // Se as regras mudarem por fora (ex.: trocou a instituição), acompanha.
-  useEffect(() => setCampos(paraCampos(semestre)), [semestre]);
+  // Se a regra mudar por fora (ex.: trocou a instituição), acompanha.
+  useEffect(() => setCampo(paraCampo(semestre)), [semestre]);
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    const v = Object.fromEntries(nomes.map((n) => [n, lerNumero(campos[n])])) as Record<keyof typeof campos, number | null>;
-    if (nomes.some((n) => v[n] === null) || v.frequenciaMinima! > 100) {
+    const valor = lerNumero(campo);
+    if (valor === null || valor > 100) {
       setAviso(t("config.regras.invalido"));
       return;
     }
-    const regras: RegrasAcademicas = {
-      frequenciaMinima: v.frequenciaMinima! / 100,
-      mediaAprovacao: v.mediaAprovacao!,
-      mediaMinimaIfa: v.mediaMinimaIfa!,
-      notaMinimaIfa: v.notaMinimaIfa!,
-      tetoAposIfa: v.tetoAposIfa!,
-    };
-    if (regras.mediaMinimaIfa > regras.mediaAprovacao) {
-      setAviso(t("config.regras.ordem", recuperacao));
-      return;
-    }
     setAviso(null);
+    // As outras regras ficam como estão no semestre.
+    const regras: RegrasAcademicas = {
+      frequenciaMinima: valor / 100,
+      mediaAprovacao: semestre.mediaAprovacao,
+      mediaMinimaIfa: semestre.mediaMinimaIfa,
+      notaMinimaIfa: semestre.notaMinimaIfa,
+      tetoAposIfa: semestre.tetoAposIfa,
+    };
     setSalvo(await acao(() => semestres.atualizarRegras(banco, semestre.id, regras)));
   }
 
@@ -153,22 +143,18 @@ function Regras({ semestre }: { semestre: Semestre }) {
       dica={t("config.regras.dica", { instituicao: instituicao?.perfil.sigla ?? "" })}
     >
       <form className="formulario" onSubmit={enviar}>
-        <div className="linha">
-          {nomes.map((n) => (
-            <label key={n}>
-              {t(`config.regras.${n}`, recuperacao)}
-              <input
-                className="campo-nota"
-                inputMode="decimal"
-                value={campos[n]}
-                onChange={(e) => {
-                  setSalvo(false);
-                  setCampos({ ...campos, [n]: e.target.value });
-                }}
-              />
-            </label>
-          ))}
-        </div>
+        <label>
+          {t("config.regras.frequenciaMinima")}
+          <input
+            className="campo-nota"
+            inputMode="decimal"
+            value={campo}
+            onChange={(e) => {
+              setSalvo(false);
+              setCampo(e.target.value);
+            }}
+          />
+        </label>
         {aviso && <p className="aviso">{aviso}</p>}
         <div className="acoes">
           <button type="submit" className="botao primario">
@@ -180,7 +166,7 @@ function Regras({ semestre }: { semestre: Semestre }) {
               className="botao"
               onClick={() => {
                 setSalvo(false);
-                setCampos(paraCampos(instituicao.perfil.regras));
+                setCampo(paraCampo(instituicao.perfil.regras));
               }}
             >
               {t("config.regras.restaurar", { instituicao: instituicao.perfil.sigla })}

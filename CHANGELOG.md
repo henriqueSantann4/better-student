@@ -4,14 +4,11 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ## [1.1.0] (em elaboração)
 
-### Corrigido
-
-- **Notas:** a nota da etapa no SUAP deixa de ser tratada como final quando ainda há avaliação por fazer. Na "soma simples", o SUAP vai somando o que sai; com o trabalho que falta anotado no app, a disciplina fica "em andamento" em vez de ir para o IFA.
-
 ### Mudou
 
-- **Notas:** a conta agora é em pontos: quanto já está garantido, quanto ainda vale e quanto falta para passar.
-- **Notas:** cada avaliação diz quanto vale (ex.: prova de 7, trabalho de 3) e, por padrão, pesa o quanto vale. Isso cobre a soma de pontos, a média e fórmulas como (P1+T1+P2+T2)/2.
+- **Notas mais simples:** a tela mostra as notas que já saíram no SUAP (etapas, recuperação e média final) e as próximas provas e trabalhos de cada disciplina, vindos da Agenda. O app deixou de prever a média e se o aluno vai para a recuperação: para isso precisaria saber quanto vale cada prova, e cada professor calcula de um jeito.
+- **Início:** sai o aviso de recuperação.
+- **Configurações:** das regras, fica só a frequência mínima, que é o que o app usa (limite de faltas).
 
 ## [1.0.0] (25/11/2026)
 

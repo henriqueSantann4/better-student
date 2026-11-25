@@ -5,13 +5,11 @@ import {
   estadoDaAula,
   hojeIso,
   nivelFaltas,
-  notaDaDisciplina,
   proximoDiaDeAulas,
   proximosEventos,
   proximosPrazos,
   resumirFaltas,
   tarefas as repoTarefas,
-  textosRecuperacao,
   type Disciplina,
   type FilaPrazo,
   type Tarefa,
@@ -41,14 +39,14 @@ function useAgora(): Date {
  */
 export function Inicio({ aoIr }: { aoIr: (destino: DestinoInicio) => void }) {
   const { t } = useTranslation();
-  const { banco, disciplinas, avaliacoes } = useSemestre();
+  const { banco, disciplinas } = useSemestre();
   const agora = useAgora();
   const [tarefas, setTarefas] = useState<Tarefa[] | null>(null);
 
-  // Tarefas mudam na Agenda; aqui basta ler ao abrir (e quando as avaliações mudam).
+  // Tarefas mudam na Agenda; aqui basta ler ao abrir a tela.
   useEffect(() => {
     repoTarefas.listar(banco).then(setTarefas).catch(() => setTarefas([]));
-  }, [banco, avaliacoes]);
+  }, [banco]);
 
   const hora = agora.getHours();
   const saudacao = hora < 5 ? "boaNoite" : hora < 12 ? "bomDia" : hora < 18 ? "boaTarde" : "boaNoite";
@@ -198,7 +196,7 @@ interface Aviso {
 /** Só o que pede atenção: no máximo quatro linhas, as mais graves primeiro. */
 function Avisos({ agora, tarefas, aoIr }: { agora: Date; tarefas: Tarefa[]; aoIr: (destino: DestinoInicio) => void }) {
   const { t } = useTranslation();
-  const { semestre, disciplinas, horarios, faltas, eventos, avaliacoes, instituicao } = useSemestre();
+  const { semestre, disciplinas, horarios, faltas, eventos } = useSemestre();
   const avisos: Aviso[] = [];
 
   // Faltas: reprovado ou perto do limite.
@@ -211,16 +209,6 @@ function Avisos({ agora, tarefas, aoIr }: { agora: Date; tarefas: Tarefa[]; aoIr
     } else if (nivel === "atencao") {
       const texto = resumo.restantes === 0 ? t("inicio.aviso.noLimite", { nome: d.nome }) : t("inicio.aviso.pertoLimite", { nome: d.nome });
       avisos.push({ id: `f-${d.id}`, tipo: "atencao", destino: "faltas", texto });
-    }
-    // Nota: indo para a recuperação.
-    const nota = notaDaDisciplina(d, avaliacoes.filter((a) => a.disciplinaId === d.id), semestre, resumo.reprovadoPorFalta);
-    if (nota.situacao === "ifa") {
-      avisos.push({
-        id: `n-${d.id}`,
-        tipo: "atencao",
-        destino: "notas",
-        texto: t("inicio.aviso.recuperacao", { nome: d.nome, ...textosRecuperacao(instituicao.perfil) }),
-      });
     }
   }
 

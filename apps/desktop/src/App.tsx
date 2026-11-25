@@ -115,7 +115,7 @@ function Layout() {
         ) : secaoAtiva === "faltas" ? (
           <Faltas />
         ) : secaoAtiva === "notas" ? (
-          <Notas />
+          <Notas aoIrAgenda={() => setSecao("agenda")} />
         ) : secaoAtiva === "calendario" ? (
           <Calendario />
         ) : secaoAtiva === "email" ? (

@@ -6,7 +6,6 @@ import {
   gravarEscolhaInstituicao,
   resolverEscolha,
   semestres,
-  textosRecuperacao,
   type EscolhaInstituicao,
 } from "@better-student/shared";
 import { useApp } from "../contexto";
@@ -97,11 +96,7 @@ export function SeletorInstituicao({
       )}
       <ul className="instituicao-resumo pequeno">
         <li>
-          {t("instituicao.regras", {
-            aprovacao: perfil.regras.mediaAprovacao,
-            frequencia: Math.round(perfil.regras.frequenciaMinima * 100),
-            ...textosRecuperacao(perfil),
-          })}
+          {t("instituicao.regras", { frequencia: Math.round(perfil.regras.frequenciaMinima * 100) })}
         </li>
         <li>{sistemas.suap ? t("instituicao.comSuap") : t("instituicao.semSuap")}</li>
         <li>
