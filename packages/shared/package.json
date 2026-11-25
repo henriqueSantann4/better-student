@@ -11,9 +11,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
+    "@types/node": "^26.6.7",
     "typescript": "^7.0.2"
   }
 }

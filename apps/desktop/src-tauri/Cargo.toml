@@ -18,6 +18,8 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Banco local. Só abre o arquivo e roda as migrations; as consultas vêm do TypeScript.
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 
 [profile.release]
 # Prioriza um executável pequeno, de acordo com a proposta de app leve.

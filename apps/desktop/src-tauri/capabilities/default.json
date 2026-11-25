@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Permissões da janela principal. Adicione permissões só quando uma funcionalidade precisar delas.",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "sql:default", "sql:allow-execute"]
 }

@@ -23,6 +23,11 @@
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: http://asset.localhost"
     }
   },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:better-student.db"]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["nsis", "msi"],

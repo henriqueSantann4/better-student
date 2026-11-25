@@ -29,7 +29,9 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Desktop "olá mundo": React com menu lateral (Agenda, Grade, Faltas, Notas, Materiais) e um comando Tauri `versao_nucleo` de exemplo.
 - ✅ `packages/shared/src/tipos.ts`: rascunho dos tipos (Semestre, Disciplina, HorarioAula, Tarefa, Subtarefa, RegraLembrete).
 - ✅ TypeScript passa na checagem e o Rust compila (`cargo check`). O app ainda **não foi aberto no Windows**: o primeiro `pnpm dev` é o teste real.
-- ⏭️ **Próximo passo:** desenhar o **modelo de dados do SQLite** (tabelas e migrations), já com as regras de faltas por encontro e a situação com o IFA.
+- ✅ Modelo de dados do SQLite: migration `packages/shared/src/banco/migrations/0001_inicial.sql`, carregada pelo `tauri-plugin-sql` (o Rust só roda as migrations; as consultas vêm do TypeScript).
+- ✅ Regras de média, faltas e situação (com IFA) em `packages/shared/src/regras/`, com testes (`node:test`, sem dependência extra).
+- ⏭️ **Próximo passo:** camada de acesso ao banco no desktop (repositórios TypeScript sobre `@tauri-apps/plugin-sql`) e as primeiras telas (Grade e Faltas).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 
@@ -57,6 +59,13 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - Explique o *porquê* das escolhas técnicas: ele está aprendendo Rust e Tauri neste projeto.
 - Commits curtos, no imperativo, em português.
 
+## Convenções do banco
+
+- Colunas em `snake_case` no SQLite, `camelCase` nos tipos TS. Datas em TEXT ISO, booleanos em INTEGER 0/1.
+- Valores derivados (média, situação, faltas restantes) **não** são guardados; são calculados em `shared/regras`.
+- Migration publicada nunca é editada: mudanças viram `0002_...sql` e uma nova entrada em `migrations()` no `lib.rs`.
+- Imports dentro de `packages/shared` usam a extensão `.ts` (permite rodar os testes direto no Node 24).
+
 ## Comandos
 
 ```bash
@@ -64,6 +73,7 @@ pnpm install      # dependências
 pnpm dev          # abre o app (Tauri + Vite)
 pnpm dev:web      # só a interface no navegador
 pnpm typecheck    # checa os tipos de todos os pacotes
+pnpm test         # roda os testes (regras e migrations)
 pnpm build        # gera o instalador para Windows
 ```
 

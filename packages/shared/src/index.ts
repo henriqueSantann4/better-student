@@ -1,1 +1,2 @@
-export * from "./tipos";
+export * from "./tipos.ts";
+export * from "./regras/index.ts";
