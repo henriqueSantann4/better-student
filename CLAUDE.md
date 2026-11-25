@@ -23,6 +23,12 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 | Gerenciador | pnpm workspaces |
 | Plataforma inicial | **Windows**, depois Linux, depois macOS |
 
+## Versões
+
+- **1.0.0** (25/11/2026, tag `v1.0.0`): tudo o que está marcado ✅/🧪 abaixo. Resumo em [`CHANGELOG.md`](CHANGELOG.md).
+- **1.1.0**: em elaboração. O que entrar nela vai para a seção `[1.1.0]` do CHANGELOG.
+- A versão fica em quatro lugares, que devem andar juntos: `apps/desktop/package.json`, `packages/shared/package.json`, `apps/desktop/src-tauri/tauri.conf.json` e `apps/desktop/src-tauri/Cargo.toml`.
+
 ## Estado atual
 
 - ✅ Estrutura do monorepo criada e com o primeiro commit.
@@ -48,7 +54,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ **Notas:** avaliações por disciplina (peso, nota máxima, data; repositório `banco/avaliacoes.ts`), nota lançada direto na tabela, provas/trabalhos da Agenda viram sugestão (`tarefa_id`). `notaDaDisciplina` (`shared/regras/notas.ts`): a nota do SUAP vence quando sai (no IFSP superior é **uma etapa só**, lançada no fim); antes disso vale a conta do aluno, com "quanto falta" (`mediaNecessaria`). Nota do IFA anotável. Regras de aprovação do semestre editáveis na própria tela.
 - ✅ **Instituição e Configurações:** perfis em `packages/shared/instituicoes/*.json` (leitor e regras em `shared/instituicao/perfil.ts`; o app junta os arquivos com `import.meta.glob` em `apps/desktop/src/instituicoes.ts`). O IFSP tem os 57 campi do site oficial; SUAP vale para todos, o Moodle é por campus (só Votuporanga confirmado). "Outra instituição" = perfil genérico. Primeiro acesso pergunta faculdade e campus (tela `EscolherInstituicao`) e grava SUAP/Moodle na configuração; o semestre nasce com as regras do perfil. O nome da recuperação (IFA) e o gênero dele vêm do perfil (`textosRecuperacao`). Tela **Configurações**: faculdade/campus, regras do semestre, endereços e contas conectadas, lembretes por tipo de tarefa (`shared/regras/lembretes.ts`, ainda sem agendar no Windows), tema (claro/escuro/sistema, no localStorage) e pasta de materiais.
 - ✅ **Início** (tela padrão ao abrir): o dia de aula que interessa (hoje enquanto houver aula por acontecer; depois da última, o próximo dia letivo, pulando feriado e fim de semana: `proximoDiaDeAulas` em `shared/regras/inicio.ts`), as 2 próximas provas, trabalhos e tarefas (`proximosPrazos`) e no máximo 4 avisos clicáveis (faltas perto do limite, recuperação, atrasadas, evento do calendário na semana). Pensada para ser lida num relance: nada além disso.
-- ⏭️ **Próximo passo:** perfis de outras universidades públicas (ex.: UNESP, que também usa Moodle), conferindo regras e endereços em fontes oficiais. Depois: notificações agendadas no Windows (questão 6) e o "Relatório de Faltas do Período" (faltas por data).
+- ⏭️ **Candidatos para a 1.1** (a definir com o Antonio): perfis de outras universidades públicas (ex.: UNESP, que também usa Moodle), conferindo regras e endereços em fontes oficiais; notificações agendadas no Windows (questão 6); o "Relatório de Faltas do Período" (faltas por data).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 
