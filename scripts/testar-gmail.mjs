@@ -265,7 +265,9 @@ try {
   }
   console.log(`✔ Últimas ${ids.length} mensagens ${institucional ? "vindas do institucional" : "da caixa de entrada"}:`);
   console.log(`  Domínios dos remetentes: ${[...dominios].map(([d, n]) => `${d} (${n})`).join(", ") || "nenhum"}`);
-  console.log(`  Categorias do Gmail: ${[...categorias].map(([c, n]) => `${c} (${n})`).join(", ") || "nenhuma (abas desativadas)"}`);
+  if (ids.length > 0) {
+    console.log(`  Categorias do Gmail: ${[...categorias].map(([c, n]) => `${c} (${n})`).join(", ") || "nenhuma (abas desativadas)"}`);
+  }
   console.log("\nFuncionou! Cole a saída a partir de \"Login aceito\" na conversa: não há conteúdo de e-mails nela.");
 } catch (erro) {
   const mensagem = String(erro?.message ?? erro);
