@@ -33,7 +33,8 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Regras de média, faltas e situação (com IFA) em `packages/shared/src/regras/`, com testes (`node:test`, sem dependência extra).
 - ✅ Camada de acesso: repositórios em `packages/shared/src/banco/` sobre a interface `Banco` (desktop usa `@tauri-apps/plugin-sql`; testes usam `node:sqlite`).
 - ✅ Telas de **Grade** (disciplinas + semana) e **Faltas** (aulas de hoje com "Faltei", resumo por disciplina, lançamento manual, histórico). Criação do primeiro semestre.
-- ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA) e edição do semestre/regras.
+- ✅ **Importação do boletim do SUAP** (página salva ou colada): leitor em `packages/shared/src/importacao/`, migration 0002 com o "retrato" do SUAP em cada disciplina. As faltas do app e as do SUAP ficam separadas; o limite usa a maior das duas.
+- ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 
@@ -67,7 +68,12 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - Valores derivados (média, situação, faltas restantes) **não** são guardados; são calculados em `shared/regras`.
 - Migration publicada nunca é editada: mudanças viram `0002_...sql` e uma nova entrada em `migrations()` no `lib.rs`.
 - Parâmetros SQL sempre com `?` (posicional): funciona no plugin do Tauri, no `node:sqlite` e no sql.js.
-- Imports dentro de `packages/shared` usam a extensão `.ts` (permite rodar os testes direto no Node 24).
+- Imports dentro de `packages/shared` usam a extensão `.ts` (permite rodar os testes direto no Node 24). Por isso o `tsconfig` tem `erasableSyntaxOnly`: nada de `enum`, `namespace` ou `constructor(public x)`.
+
+## Amostras reais
+
+- Páginas reais do SUAP (com dados pessoais) ficam em `amostras-privadas/`, que está no `.gitignore`. Nunca copiar valores delas para o código ou testes.
+- Os testes usam versões **anônimas** em `packages/shared/src/importacao/fixtures/`. Se a amostra real existir, um teste extra confere que ela ainda é lida.
 
 ## Comandos
 

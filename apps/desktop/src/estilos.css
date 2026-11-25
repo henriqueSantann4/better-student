@@ -423,3 +423,79 @@ button:focus-visible {
   background: color-mix(in srgb, var(--perigo) 14%, var(--painel));
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
 }
+
+/* ---------- Importação do SUAP ---------- */
+
+.empurrar-direita {
+  margin-left: auto;
+}
+
+.passos {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: var(--suave);
+}
+
+.importar-entradas {
+  align-items: stretch;
+}
+
+.importar-entradas .botao {
+  display: flex;
+  align-items: center;
+}
+
+.area-colar {
+  flex: 1 1 240px;
+  padding: 8px 10px;
+  border: 1px dashed var(--borda-forte);
+  border-radius: 6px;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+  resize: none;
+  cursor: pointer;
+}
+
+.area-colar:focus {
+  border-color: var(--destaque);
+  outline: none;
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabela th,
+.tabela td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--borda);
+  text-align: left;
+}
+
+.tabela th {
+  color: var(--suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.tabela .numero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sucesso {
+  margin: 0 0 12px;
+  color: var(--ok);
+}
+
+.texto-perigo {
+  color: var(--perigo);
+}

@@ -1,4 +1,4 @@
-import type { Disciplina } from "../tipos.ts";
+import type { DadosSuap, Disciplina } from "../tipos.ts";
 import { agora, lerRegistro, novoId, type Banco, type LinhaRegistro } from "./banco.ts";
 
 interface LinhaDisciplina extends LinhaRegistro {
@@ -10,6 +10,36 @@ interface LinhaDisciplina extends LinhaRegistro {
   frequencia_minima: number | null;
   cor: string | null;
   nota_ifa: number | null;
+  suap_codigo: string | null;
+  suap_diario: string | null;
+  suap_aulas_cumpridas: number | null;
+  suap_faltas: number | null;
+  suap_frequencia: number | null;
+  suap_situacao: string | null;
+  suap_etapas: string | null;
+  suap_media: number | null;
+  suap_naf: number | null;
+  suap_mfd: number | null;
+  suap_atualizado_em: string | null;
+  suap_importado_em: string | null;
+}
+
+function lerSuap(l: LinhaDisciplina): DadosSuap | null {
+  if (!l.suap_importado_em) return null;
+  return {
+    codigo: l.suap_codigo,
+    diario: l.suap_diario,
+    aulasCumpridas: l.suap_aulas_cumpridas,
+    faltas: l.suap_faltas,
+    frequencia: l.suap_frequencia,
+    situacao: l.suap_situacao,
+    etapas: l.suap_etapas ? (JSON.parse(l.suap_etapas) as DadosSuap["etapas"]) : [],
+    media: l.suap_media,
+    naf: l.suap_naf,
+    mfd: l.suap_mfd,
+    atualizadoEm: l.suap_atualizado_em,
+    importadoEm: l.suap_importado_em,
+  };
 }
 
 function lerDisciplina(l: LinhaDisciplina): Disciplina {
@@ -23,6 +53,7 @@ function lerDisciplina(l: LinhaDisciplina): Disciplina {
     frequenciaMinima: l.frequencia_minima,
     cor: l.cor,
     notaIfa: l.nota_ifa,
+    suap: lerSuap(l),
   };
 }
 
@@ -65,6 +96,19 @@ export const disciplinas = {
        WHERE id = ?`,
       [dados.nome, dados.sigla ?? null, dados.professor ?? null, dados.totalAulas,
         dados.frequenciaMinima ?? null, dados.cor ?? null, agora(), id],
+    );
+  },
+
+  /** Grava o retrato do SUAP (última importação) na disciplina. */
+  async gravarSuap(banco: Banco, id: string, dados: Omit<DadosSuap, "importadoEm">): Promise<void> {
+    const momento = agora();
+    await banco.executar(
+      `UPDATE disciplina SET suap_codigo = ?, suap_diario = ?, suap_aulas_cumpridas = ?, suap_faltas = ?,
+         suap_frequencia = ?, suap_situacao = ?, suap_etapas = ?, suap_media = ?, suap_naf = ?, suap_mfd = ?,
+         suap_atualizado_em = ?, suap_importado_em = ?, atualizado_em = ?
+       WHERE id = ?`,
+      [dados.codigo, dados.diario, dados.aulasCumpridas, dados.faltas, dados.frequencia, dados.situacao,
+        JSON.stringify(dados.etapas), dados.media, dados.naf, dados.mfd, dados.atualizadoEm, momento, momento, id],
     );
   },
 

@@ -83,6 +83,24 @@ describe("resumirFaltas", () => {
   });
 });
 
+describe("resumirFaltas com faltas do SUAP", () => {
+  const d = { totalAulas: 100, frequenciaMinima: null };
+
+  it("usa o SUAP quando ele tem mais faltas que o app", () => {
+    const r = resumirFaltas(d, [falta(4)], REGRAS_PADRAO_IFSP, 25);
+    assert.deepEqual([r.faltas, r.registradas, r.oficiais, r.fonte, r.restantes], [25, 4, 25, "suap", 0]);
+  });
+
+  it("usa o app quando ele está à frente (professor ainda não lançou)", () => {
+    const r = resumirFaltas(d, [falta(8)], REGRAS_PADRAO_IFSP, 4);
+    assert.deepEqual([r.faltas, r.fonte], [8, "app"]);
+  });
+
+  it("sem importação, fica só com o app", () => {
+    assert.equal(resumirFaltas(d, [falta(4)], REGRAS_PADRAO_IFSP).fonte, "app");
+  });
+});
+
 describe("encontrosRestantes", () => {
   it("conta só encontros inteiros", () => {
     assert.equal(encontrosRestantes(25, 4), 6);

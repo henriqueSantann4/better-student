@@ -8,10 +8,10 @@ import {
   type Disciplina,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
-import { formatarDataCompleta, nomeDia } from "../formatos";
+import { CORES } from "../cores";
+import { formatarDataCompleta, formatarNota, nomeDia } from "../formatos";
+import { ImportarSuap } from "./ImportarSuap";
 
-/** Cores sugeridas para as disciplinas, em rodízio. */
-const CORES = ["#4c6ef5", "#12b886", "#f59f00", "#e64980", "#7950f2", "#15aabf", "#fa5252", "#82c91e"];
 
 /** Segunda a sábado; domingo só aparece se tiver aula. */
 const DIAS_UTEIS: DiaSemana[] = [1, 2, 3, 4, 5, 6];
@@ -20,6 +20,9 @@ const TODOS_DIAS: DiaSemana[] = [1, 2, 3, 4, 5, 6, 0];
 export function Grade() {
   const { t } = useTranslation();
   const { semestre, disciplinas, horarios } = useSemestre();
+  // Sem disciplinas, a importação já aparece aberta: é o jeito mais rápido de começar.
+  const [importando, setImportando] = useState<boolean | null>(null);
+  const mostrarImportar = importando ?? disciplinas.length === 0;
 
   return (
     <>
@@ -32,8 +35,14 @@ export function Grade() {
             fim: formatarDataCompleta(semestre.fim),
           })}
         </span>
+        {!mostrarImportar && (
+          <button type="button" className="botao empurrar-direita" onClick={() => setImportando(true)}>
+            {t("importar.botao")}
+          </button>
+        )}
       </header>
 
+      {mostrarImportar && <ImportarSuap aoFechar={() => setImportando(false)} />}
       <Semana />
       {disciplinas.length > 0 && <FormHorario />}
 
@@ -225,6 +234,20 @@ function ItemDisciplina({ disciplina, qtdHorarios }: { disciplina: Disciplina; q
             .filter(Boolean)
             .join(" · ")}
         </span>
+        {disciplina.suap && (
+          <span className="pequeno suave">
+            {[
+              `SUAP: ${disciplina.suap.situacao ?? "–"}`,
+              disciplina.suap.mfd !== null
+                ? t("grade.suapMediaFinal", { nota: formatarNota(disciplina.suap.mfd) })
+                : disciplina.suap.media !== null
+                  ? t("grade.suapMedia", { nota: formatarNota(disciplina.suap.media) })
+                  : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        )}
       </div>
       <button type="button" className="botao" onClick={() => setEditando(true)}>
         {t("comum.editar")}

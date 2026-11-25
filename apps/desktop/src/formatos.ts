@@ -29,9 +29,21 @@ export function formatarDataCompleta(data: DataIso): string {
   return new Intl.DateTimeFormat(i18n.language).format(deDataIso(data));
 }
 
+/** "2026-11-25T10:46" (hora local, sem fuso) → "25/11/2026 10:46" */
+export function formatarDataHora(dataHora: string): string {
+  const [data, hora] = dataHora.split("T");
+  return hora ? `${formatarDataCompleta(data!)} ${hora.slice(0, 5)}` : formatarDataCompleta(data!);
+}
+
 /** Ex.: 0.925 → "92,5%" */
 export function formatarPercentual(valor: number): string {
   return new Intl.NumberFormat(i18n.language, { style: "percent", maximumFractionDigits: 1 }).format(valor);
+}
+
+/** Ex.: 5.4 → "5,4"; null → "–" */
+export function formatarNota(valor: number | null | undefined): string {
+  if (valor === null || valor === undefined) return "–";
+  return new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 }).format(valor);
 }
 
 /** Erros do SQLite chegam como texto; isto identifica a violação de um índice único. */

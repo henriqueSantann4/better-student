@@ -36,10 +36,19 @@ export async function abrirBancoNavegador(): Promise<Banco> {
   const db = salvo ? new SQL.Database(salvo) : new SQL.Database();
   db.exec("PRAGMA foreign_keys = ON;");
 
-  if (!salvo) {
-    for (const caminho of Object.keys(migrations).sort()) {
-      db.exec(migrations[caminho]!);
-    }
+  // Roda só as migrations novas. O número da última aplicada fica no próprio
+  // arquivo do SQLite (PRAGMA user_version), como o plugin do Tauri faz com a
+  // tabela _sqlx_migrations.
+  const versao = (db.exec("PRAGMA user_version")[0]?.values[0]?.[0] as number | undefined) ?? 0;
+  // Bancos criados antes deste controle já têm a 0001, mas estão com versão 0.
+  const jaTemTabelas = db.exec("SELECT 1 FROM sqlite_master WHERE name = 'semestre'").length > 0;
+  const aplicadas = versao === 0 && jaTemTabelas ? 1 : versao;
+  const pendentes = Object.keys(migrations).sort().slice(aplicadas);
+  for (const caminho of pendentes) db.exec(migrations[caminho]!);
+  const total = Object.keys(migrations).length;
+  if (total !== versao) {
+    db.exec(`PRAGMA user_version = ${total}`);
+    salvar();
   }
 
   function salvar() {

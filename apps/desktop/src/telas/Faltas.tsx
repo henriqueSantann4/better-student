@@ -10,7 +10,7 @@ import {
   type Disciplina,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
-import { formatarData, formatarPercentual } from "../formatos";
+import { formatarData, formatarDataHora, formatarPercentual } from "../formatos";
 
 export function Faltas() {
   const { t } = useTranslation();
@@ -108,6 +108,7 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
     disciplina,
     faltas.filter((f) => f.disciplinaId === disciplina.id),
     semestre,
+    disciplina.suap?.faltas ?? null,
   );
   // Com encontros de tamanhos diferentes, conta pelo maior: é a estimativa mais segura.
   const aulasPorEncontro = Math.max(
@@ -135,6 +136,8 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
       <span>{t("faltas.resumo", { faltas: resumo.faltas, limite: resumo.limite })}</span>
       {resumo.reprovadoPorFalta ? (
         <span className="pequeno">{t("faltas.reprovadoDetalhe", { limite: resumo.limite })}</span>
+      ) : resumo.restantes === 0 ? (
+        <strong className="pequeno texto-perigo">{t("faltas.noLimite")}</strong>
       ) : (
         <span className="pequeno">
           {t("faltas.podeFaltar", { count: resumo.restantes })}
@@ -146,6 +149,15 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
         </span>
       )}
       <span className="pequeno suave">{t("faltas.frequencia", { valor: formatarPercentual(resumo.frequencia) })}</span>
+      {resumo.oficiais !== null && (
+        <span className="pequeno suave">
+          {t(resumo.fonte === "suap" ? "faltas.fonteSuap" : "faltas.fonteApp", {
+            registradas: resumo.registradas,
+            oficiais: resumo.oficiais,
+          })}
+          {disciplina.suap?.atualizadoEm && ` ${t("faltas.suapEm", { data: formatarDataHora(disciplina.suap.atualizadoEm) })}`}
+        </span>
+      )}
     </article>
   );
 }

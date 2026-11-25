@@ -74,6 +74,32 @@ export interface Disciplina extends Registro {
   cor: string | null;
   /** Nota tirada no IFA. `null` = não fez IFA. */
   notaIfa: number | null;
+  /** Última importação do SUAP. `null` = nunca importada. */
+  suap: DadosSuap | null;
+}
+
+/**
+ * "Retrato" da disciplina no SUAP, na última importação. São os números
+ * oficiais (totais), separados das faltas que o app registra por data.
+ */
+export interface DadosSuap {
+  codigo: string | null;
+  diario: string | null;
+  aulasCumpridas: number | null;
+  faltas: number | null;
+  /** Sobre as aulas já dadas, de 0 a 1 (é o que o SUAP mostra). */
+  frequencia: number | null;
+  situacao: string | null;
+  etapas: { numero: number; nota: number | null; faltas: number | null }[];
+  media: number | null;
+  /** Nota da Avaliação Final (IFA). */
+  naf: number | null;
+  /** Média Final da Disciplina. */
+  mfd: number | null;
+  /** "Atualizado em" informado pelo próprio SUAP. */
+  atualizadoEm: string | null;
+  /** Quando o app fez a importação. */
+  importadoEm: DataHoraIso;
 }
 
 export type DiaSemana = 0 | 1 | 2 | 3 | 4 | 5 | 6;

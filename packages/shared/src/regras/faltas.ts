@@ -2,8 +2,14 @@ import type { Disciplina, Falta, RegrasAcademicas } from "../tipos.ts";
 import { pisoSeguro } from "./comparacao.ts";
 
 export interface ResumoFaltas {
-  /** Aulas faltadas até agora. */
+  /** Aulas faltadas até agora: a maior entre a contagem do app e a do SUAP. */
   faltas: number;
+  /** Soma das faltas registradas no app. */
+  registradas: number;
+  /** Faltas oficiais do SUAP (última importação), se houver. */
+  oficiais: number | null;
+  /** De onde veio o número usado em `faltas`. */
+  fonte: "app" | "suap";
   /** Máximo de aulas que pode faltar sem reprovar: ⌊totalAulas × (1 − frequênciaMínima)⌋. */
   limite: number;
   /** Aulas que ainda pode faltar (0 se já passou do limite). */
@@ -21,23 +27,33 @@ export interface ResumoFaltas {
  * O limite é arredondado para baixo porque falta é um número inteiro de aulas:
  * com 70 aulas e 75% de frequência, 17 faltas dão 24,3% (ok), mas 18 dão
  * 25,7% (reprova). Então o limite é 17, e não 17,5.
+ *
+ * Com faltas oficiais do SUAP, vale a MAIOR das duas contagens. O professor
+ * costuma lançar com atraso (o app sabe antes), mas também pode registrar
+ * faltas que o aluno esqueceu de anotar. Avisar cedo é mais seguro.
  */
 export function resumirFaltas(
   disciplina: Pick<Disciplina, "totalAulas" | "frequenciaMinima">,
   faltas: readonly Falta[],
   regras: Pick<RegrasAcademicas, "frequenciaMinima">,
+  faltasOficiais: number | null = null,
 ): ResumoFaltas {
   const frequenciaMinima = disciplina.frequenciaMinima ?? regras.frequenciaMinima;
   const total = disciplina.totalAulas;
 
-  const faltadas = faltas
+  const registradas = faltas
     .filter((f) => f.excluidoEm === null)
     .reduce((soma, f) => soma + f.quantidadeAulas, 0);
+  const fonte = faltasOficiais !== null && faltasOficiais > registradas ? "suap" : "app";
+  const faltadas = fonte === "suap" ? faltasOficiais! : registradas;
 
   const limite = pisoSeguro(total * (1 - frequenciaMinima));
 
   return {
     faltas: faltadas,
+    registradas,
+    oficiais: faltasOficiais,
+    fonte,
     limite,
     restantes: Math.max(0, limite - faltadas),
     frequencia: total > 0 ? Math.max(0, (total - faltadas) / total) : 1,

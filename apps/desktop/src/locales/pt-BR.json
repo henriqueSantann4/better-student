@@ -65,7 +65,9 @@
     "aulas_one": "{{count}} aula",
     "aulas_other": "{{count}} aulas",
     "fimAntesInicio": "O fim da aula precisa ser depois do início.",
-    "removerHorario": "Remover esta aula da grade"
+    "removerHorario": "Remover esta aula da grade",
+    "suapMedia": "média {{nota}}",
+    "suapMediaFinal": "média final {{nota}}"
   },
   "faltas": {
     "titulo": "Faltas",
@@ -98,6 +100,38 @@
     "observacao": "Observação",
     "duplicada": "Essa falta já está registrada.",
     "historico": "Histórico",
-    "semFaltas": "Nenhuma falta registrada."
+    "semFaltas": "Nenhuma falta registrada.",
+    "fonteSuap": "Usando o SUAP: {{oficiais}} faltas lá, {{registradas}} anotadas aqui.",
+    "fonteApp": "SUAP: {{oficiais}} faltas (você anotou {{registradas}}; o professor pode não ter lançado todas).",
+    "suapEm": "(SUAP atualizado em {{data}})",
+    "noLimite": "No limite: mais uma falta reprova."
+  },
+  "importar": {
+    "botao": "Importar do SUAP",
+    "titulo": "Importar boletim do SUAP",
+    "passo1": "No SUAP, abra o seu boletim (Ensino → Boletim).",
+    "passo2": "Salve a página (Ctrl+S, \"Página da Web, somente HTML\") e abra o arquivo aqui, ou copie a página inteira (Ctrl+A, Ctrl+C) e cole no campo ao lado.",
+    "abrirArquivo": "Abrir página salva…",
+    "colarAqui": "…ou clique aqui e cole a página (Ctrl+V)",
+    "periodo": "Boletim de {{periodo}}",
+    "atualizadoSuap": "atualizado no SUAP em {{data}}",
+    "periodoDiferente": "Atenção: este boletim parece ser de outro período, e não do semestre {{semestre}}.",
+    "disciplina": "Disciplina",
+    "acao": "O que vai acontecer",
+    "aulas": "Aulas",
+    "faltas": "Faltas",
+    "media": "Média",
+    "nova": "Nova disciplina",
+    "atualizar": "Atualizar \"{{nome}}\"",
+    "explicacao": "O total de aulas vem do SUAP. As faltas que você anotou no app são mantidas: o app mostra as duas contagens e usa a maior para avisar do limite.",
+    "confirmar_one": "Importar {{count}} disciplina",
+    "confirmar_other": "Importar {{count}} disciplinas",
+    "concluido": "Pronto! {{criadas}} disciplina(s) nova(s) e {{atualizadas}} atualizada(s).",
+    "ignoradas": "Sem total de aulas no boletim, ficaram de fora: {{nomes}}.",
+    "erro": {
+      "sem_tabela": "Não achei a tabela do boletim nessa página. Confira se é a página do Boletim no SUAP.",
+      "sem_disciplinas": "O boletim não tem nenhuma disciplina.",
+      "semHtml": "O que foi colado não veio como página. Copie direto do navegador, com a página do boletim aberta."
+    }
   }
 }

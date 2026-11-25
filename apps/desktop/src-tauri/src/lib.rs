@@ -22,12 +22,20 @@ fn versao_nucleo() -> String {
 /// `include_str!` embute o texto do arquivo no executável durante a
 /// compilação, então o instalador não precisa levar os `.sql` separados.
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "esquema inicial",
-        sql: include_str!("../../../../packages/shared/src/banco/migrations/0001_inicial.sql"),
-        kind: MigrationKind::Up,
-    }]
+    vec![
+        Migration {
+            version: 1,
+            description: "esquema inicial",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0001_inicial.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "dados do suap",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0002_dados_suap.sql"),
+            kind: MigrationKind::Up,
+        },
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
