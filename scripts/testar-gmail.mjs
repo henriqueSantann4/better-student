@@ -35,6 +35,8 @@ const { values: opcoes } = parseArgs({
     "base-token": { type: "string", default: "https://oauth2.googleapis.com" },
     "base-gmail": { type: "string", default: "https://gmail.googleapis.com" },
     "sem-navegador": { type: "boolean", default: false },
+    // Encaminhamento: entra com o Gmail pessoal e lê SÓ o que chegou do institucional.
+    institucional: { type: "string" },
   },
 });
 
@@ -226,7 +228,20 @@ try {
   console.log(`✔ ${labels.length} marcadores (${labels.length - sistema.length} criados por você)`);
   console.log(`  Do sistema: ${sistema.join(", ")}`);
 
-  const lista = await gmail("messages?maxResults=20&q=in:inbox", token);
+  // Com --institucional, só as mensagens entregues àquele endereço (as
+  // encaminhadas mantêm o "Delivered-To" original). O resto da conta pessoal
+  // não é lido.
+  const institucional = opcoes.institucional?.trim();
+  const busca = institucional ? `deliveredto:${institucional}` : "in:inbox";
+  if (institucional) {
+    const total = await gmail(`messages?maxResults=500&q=${encodeURIComponent(busca)}`, token);
+    const qtd = total.resultSizeEstimate ?? (total.messages ?? []).length;
+    console.log(`✔ Mensagens encaminhadas do e-mail institucional: ${qtd}${total.nextPageToken ? " ou mais" : ""}`);
+    if (qtd === 0) {
+      console.log("  Nenhuma ainda. O encaminhamento só vale para e-mails que chegarem DEPOIS de ativado.");
+    }
+  }
+  const lista = await gmail(`messages?maxResults=20&q=${encodeURIComponent(busca)}`, token);
   const ids = (lista.messages ?? []).map((m) => m.id);
   const dominios = new Map();
   const categorias = new Map();
@@ -237,7 +252,7 @@ try {
     dominios.set(dom, (dominios.get(dom) ?? 0) + 1);
     for (const l of m.labelIds ?? []) if (l.startsWith("CATEGORY_")) categorias.set(l, (categorias.get(l) ?? 0) + 1);
   }
-  console.log(`✔ Últimas ${ids.length} mensagens da caixa de entrada:`);
+  console.log(`✔ Últimas ${ids.length} mensagens ${institucional ? "vindas do institucional" : "da caixa de entrada"}:`);
   console.log(`  Domínios dos remetentes: ${[...dominios].map(([d, n]) => `${d} (${n})`).join(", ") || "nenhum"}`);
   console.log(`  Categorias do Gmail: ${[...categorias].map(([c, n]) => `${c} (${n})`).join(", ") || "nenhuma (abas desativadas)"}`);
   console.log("\nFuncionou! Cole a saída a partir de \"Login aceito\" na conversa: não há conteúdo de e-mails nela.");
