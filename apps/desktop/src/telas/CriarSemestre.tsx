@@ -44,7 +44,7 @@ export function CriarSemestre() {
 
 function ComecarPeloSuap() {
   const { t } = useTranslation();
-  const { banco, acao } = useApp();
+  const { banco, acao, instituicao } = useApp();
   const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
   const [extras, setExtras] = useState<ExtrasSuap>({ horarios: null, calendario: null });
 
@@ -76,7 +76,8 @@ function ComecarPeloSuap() {
   async function confirmar() {
     if (!boletim) return;
     await acao(async () => {
-      const semestre = await semestres.criar(banco, novo);
+      // As regras (médias, recuperação, frequência) vêm da instituição escolhida.
+      const semestre = await semestres.criar(banco, { ...novo, regras: instituicao?.perfil.regras });
       await aplicarImportacao(banco, semestre.id, boletim, plano, CORES);
       if (horarios) await importarHorarios(banco, semestre.id, horarios);
       if (doCalendario) await repoCalendario.aplicarPacote(banco, semestre, "suap", doCalendario);
@@ -109,7 +110,7 @@ function ComecarPeloSuap() {
 
 function FormManual() {
   const { t } = useTranslation();
-  const { banco, acao } = useApp();
+  const { banco, acao, instituicao } = useApp();
   const [nome, setNome] = useState(() => {
     const { ano, periodo } = periodoDaData();
     return `${ano}.${periodo}`;
@@ -127,7 +128,9 @@ function FormManual() {
       setAviso(t("semestre.fimAntesInicio"));
       return;
     }
-    await acao(() => semestres.criar(banco, { nome: nome.trim(), inicio, fim, datasEstimadas: datas === null }));
+    await acao(() =>
+      semestres.criar(banco, { nome: nome.trim(), inicio, fim, datasEstimadas: datas === null, regras: instituicao?.perfil.regras }),
+    );
   }
 
   return (

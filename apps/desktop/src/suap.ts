@@ -2,20 +2,18 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { configuracao, type Banco } from "@better-student/shared";
 
-/**
- * Endereço padrão do SUAP. É só o valor inicial: cada usuário pode trocar
- * pelo SUAP do seu instituto (fica salvo na configuração "suapServidor").
- */
-export const SERVIDOR_SUAP_PADRAO = "https://suap.ifsp.edu.br/";
-
 /** O modo automático depende da janela do SUAP, que só existe no app Tauri. */
 export const suapAutomaticoDisponivel = isTauri;
 
-export async function lerServidorSuap(banco: Banco): Promise<string> {
-  return (await configuracao.ler<string>(banco, "suapServidor")) ?? SERVIDOR_SUAP_PADRAO;
+/**
+ * Endereço do SUAP, que vem do perfil da instituição escolhida (e pode ser
+ * trocado em Configurações). `null` = a instituição não usa SUAP.
+ */
+export async function lerServidorSuap(banco: Banco): Promise<string | null> {
+  return configuracao.ler<string>(banco, "suapServidor");
 }
 
-export async function gravarServidorSuap(banco: Banco, servidor: string): Promise<void> {
+export async function gravarServidorSuap(banco: Banco, servidor: string | null): Promise<void> {
   await configuracao.gravar(banco, "suapServidor", servidor);
 }
 

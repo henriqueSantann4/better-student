@@ -14,8 +14,9 @@
   --perigo: #e03131;
 }
 
+/* Escuro: pelo sistema (se o usuário não escolheu "claro") ou escolhido em Configurações. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema="claro"]) {
     --fundo: #15171c;
     --painel: #1d2027;
     --texto: #e8eaed;
@@ -25,6 +26,22 @@
     --atencao-texto: #ffc94d;
     --perigo: #ff6b6b;
   }
+}
+
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #15171c;
+  --painel: #1d2027;
+  --texto: #e8eaed;
+  --suave: #9aa0a6;
+  --destaque: #748ffc;
+  --ok: #51cf66;
+  --atencao-texto: #ffc94d;
+  --perigo: #ff6b6b;
+}
+
+:root[data-tema="claro"] {
+  color-scheme: light;
 }
 
 * {
@@ -1346,4 +1363,48 @@ textarea {
 
 .texto-ok {
   color: var(--ok);
+}
+
+/* ---------- Instituição e Configurações ---------- */
+
+.instituicao-resumo {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--suave);
+}
+
+.caixa-marcar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.config-contas {
+  margin-top: 14px;
+}
+
+.opcoes-tema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opcao-tema {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.opcao-tema.ativa {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+.opcao-tema input {
+  accent-color: var(--destaque);
 }

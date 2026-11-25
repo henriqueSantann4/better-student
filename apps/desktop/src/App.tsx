@@ -7,14 +7,16 @@ import { ProvedorApp, useApp } from "./contexto";
 import { ehDuplicado } from "./formatos";
 import { Agenda } from "./telas/Agenda";
 import { Calendario } from "./telas/Calendario";
+import { Configuracoes } from "./telas/Configuracoes";
 import { CriarSemestre } from "./telas/CriarSemestre";
 import { Email } from "./telas/Email";
+import { EscolherInstituicao } from "./telas/EscolherInstituicao";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
 import { Moodle } from "./telas/Moodle";
 import { Notas } from "./telas/Notas";
 
-const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email"] as const;
+const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email", "configuracoes"] as const;
 type Secao = (typeof SECOES)[number];
 
 export function App() {
@@ -46,7 +48,7 @@ export function App() {
 
 function Layout() {
   const { t } = useTranslation();
-  const { dados } = useApp();
+  const { dados, instituicao } = useApp();
   const [secao, setSecao] = useState<Secao | null>(null);
   const [versaoNucleo, setVersaoNucleo] = useState<string | null>(null);
 
@@ -71,8 +73,13 @@ function Layout() {
     <div className="layout">
       <nav className="menu">
         <strong className="logo">{t("app.nome")}</strong>
-        {dados && <span className="menu-semestre suave">{dados.semestre.nome}</span>}
-        {SECOES.map((s) => (
+        {dados && (
+          <span className="menu-semestre suave">
+            {instituicao ? `${dados.semestre.nome} · ${instituicao.perfil.sigla}${instituicao.campus ? ` ${instituicao.campus.nome}` : ""}` : dados.semestre.nome}
+          </span>
+        )}
+        {/* Na pergunta inicial (faculdade), o menu fica escondido: ela vem antes de tudo. */}
+        {instituicao !== null && SECOES.map((s) => (
           <button
             key={s}
             type="button"
@@ -89,8 +96,13 @@ function Layout() {
       </nav>
       <main className="conteudo">
         <AvisoErro />
-        {dados === undefined ? (
+        {dados === undefined || instituicao === undefined ? (
           <p className="suave">{t("app.carregando")}</p>
+        ) : instituicao === null ? (
+          // Primeiro acesso: a faculdade vem antes de tudo, porque preenche o resto.
+          <EscolherInstituicao />
+        ) : secaoAtiva === "configuracoes" ? (
+          <Configuracoes />
         ) : dados === null ? (
           <CriarSemestre />
         ) : secaoAtiva === "agenda" ? (

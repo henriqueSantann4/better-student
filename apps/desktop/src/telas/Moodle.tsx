@@ -22,7 +22,8 @@ import {
 export function Moodle() {
   const { t } = useTranslation();
   const { banco } = useApp();
-  const [site, setSite] = useState<string | null>(null);
+  // undefined = carregando; null = o campus não tem Moodle conhecido (o aluno informa).
+  const [site, setSite] = useState<string | null | undefined>(undefined);
   const [conectado, setConectado] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
@@ -46,8 +47,10 @@ export function Moodle() {
       </section>
     );
   }
-  if (site === null || conectado === undefined) return <p className="suave">{t("app.carregando")}</p>;
-  if (!conectado) return <ConectarMoodle site={site} aoMudarSite={setSite} aoConectar={() => setConectado(true)} />;
+  if (site === undefined || (site && conectado === undefined)) return <p className="suave">{t("app.carregando")}</p>;
+  if (!site || !conectado) {
+    return <ConectarMoodle site={site ?? ""} aoMudarSite={setSite} aoConectar={() => setConectado(true)} />;
+  }
   return (
     <PainelConectado
       site={site}
@@ -102,6 +105,7 @@ function ConectarMoodle({
         <li>{t("moodle.passo2")}</li>
         <li>{t("moodle.passo3")}</li>
       </ol>
+      {!site && <p className="pequeno texto-atencao">{t("moodle.semSite")}</p>}
       {aguardando ? (
         <div className="acoes">
           <p className="pequeno">{t("moodle.aguardando")}</p>
@@ -117,16 +121,16 @@ function ConectarMoodle({
           </button>
         </div>
       ) : (
-        <button type="button" className="botao primario" onClick={entrar}>
+        <button type="button" className="botao primario" onClick={entrar} disabled={!endereco.trim()}>
           {t("moodle.entrar")}
         </button>
       )}
       {erro && <p className="aviso">{erro}</p>}
-      <details className="pequeno">
+      <details className="pequeno" open={!site}>
         <summary>{t("moodle.outroSite")}</summary>
         <label className="formulario">
           {t("moodle.endereco")}
-          <input value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+          <input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="https://moodle.exemplo.edu.br" />
         </label>
       </details>
       <p className="pequeno suave">{t("moodle.seguranca")}</p>

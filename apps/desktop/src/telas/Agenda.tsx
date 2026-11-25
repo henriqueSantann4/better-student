@@ -60,7 +60,7 @@ export function Agenda() {
   const sincronizarMoodle = useCallback(async () => {
     if (sincronizando.current || !moodleDisponivel()) return;
     const site = await lerSiteMoodle(banco);
-    if (!(await estaConectado(site))) return;
+    if (!site || !(await estaConectado(site))) return;
     setMoodleConectado(true);
     sincronizando.current = true;
     setMoodle({ estado: "buscando" });

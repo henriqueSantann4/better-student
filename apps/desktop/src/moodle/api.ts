@@ -23,13 +23,14 @@ import {
   type InfoSite,
 } from "@better-student/shared";
 
-/** Endereço inicial (Moodle do IFSP Votuporanga); cada usuário pode trocar. */
-export const SITE_MOODLE_PADRAO = "https://ead.vtp.ifsp.edu.br";
-
 export const moodleDisponivel = isTauri;
 
-export async function lerSiteMoodle(banco: Banco): Promise<string> {
-  return (await configuracao.ler<string>(banco, "moodleSite")) ?? SITE_MOODLE_PADRAO;
+/**
+ * Endereço do Moodle, que vem do perfil do campus (e pode ser trocado em
+ * Configurações). `null` = ainda não sabemos o Moodle do campus.
+ */
+export async function lerSiteMoodle(banco: Banco): Promise<string | null> {
+  return configuracao.ler<string>(banco, "moodleSite");
 }
 
 export function estaConectado(site: string): Promise<boolean> {

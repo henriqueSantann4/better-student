@@ -5,8 +5,8 @@ import {
   disciplinas as repoDisciplinas,
   notaDaDisciplina,
   resumirFaltas,
-  semestres,
   tarefas as repoTarefas,
+  textosRecuperacao,
   type Avaliacao,
   type Disciplina,
   type RegrasAcademicas,
@@ -69,7 +69,7 @@ export function Notas() {
           {disciplinas.map((d) => (
             <CartaoNotas key={d.id} disciplina={d} tarefas={tarefas.filter((x) => x.disciplinaId === d.id)} />
           ))}
-          <Regras />
+          <p className="pequeno suave">{t("notas.regrasEmConfig")}</p>
         </>
       )}
     </>
@@ -78,7 +78,8 @@ export function Notas() {
 
 function CartaoNotas({ disciplina, tarefas }: { disciplina: Disciplina; tarefas: Tarefa[] }) {
   const { t } = useTranslation();
-  const { banco, acao, semestre, faltas, avaliacoes } = useSemestre();
+  const { banco, acao, semestre, faltas, avaliacoes, instituicao } = useSemestre();
+  const recuperacao = textosRecuperacao(instituicao.perfil);
   const minhas = avaliacoes.filter((a) => a.disciplinaId === disciplina.id);
   const { reprovadoPorFalta } = resumirFaltas(
     disciplina,
@@ -102,13 +103,13 @@ function CartaoNotas({ disciplina, tarefas }: { disciplina: Disciplina; tarefas:
             <p className="pequeno suave">
               {t("notas.suap")}{" "}
               {suap.etapas.map((e) => `${t("notas.etapa", { numero: e.numero })} ${formatarNota(e.nota)}`).join(" · ")}
-              {suap.naf !== null && ` · ${t("notas.naf")} ${formatarNota(suap.naf)}`}
+              {suap.naf !== null && ` · ${t("notas.naf", recuperacao)} ${formatarNota(suap.naf)}`}
               {suap.mfd !== null && ` · ${t("notas.mfd")} ${formatarNota(suap.mfd)}`}
               {suap.importadoEm && ` · ${t("notas.atualizado", { data: formatarDataHora(suap.importadoEm) })}`}
             </p>
           )}
         </div>
-        <span className={`etiqueta ${CLASSE_SITUACAO[nota.situacao]}`}>{t(`notas.situacao.${nota.situacao}`)}</span>
+        <span className={`etiqueta ${CLASSE_SITUACAO[nota.situacao]}`}>{t(`notas.situacao.${nota.situacao}`, recuperacao)}</span>
       </div>
 
       <div className="notas-media">
@@ -188,7 +189,8 @@ function Orientacao({
   regras: RegrasAcademicas;
 }) {
   const { t } = useTranslation();
-  const { banco, acao } = useSemestre();
+  const { banco, acao, instituicao } = useSemestre();
+  const recuperacao = textosRecuperacao(instituicao.perfil);
   const [ifa, setIfa] = useState(disciplina.notaIfa !== null ? formatarNota(disciplina.notaIfa) : "");
 
   if (nota.situacao === "reprovado_falta") return <p className="pequeno texto-perigo">{t("notas.dica.falta")}</p>;
@@ -204,12 +206,13 @@ function Orientacao({
       <div className="notas-ifa pequeno">
         <span className="texto-atencao">
           {t("notas.dica.ifa", {
+            ...recuperacao,
             minimo: formatarNota(regras.notaMinimaIfa),
             teto: formatarNota(regras.tetoAposIfa),
           })}
         </span>
         <label>
-          {t("notas.notaIfa")}
+          {t("notas.notaIfa", recuperacao)}
           <input
             className="campo-nota"
             inputMode="decimal"
@@ -229,7 +232,11 @@ function Orientacao({
   }
   if (nota.precisa <= 0) return <p className="pequeno texto-ok">{t("notas.dica.garantido")}</p>;
   if (nota.precisa > 10) {
-    return <p className="pequeno texto-perigo">{t("notas.dica.impossivel", { minimo: formatarNota(regras.mediaMinimaIfa) })}</p>;
+    return (
+      <p className="pequeno texto-perigo">
+        {t("notas.dica.impossivel", { minimo: formatarNota(regras.mediaMinimaIfa), ...recuperacao })}
+      </p>
+    );
   }
   return (
     <p className="pequeno">
@@ -377,80 +384,5 @@ function NovaAvaliacao({ disciplinaId }: { disciplinaId: string }) {
         </button>
       </div>
     </form>
-  );
-}
-
-/** Regras do semestre (padrão IFSP), editáveis. */
-function Regras() {
-  const { t } = useTranslation();
-  const { banco, acao, semestre } = useSemestre();
-  const inicial = () => ({
-    frequenciaMinima: formatarNota(semestre.frequenciaMinima * 100),
-    mediaAprovacao: formatarNota(semestre.mediaAprovacao),
-    mediaMinimaIfa: formatarNota(semestre.mediaMinimaIfa),
-    notaMinimaIfa: formatarNota(semestre.notaMinimaIfa),
-    tetoAposIfa: formatarNota(semestre.tetoAposIfa),
-  });
-  const [campos, setCampos] = useState(inicial);
-  const [aviso, setAviso] = useState<string | null>(null);
-  const [salvo, setSalvo] = useState(false);
-
-  const nomes = Object.keys(campos) as (keyof typeof campos)[];
-
-  async function enviar(e: FormEvent) {
-    e.preventDefault();
-    const valores = Object.fromEntries(nomes.map((n) => [n, lerNota(campos[n])])) as Record<keyof typeof campos, number | null | undefined>;
-    if (nomes.some((n) => typeof valores[n] !== "number") || valores.frequenciaMinima! > 100) {
-      setAviso(t("notas.invalido"));
-      return;
-    }
-    const regras: RegrasAcademicas = {
-      frequenciaMinima: valores.frequenciaMinima! / 100,
-      mediaAprovacao: valores.mediaAprovacao!,
-      mediaMinimaIfa: valores.mediaMinimaIfa!,
-      notaMinimaIfa: valores.notaMinimaIfa!,
-      tetoAposIfa: valores.tetoAposIfa!,
-    };
-    if (regras.mediaMinimaIfa > regras.mediaAprovacao) {
-      setAviso(t("notas.regras.ordem"));
-      return;
-    }
-    setAviso(null);
-    setSalvo(await acao(() => semestres.atualizarRegras(banco, semestre.id, regras)));
-  }
-
-  return (
-    <details className="cartao recolhivel">
-      <summary>
-        <strong>{t("notas.regras.titulo")}</strong>
-        <span className="pequeno suave"> {t("notas.regras.dica")}</span>
-      </summary>
-      <form className="formulario" onSubmit={enviar}>
-        <div className="linha">
-          {nomes.map((n) => (
-            <label key={n}>
-              {t(`notas.regras.${n}`)}
-              <input
-                className="campo-nota"
-                inputMode="decimal"
-                value={campos[n]}
-                onChange={(e) => {
-                  setSalvo(false);
-                  setCampos({ ...campos, [n]: e.target.value });
-                }}
-              />
-            </label>
-          ))}
-        </div>
-        <p className="pequeno suave">{t("notas.regras.explicacao")}</p>
-        {aviso && <p className="aviso">{aviso}</p>}
-        <div className="acoes">
-          <button type="submit" className="botao primario">
-            {t("comum.salvar")}
-          </button>
-          {salvo && <span className="pequeno texto-ok">{t("notas.regras.salvas")}</span>}
-        </div>
-      </form>
-    </details>
   );
 }

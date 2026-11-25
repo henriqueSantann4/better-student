@@ -5,6 +5,8 @@ import {
   disciplinas,
   faltas,
   horarios,
+  lerEscolhaInstituicao,
+  resolverEscolha,
   semestres,
   type Avaliacao,
   type Banco,
@@ -12,8 +14,10 @@ import {
   type EventoCalendario,
   type Falta,
   type HorarioAula,
+  type InstituicaoEscolhida,
   type Semestre,
 } from "@better-student/shared";
+import { PERFIS } from "./instituicoes";
 
 /** Tudo o que as telas do semestre atual precisam, carregado de uma vez. */
 export interface DadosSemestre {
@@ -29,6 +33,11 @@ interface Contexto {
   banco: Banco;
   /** `undefined` = carregando; `null` = ainda não existe semestre. */
   dados: DadosSemestre | null | undefined;
+  /**
+   * Faculdade e campus escolhidos no primeiro acesso, com os sistemas que
+   * valem para eles. `undefined` = carregando; `null` = ainda não escolheu.
+   */
+  instituicao: InstituicaoEscolhida | null | undefined;
   /**
    * Roda uma alteração no banco e recarrega os dados. Se der erro, mostra a
    * mensagem no topo da tela e devolve `false`.
@@ -47,9 +56,12 @@ const ContextoApp = createContext<Contexto | null>(null);
  */
 export function ProvedorApp({ banco, children }: { banco: Banco; children: ReactNode }) {
   const [dados, setDados] = useState<DadosSemestre | null | undefined>(undefined);
+  const [instituicao, setInstituicao] = useState<InstituicaoEscolhida | null | undefined>(undefined);
   const [erro, setErro] = useState<unknown>(null);
 
   const recarregar = useCallback(async () => {
+    const escolha = await lerEscolhaInstituicao(banco);
+    setInstituicao(escolha ? resolverEscolha(PERFIS, escolha) : null);
     const semestre = await semestres.atual(banco);
     if (!semestre) {
       setDados(null);
@@ -86,7 +98,7 @@ export function ProvedorApp({ banco, children }: { banco: Banco; children: React
   );
 
   return (
-    <ContextoApp.Provider value={{ banco, dados, acao, erro, limparErro: () => setErro(null) }}>
+    <ContextoApp.Provider value={{ banco, dados, instituicao, acao, erro, limparErro: () => setErro(null) }}>
       {children}
     </ContextoApp.Provider>
   );
@@ -99,8 +111,8 @@ export function useApp(): Contexto {
 }
 
 /** Atalho para telas que só aparecem quando já existe semestre. */
-export function useSemestre(): DadosSemestre & Omit<Contexto, "dados"> {
-  const { dados, ...resto } = useApp();
-  if (!dados) throw new Error("useSemestre usado sem semestre carregado");
-  return { ...dados, ...resto };
+export function useSemestre(): DadosSemestre & Omit<Contexto, "dados" | "instituicao"> & { instituicao: InstituicaoEscolhida } {
+  const { dados, instituicao, ...resto } = useApp();
+  if (!dados || !instituicao) throw new Error("useSemestre usado sem semestre e instituição carregados");
+  return { ...dados, ...resto, instituicao };
 }

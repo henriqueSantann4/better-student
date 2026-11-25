@@ -4,6 +4,7 @@ export * from "./banco/index.ts";
 export * from "./datas.ts";
 export * from "./importacao/index.ts";
 export * from "./calendario/index.ts";
+export * from "./instituicao/perfil.ts";
 export * from "./email/email.ts";
 export * from "./moodle/moodle.ts";
 export * from "./moodle/casar.ts";

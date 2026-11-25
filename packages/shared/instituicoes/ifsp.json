@@ -1,0 +1,318 @@
+{
+  "formato": 1,
+  "id": "ifsp",
+  "sigla": "IFSP",
+  "nome": "Instituto Federal de São Paulo",
+  "fonte": "https://www.ifsp.edu.br/index.php/sobre-o-campus",
+  "observacao": "Campi conferidos no site oficial em 25/11/2026. O SUAP é o mesmo para todos os campi; o Moodle é de cada campus (só o de Votuporanga está confirmado). A nota mínima no IFA (6) ainda é uma estimativa: confira no regulamento.",
+  "regras": {
+    "frequenciaMinima": 0.75,
+    "mediaAprovacao": 6,
+    "mediaMinimaIfa": 4,
+    "notaMinimaIfa": 6,
+    "tetoAposIfa": 6
+  },
+  "recuperacao": "IFA",
+  "recuperacaoGenero": "m",
+  "sistemas": {
+    "suap": "https://suap.ifsp.edu.br/",
+    "moodle": null,
+    "email": {
+      "provedor": "google",
+      "dominio": "aluno.ifsp.edu.br"
+    }
+  },
+  "campi": [
+    {
+      "id": "arq",
+      "nome": "Araraquara",
+      "site": "https://arq.ifsp.edu.br/"
+    },
+    {
+      "id": "avr",
+      "nome": "Avaré",
+      "site": "https://avr.ifsp.edu.br/"
+    },
+    {
+      "id": "brt",
+      "nome": "Barretos",
+      "site": "https://brt.ifsp.edu.br/"
+    },
+    {
+      "id": "bru",
+      "nome": "Bauru",
+      "site": "https://bru.ifsp.edu.br/"
+    },
+    {
+      "id": "bri",
+      "nome": "Birigui",
+      "site": "https://bri.ifsp.edu.br/"
+    },
+    {
+      "id": "btv",
+      "nome": "Boituva",
+      "site": "https://btv.ifsp.edu.br/"
+    },
+    {
+      "id": "bra",
+      "nome": "Bragança Paulista",
+      "site": "https://bra.ifsp.edu.br/"
+    },
+    {
+      "id": "cmp",
+      "nome": "Campinas",
+      "site": "https://portal.cmp.ifsp.edu.br/"
+    },
+    {
+      "id": "campos-do-jordao",
+      "nome": "Campos do Jordão",
+      "site": "https://www.ifspcjo.edu.br/portal"
+    },
+    {
+      "id": "cpv",
+      "nome": "Capivari",
+      "site": "https://cpv.ifsp.edu.br/"
+    },
+    {
+      "id": "caraguatatuba",
+      "nome": "Caraguatatuba",
+      "site": "https://www.ifspcaraguatatuba.edu.br/"
+    },
+    {
+      "id": "crp",
+      "nome": "Carapicuíba",
+      "site": "https://crp.ifsp.edu.br/"
+    },
+    {
+      "id": "ctd",
+      "nome": "Catanduva",
+      "site": "https://ctd.ifsp.edu.br/"
+    },
+    {
+      "id": "cit",
+      "nome": "Cidade Tiradentes",
+      "site": "https://cit.ifsp.edu.br/"
+    },
+    {
+      "id": "cot",
+      "nome": "Cotia",
+      "site": "https://cot.ifsp.edu.br/"
+    },
+    {
+      "id": "cbt",
+      "nome": "Cubatão",
+      "site": "https://cbt.ifsp.edu.br/"
+    },
+    {
+      "id": "did",
+      "nome": "Diadema",
+      "site": "https://did.ifsp.edu.br/"
+    },
+    {
+      "id": "fro",
+      "nome": "Franco da Rocha",
+      "site": "https://fro.ifsp.edu.br/"
+    },
+    {
+      "id": "gja",
+      "nome": "Guarujá",
+      "site": "https://gja.ifsp.edu.br/"
+    },
+    {
+      "id": "gru",
+      "nome": "Guarulhos",
+      "site": "https://gru.ifsp.edu.br/"
+    },
+    {
+      "id": "hto",
+      "nome": "Hortolândia",
+      "site": "https://hto.ifsp.edu.br/"
+    },
+    {
+      "id": "ist",
+      "nome": "Ilha Solteira",
+      "site": "https://ist.ifsp.edu.br/"
+    },
+    {
+      "id": "itp",
+      "nome": "Itapetininga",
+      "site": "https://itp.ifsp.edu.br/"
+    },
+    {
+      "id": "itq",
+      "nome": "Itaquaquecetuba",
+      "site": "https://itq.ifsp.edu.br/"
+    },
+    {
+      "id": "jcr",
+      "nome": "Jacareí",
+      "site": "https://jcr.ifsp.edu.br/"
+    },
+    {
+      "id": "jcn",
+      "nome": "Jaçanã",
+      "site": "https://jcn.ifsp.edu.br/"
+    },
+    {
+      "id": "jan",
+      "nome": "Jardim Ângela",
+      "site": "https://jan.ifsp.edu.br/"
+    },
+    {
+      "id": "jnd",
+      "nome": "Jundiaí",
+      "site": "https://jnd.ifsp.edu.br/"
+    },
+    {
+      "id": "mto",
+      "nome": "Matão",
+      "site": "http://mto.ifsp.edu.br/"
+    },
+    {
+      "id": "mau",
+      "nome": "Mauá",
+      "site": "https://mau.ifsp.edu.br/"
+    },
+    {
+      "id": "mrc",
+      "nome": "Miracatu",
+      "site": "https://mrc.ifsp.edu.br/"
+    },
+    {
+      "id": "osa",
+      "nome": "Osasco",
+      "site": "https://osa.ifsp.edu.br/"
+    },
+    {
+      "id": "prc",
+      "nome": "Piracicaba",
+      "site": "https://prc.ifsp.edu.br/"
+    },
+    {
+      "id": "ptb",
+      "nome": "Pirituba",
+      "site": "https://ptb.ifsp.edu.br/"
+    },
+    {
+      "id": "pep",
+      "nome": "Presidente Epitácio",
+      "site": "https://pep.ifsp.edu.br/"
+    },
+    {
+      "id": "pru",
+      "nome": "Presidente Prudente",
+      "site": "https://pru.ifsp.edu.br/"
+    },
+    {
+      "id": "rgt",
+      "nome": "Registro",
+      "site": "https://rgt.ifsp.edu.br/"
+    },
+    {
+      "id": "rpr",
+      "nome": "Ribeirão Preto",
+      "site": "https://rpr.ifsp.edu.br/"
+    },
+    {
+      "id": "rcl",
+      "nome": "Rio Claro",
+      "site": "https://rcl.ifsp.edu.br/"
+    },
+    {
+      "id": "slt",
+      "nome": "Salto",
+      "site": "https://slt.ifsp.edu.br/"
+    },
+    {
+      "id": "san",
+      "nome": "Santos",
+      "site": "https://san.ifsp.edu.br/"
+    },
+    {
+      "id": "sbc",
+      "nome": "São Bernardo do Campo",
+      "site": "https://sbc.ifsp.edu.br/"
+    },
+    {
+      "id": "scl",
+      "nome": "São Carlos",
+      "site": "https://scl.ifsp.edu.br/"
+    },
+    {
+      "id": "sbv",
+      "nome": "São João da Boa Vista",
+      "site": "https://sbv.ifsp.edu.br/"
+    },
+    {
+      "id": "sjp",
+      "nome": "São José do Rio Preto",
+      "site": "https://sjp.ifsp.edu.br/"
+    },
+    {
+      "id": "sjc",
+      "nome": "São José dos Campos",
+      "site": "https://sjc.ifsp.edu.br/"
+    },
+    {
+      "id": "smp",
+      "nome": "São Miguel Paulista",
+      "site": "https://smp.ifsp.edu.br/"
+    },
+    {
+      "id": "spo",
+      "nome": "São Paulo",
+      "site": "https://spo.ifsp.edu.br/"
+    },
+    {
+      "id": "srq",
+      "nome": "São Roque",
+      "site": "https://srq.ifsp.edu.br/"
+    },
+    {
+      "id": "svc",
+      "nome": "São Vicente",
+      "site": "https://svc.ifsp.edu.br/"
+    },
+    {
+      "id": "ser",
+      "nome": "Serrana",
+      "site": "https://ser.ifsp.edu.br/"
+    },
+    {
+      "id": "srt",
+      "nome": "Sertãozinho",
+      "site": "https://srt.ifsp.edu.br/"
+    },
+    {
+      "id": "sor",
+      "nome": "Sorocaba",
+      "site": "https://sor.ifsp.edu.br/"
+    },
+    {
+      "id": "smr",
+      "nome": "Sumaré",
+      "site": "https://smr.ifsp.edu.br/"
+    },
+    {
+      "id": "szn",
+      "nome": "Suzano",
+      "site": "https://szn.ifsp.edu.br/"
+    },
+    {
+      "id": "tup",
+      "nome": "Tupã",
+      "site": "https://tup.ifsp.edu.br/"
+    },
+    {
+      "id": "vtp",
+      "nome": "Votuporanga",
+      "site": "https://vtp.ifsp.edu.br/",
+      "sistemas": {
+        "moodle": "https://ead.vtp.ifsp.edu.br"
+      },
+      "calendarios": [
+        "ifsp-votuporanga-superiores-2026"
+      ]
+    }
+  ]
+}

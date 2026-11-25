@@ -176,7 +176,9 @@ function ConfigurarEmail({
   aoCancelar?: () => void;
 }) {
   const { t } = useTranslation();
-  const { banco, acao } = useApp();
+  const { banco, acao, instituicao } = useApp();
+  // O exemplo de endereço usa o domínio dos alunos da faculdade escolhida.
+  const dominio = instituicao?.sistemas.email?.dominio ?? "faculdade.edu.br";
   const [valor, setValor] = useState(atual ?? "");
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -202,7 +204,7 @@ function ConfigurarEmail({
             type="email"
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            placeholder={t("email.enderecoDica")}
+            placeholder={t("email.enderecoDica", { dominio })}
             autoComplete="email"
             required
           />
