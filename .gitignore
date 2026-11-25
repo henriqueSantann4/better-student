@@ -12,6 +12,9 @@ apps/desktop/src-tauri/gen/
 *.db-wal
 *.db-shm
 
+# Amostras com dados pessoais reais (páginas salvas do SUAP etc.)
+amostras-privadas/
+
 # Segredos
 .env
 .env.*
