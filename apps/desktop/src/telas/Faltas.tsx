@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  diaSemanaDe,
+  aulasDoDia,
+  diaLetivo,
   encontrosRestantes,
   faltas as repoFaltas,
   hojeIso,
@@ -63,15 +64,23 @@ export function Faltas() {
 /** Atalho do dia a dia: as aulas de hoje com um botão "Faltei". */
 function AulasDeHoje() {
   const { t } = useTranslation();
-  const { banco, acao, disciplinas, horarios, faltas } = useSemestre();
+  const { banco, acao, disciplinas, horarios, faltas, eventos } = useSemestre();
   const hoje = hojeIso();
   const porId = new Map(disciplinas.map((d) => [d.id, d]));
-  const aulas = horarios.filter((h) => h.diaSemana === diaSemanaDe(hoje));
+  // O calendário decide: feriado não tem aula; sábado letivo usa a grade de outro dia.
+  const { dia, aulas } = aulasDoDia(hoje, horarios, eventos);
 
   return (
     <section className="cartao">
       <h2>{t("faltas.hoje")}</h2>
-      {aulas.length === 0 && <p className="suave">{t("faltas.semAulasHoje")}</p>}
+      {dia.motivo && (
+        <p className="pequeno">
+          {dia.letivo
+            ? t("faltas.hojeSabadoLetivo", { evento: dia.motivo.titulo })
+            : t("faltas.hojeSemAula", { evento: dia.motivo.titulo })}
+        </p>
+      )}
+      {aulas.length === 0 && !dia.motivo && <p className="suave">{t("faltas.semAulasHoje")}</p>}
       <ul className="lista">
         {aulas.map((h) => {
           const d = porId.get(h.disciplinaId);
@@ -198,7 +207,7 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
 /** Lançamento manual: falta de outro dia, falta avulsa ou falta parcial. */
 function FormFalta() {
   const { t } = useTranslation();
-  const { banco, acao, disciplinas, horarios } = useSemestre();
+  const { banco, acao, disciplinas, horarios, eventos } = useSemestre();
   const [disciplinaId, setDisciplinaId] = useState(disciplinas[0]?.id ?? "");
   const [data, setData] = useState(hojeIso);
   const [horarioId, setHorarioId] = useState<string | null>(null);
@@ -206,9 +215,10 @@ function FormFalta() {
   const [observacao, setObservacao] = useState("");
 
   const escolhida = disciplinas.some((d) => d.id === disciplinaId) ? disciplinaId : (disciplinas[0]?.id ?? "");
-  // Encontros dessa disciplina no dia da semana da data escolhida.
+  // Encontros dessa disciplina no dia da grade que vale na data escolhida
+  // (num sábado letivo, é a grade do dia que ele segue).
   const encontros = data
-    ? horarios.filter((h) => h.disciplinaId === escolhida && h.diaSemana === diaSemanaDe(data))
+    ? horarios.filter((h) => h.disciplinaId === escolhida && h.diaSemana === diaLetivo(data, eventos).diaDaGrade)
     : [];
   // Sem escolha explícita, sugere o primeiro encontro do dia (ou avulsa, se não houver).
   const encontro = horarioId === "" ? undefined : (encontros.find((h) => h.id === horarioId) ?? encontros[0]);

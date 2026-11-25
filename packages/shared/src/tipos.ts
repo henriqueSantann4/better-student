@@ -121,9 +121,17 @@ export interface HorarioAula extends Registro {
 export type TipoEventoCalendario =
   | "feriado"
   | "recesso"
-  | "semana_provas"
   | "inicio_aulas"
   | "fim_aulas"
+  | "semana_provas"
+  /** Prova final / IFA. */
+  | "prova_final"
+  /** Sábado com aula, seguindo a grade de outro dia (`segueDiaSemana`). */
+  | "sabado_letivo"
+  /** Data limite (trancamento, aproveitamento de estudos...). */
+  | "prazo"
+  /** Semanas acadêmicas, simpósios, festivais. */
+  | "evento"
   | "outro";
 
 export interface EventoCalendario extends Registro {
@@ -132,8 +140,12 @@ export interface EventoCalendario extends Registro {
   titulo: string;
   dataInicio: DataIso;
   dataFim: DataIso;
-  /** Se não há aula nesses dias (feriado, recesso). O parser usa isso. */
+  /** Se não há aula nesses dias (feriado, recesso). */
   suspendeAulas: boolean;
+  /** Num sábado letivo, qual dia da grade vale (1 = segunda...). */
+  segueDiaSemana: DiaSemana | null;
+  /** Pacote de calendário de onde veio. `null` = criado pelo usuário. */
+  origem: string | null;
 }
 
 /**

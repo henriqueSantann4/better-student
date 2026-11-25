@@ -173,7 +173,11 @@ export function lerBoletimSuap(html: string): BoletimSuap {
   if (disciplinas.length === 0) throw new ErroBoletim("sem_disciplinas");
 
   const textoPagina = textoDe(html);
-  const periodo = /Boletim\s*-\s*(\d{4})\s*\/\s*(\d)/i.exec(textoPagina);
+  // O título "Boletim - 2026/2" pode não vir quando o app busca só o pedaço
+  // da aba (modo automático); aí vale a opção marcada no seletor de período.
+  const periodo =
+    /Boletim\s*-\s*(\d{4})\s*\/\s*(\d)/i.exec(textoPagina) ??
+    /<option\b(?=[^>]*\bselected\b)[^>]*value=["'](\d{4})_(\d)["']/i.exec(html);
   const atualizado = /Atualizado em:\s*(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}:\d{2})/i.exec(textoPagina);
 
   return {

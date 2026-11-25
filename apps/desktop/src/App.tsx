@@ -5,11 +5,12 @@ import type { Banco } from "@better-student/shared";
 import { abrirBanco } from "./banco";
 import { ProvedorApp, useApp } from "./contexto";
 import { ehDuplicado } from "./formatos";
+import { Calendario } from "./telas/Calendario";
 import { CriarSemestre } from "./telas/CriarSemestre";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
 
-const SECOES = ["agenda", "grade", "faltas", "notas", "materiais"] as const;
+const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais"] as const;
 type Secao = (typeof SECOES)[number];
 
 export function App() {
@@ -92,6 +93,8 @@ function Layout() {
           <Grade />
         ) : secaoAtiva === "faltas" ? (
           <Faltas />
+        ) : secaoAtiva === "calendario" ? (
+          <Calendario />
         ) : (
           <>
             <h1>{t(`menu.${secaoAtiva}`)}</h1>

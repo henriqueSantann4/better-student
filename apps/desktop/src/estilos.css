@@ -525,3 +525,72 @@ button:focus-visible {
   border-radius: 0;
   background: none;
 }
+
+/* ---------- Calendário ---------- */
+
+.mes + .mes {
+  margin-top: 16px;
+}
+
+.mes-nome {
+  margin: 0 0 4px;
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.item.passado {
+  opacity: 0.5;
+}
+
+.item .etiqueta {
+  min-width: 92px;
+  text-align: center;
+  color: var(--suave);
+  background: color-mix(in srgb, var(--suave) 14%, transparent);
+}
+
+.etiqueta.tipo-feriado,
+.etiqueta.tipo-recesso {
+  color: var(--perigo);
+  background: color-mix(in srgb, var(--perigo) 14%, transparent);
+}
+
+.etiqueta.tipo-sabado_letivo,
+.etiqueta.tipo-inicio_aulas,
+.etiqueta.tipo-fim_aulas {
+  color: var(--destaque);
+  background: color-mix(in srgb, var(--destaque) 14%, transparent);
+}
+
+.etiqueta.tipo-prazo,
+.etiqueta.tipo-prova_final {
+  color: var(--atencao-texto);
+  background: color-mix(in srgb, var(--atencao) 20%, transparent);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Busca automática no SUAP ---------- */
+
+.automatico {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.automatico .formulario {
+  margin-top: 6px;
+  min-width: 320px;
+}
+
+.separador {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}

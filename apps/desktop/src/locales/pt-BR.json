@@ -11,7 +11,8 @@
     "grade": "Grade horária",
     "faltas": "Faltas",
     "notas": "Notas",
-    "materiais": "Materiais"
+    "materiais": "Materiais",
+    "calendario": "Calendário"
   },
   "emBreve": "Esta seção chega nas próximas versões.",
   "comum": {
@@ -39,7 +40,7 @@
     "preferoManual": "Prefiro criar o semestre à mão",
     "preferoSuap": "Prefiro começar pelo boletim do SUAP",
     "seraCriado": "Vou criar o semestre {{nome}}, de {{inicio}} a {{fim}}, e importar as disciplinas abaixo.",
-    "datasEstimadasDica": "O boletim não informa quando as aulas começam e terminam, então essas datas são uma estimativa. Corrija quando souber o calendário do campus (em Grade horária → Editar semestre).",
+    "datasEstimadasDica": "O boletim não informa quando as aulas começam e terminam, então essas datas são uma estimativa. Para usar as datas reais, escolha o calendário do seu campus em Calendário (ou corrija em Grade horária → Editar semestre).",
     "criarEImportar_one": "Criar semestre e importar {{count}} disciplina",
     "criarEImportar_other": "Criar semestre e importar {{count}} disciplinas",
     "estimadas": "Datas estimadas",
@@ -119,7 +120,9 @@
     "fonteSoSuap": "Faltas vindas do SUAP.",
     "atualizarSuap": "Atualizar do SUAP",
     "anotarTitulo": "Anotar faltas no app (opcional)",
-    "anotarDica": "Serve para saber antes de o professor lançar no SUAP. Se você só usa o SUAP, pode ignorar."
+    "anotarDica": "Serve para saber antes de o professor lançar no SUAP. Se você só usa o SUAP, pode ignorar.",
+    "hojeSemAula": "Hoje não tem aula: {{evento}}.",
+    "hojeSabadoLetivo": "Hoje é {{evento}}."
   },
   "importar": {
     "botao": "Importar do SUAP",
@@ -147,6 +150,39 @@
       "sem_tabela": "Não achei a tabela do boletim nessa página. Confira se é a página do Boletim no SUAP.",
       "sem_disciplinas": "O boletim não tem nenhuma disciplina.",
       "semHtml": "O que foi colado não veio como página. Copie direto do navegador, com a página do boletim aberta."
+    },
+    "buscarNoSuap": "Entrar no SUAP e buscar o boletim",
+    "buscarNoSuapDica": "Abre o SUAP numa janela do app. Você entra com seu usuário e senha na própria página do SUAP (o app não vê a senha) e o boletim é trazido sozinho. O login fica salvo nessa janela enquanto o SUAP mantiver a sessão.",
+    "aguardandoSuap": "Esperando o boletim… Entre no SUAP na janela que abriu.",
+    "outroInstituto": "Outro instituto?",
+    "enderecoSuap": "Endereço do SUAP",
+    "ouManual": "Ou, se preferir, traga a página manualmente:"
+  },
+  "calendario": {
+    "titulo": "Calendário acadêmico",
+    "trocar": "Trocar calendário",
+    "proximos": "Próximos",
+    "semestreTodo": "Semestre inteiro",
+    "segue": "aulas de {{dia}}",
+    "escolher": "Calendário do campus",
+    "explicacao": "O calendário traz as datas reais do semestre, os feriados e recessos (o app não mostra aula nesses dias) e os sábados letivos, com a grade do dia que eles seguem.",
+    "aulasDe": "aulas de {{inicio}} a {{fim}}",
+    "usar": "Usar este calendário",
+    "semEstePeriodo": "Sem o semestre atual",
+    "abrirArquivo": "Abrir calendário de outro campus (.json)…",
+    "semPeriodo": "Esse calendário não tem o semestre {{semestre}}.",
+    "arquivoInvalido": "Esse arquivo não é um calendário válido do Better Student.",
+    "tipo": {
+      "feriado": "Feriado",
+      "recesso": "Recesso",
+      "inicio_aulas": "Início",
+      "fim_aulas": "Fim",
+      "semana_provas": "Provas",
+      "prova_final": "Prova final",
+      "sabado_letivo": "Sábado letivo",
+      "prazo": "Prazo",
+      "evento": "Evento",
+      "outro": "Outro"
     }
   }
 }

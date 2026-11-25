@@ -45,6 +45,13 @@ describe("lerBoletimSuap (boletim de exemplo)", () => {
     assert.equal(lerBoletimSuap(semId).disciplinas.length, 3);
   });
 
+  it("sem o título, usa o período marcado no seletor (pedaço da aba)", () => {
+    const pedaco = exemplo
+      .replace("Boletim - 2026/2 - Matriculado", "Boletim")
+      .replace("<table", '<select id="ano_periodo"><option value="2026_2" selected>2026/2</option><option value="2026_1">2026/1</option></select><table');
+    assert.deepEqual(lerBoletimSuap(pedaco).periodo, { ano: 2026, periodo: 2 });
+  });
+
   it("recusa páginas sem a tabela do boletim", () => {
     assert.throws(() => lerBoletimSuap("<html><body>Login</body></html>"), ErroBoletim);
   });

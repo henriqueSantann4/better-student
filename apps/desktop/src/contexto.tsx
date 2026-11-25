@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import {
+  calendario,
   disciplinas,
   faltas,
   horarios,
   semestres,
   type Banco,
   type Disciplina,
+  type EventoCalendario,
   type Falta,
   type HorarioAula,
   type Semestre,
@@ -17,6 +19,7 @@ export interface DadosSemestre {
   disciplinas: Disciplina[];
   horarios: HorarioAula[];
   faltas: Falta[];
+  eventos: EventoCalendario[];
 }
 
 interface Contexto {
@@ -49,12 +52,13 @@ export function ProvedorApp({ banco, children }: { banco: Banco; children: React
       setDados(null);
       return;
     }
-    const [d, h, f] = await Promise.all([
+    const [d, h, f, e] = await Promise.all([
       disciplinas.listar(banco, semestre.id),
       horarios.listarDoSemestre(banco, semestre.id),
       faltas.listarDoSemestre(banco, semestre.id),
+      calendario.listar(banco, semestre.id),
     ]);
-    setDados({ semestre, disciplinas: d, horarios: h, faltas: f });
+    setDados({ semestre, disciplinas: d, horarios: h, faltas: f, eventos: e });
   }, [banco]);
 
   useEffect(() => {

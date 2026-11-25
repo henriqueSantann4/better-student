@@ -7,6 +7,8 @@ import { bancoEmMemoria } from "../banco/memoria.ts";
 import { semestres } from "../banco/semestres.ts";
 import { disciplinas } from "../banco/disciplinas.ts";
 import { faltas } from "../banco/faltas.ts";
+import { calendario } from "../banco/calendario.ts";
+import { lerPacoteCalendario, semestreDoPacote } from "../calendario/pacote.ts";
 import { lerBoletimSuap } from "./boletimSuap.ts";
 import { aplicarImportacao, periodoConfere, planejarImportacao, semestreDoBoletim } from "./importarSuap.ts";
 
@@ -89,5 +91,21 @@ describe("importação do boletim do SUAP", () => {
     await semestres.atualizar(b, s.id, { nome: "2026.2", inicio: "2026-08-04", fim: "2026-12-12" });
     const editado = await semestres.atual(b);
     assert.deepEqual([editado?.inicio, editado?.datasEstimadas], ["2026-08-04", false]);
+  });
+
+  it("calendário do campus: grava os eventos, acerta as datas e não duplica", async () => {
+    const pacote = lerPacoteCalendario(JSON.parse(readFileSync(new URL("../../calendarios/ifsp-votuporanga-superiores-2026.json", import.meta.url), "utf8")));
+    const b = bancoEmMemoria();
+    const s = await semestres.criar(b, semestreDoBoletim(boletim));
+    const dados = semestreDoPacote(pacote, { ano: 2026, periodo: 2 })!;
+    await calendario.aplicarPacote(b, s, pacote.id, dados);
+    await calendario.aplicarPacote(b, (await semestres.atual(b))!, pacote.id, dados);
+
+    const eventos = await calendario.listar(b, s.id);
+    assert.equal(eventos.length, dados.eventos.length);
+    const atual = await semestres.atual(b);
+    assert.deepEqual([atual?.inicio, atual?.fim, atual?.datasEstimadas], ["2026-07-28", "2026-12-17", false]);
+    assert.equal(eventos.find((e) => e.dataInicio === "2026-11-14")?.segueDiaSemana, 1);
+    assert.equal(eventos.find((e) => e.titulo === "Finados")?.suspendeAulas, true);
   });
 });

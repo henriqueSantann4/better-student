@@ -35,6 +35,9 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Telas de **Grade** (disciplinas + semana) e **Faltas** (aulas de hoje com "Faltei", resumo por disciplina, lançamento manual, histórico). Criação do primeiro semestre.
 - ✅ **Importação do boletim do SUAP** (página salva ou colada): leitor em `packages/shared/src/importacao/`, migration 0002 com o "retrato" do SUAP em cada disciplina. As faltas do app e as do SUAP ficam separadas; o limite usa a maior das duas.
 - ✅ Primeiro acesso pelo boletim: o semestre é criado a partir do período do boletim, com **datas estimadas** (o SUAP não informa início/fim; migration 0003 marca isso), editáveis em Grade → Editar semestre.
+- ✅ **Calendário acadêmico** como pacote de dados (`packages/shared/calendarios/*.json`, nada fixo no código): datas reais do semestre, feriados/recessos (sem aula) e sábados letivos (grade de outro dia). Migration 0004 recria `evento_calendario` com os tipos novos. Tela "Calendário".
+- 🧪 **Modo automático do SUAP** (precisa testar no Tauri): janela do SUAP dentro do app; o usuário entra na página real (o login tem reCAPTCHA invisível, então o app NÃO guarda senha nem faz login sozinho). O script `src-tauri/src/suap.js` busca `/edu/aluno/<matrícula>/boletins/` e entrega pelo comando `entregar_suap`, o único que a capability `suap.json` libera.
+- ✅ App abre maximizado.
 - ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)

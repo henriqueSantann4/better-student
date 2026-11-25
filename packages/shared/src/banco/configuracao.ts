@@ -1,7 +1,7 @@
 import { agora, type Banco } from "./banco.ts";
 
 /** Chaves conhecidas da tabela `configuracao`. */
-export type ChaveConfiguracao = "semestreAtualId" | "pastaMateriais" | "lembretesPadrao";
+export type ChaveConfiguracao = "semestreAtualId" | "pastaMateriais" | "lembretesPadrao" | "suapServidor";
 
 /** Configurações gerais, guardadas como JSON numa tabela chave/valor. */
 export const configuracao = {

@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type ClipboardEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   aplicarImportacao,
@@ -10,7 +10,8 @@ import {
   type ItemImportacao,
   type ResultadoImportacao,
 } from "@better-student/shared";
-import { useSemestre } from "../contexto";
+import { useApp, useSemestre } from "../contexto";
+import { buscarBoletimNoSuap, gravarServidorSuap, lerServidorSuap, suapAutomaticoDisponivel } from "../suap";
 import { CORES } from "../cores";
 import { formatarDataHora, formatarNota } from "../formatos";
 
@@ -97,7 +98,18 @@ export function ResultadoImportacaoTexto({ resultado }: { resultado: ResultadoIm
  */
 export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: BoletimSuap) => void; comPassos?: boolean }) {
   const { t } = useTranslation();
+  const { banco } = useApp();
   const [aviso, setAviso] = useState<string | null>(null);
+  const [aguardando, setAguardando] = useState(false);
+  const [servidor, setServidor] = useState<string | null>(null);
+  const pararEspera = useRef<(() => void) | null>(null);
+  const automatico = suapAutomaticoDisponivel();
+
+  useEffect(() => {
+    if (automatico) lerServidorSuap(banco).then(setServidor).catch(() => undefined);
+    // Ao sair da tela, para de esperar o boletim.
+    return () => pararEspera.current?.();
+  }, [banco, automatico]);
 
   function ler(html: string) {
     try {
@@ -107,6 +119,27 @@ export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: B
     } catch (erro) {
       setAviso(erro instanceof ErroBoletim ? t(`importar.erro.${erro.motivo}`) : String(erro));
     }
+  }
+
+  async function buscarNoSuap() {
+    if (!servidor) return;
+    setAviso(null);
+    setAguardando(true);
+    try {
+      await gravarServidorSuap(banco, servidor);
+      pararEspera.current = await buscarBoletimNoSuap(servidor, (html) => {
+        setAguardando(false);
+        ler(html);
+      });
+    } catch (erro) {
+      setAguardando(false);
+      setAviso(String(erro));
+    }
+  }
+
+  function cancelarEspera() {
+    pararEspera.current?.();
+    setAguardando(false);
   }
 
   async function abrirArquivo(e: ChangeEvent<HTMLInputElement>) {
@@ -124,6 +157,33 @@ export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: B
 
   return (
     <>
+      {automatico && servidor !== null && (
+        <div className="automatico">
+          {aguardando ? (
+            <>
+              <p className="pequeno">{t("importar.aguardandoSuap")}</p>
+              <button type="button" className="botao" onClick={cancelarEspera}>
+                {t("comum.cancelar")}
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="botao primario" onClick={buscarNoSuap}>
+                {t("importar.buscarNoSuap")}
+              </button>
+              <p className="pequeno suave">{t("importar.buscarNoSuapDica")}</p>
+              <details className="pequeno">
+                <summary>{t("importar.outroInstituto")}</summary>
+                <label className="formulario">
+                  {t("importar.enderecoSuap")}
+                  <input value={servidor} onChange={(e) => setServidor(e.target.value)} />
+                </label>
+              </details>
+            </>
+          )}
+          <p className="pequeno suave separador">{t("importar.ouManual")}</p>
+        </div>
+      )}
       {comPassos && (
         <ol className="passos pequeno">
           <li>{t("importar.passo1")}</li>
@@ -131,7 +191,7 @@ export function EntradaBoletim({ aoLer, comPassos = true }: { aoLer: (boletim: B
         </ol>
       )}
       <div className="linha importar-entradas">
-        <label className="botao primario">
+        <label className={automatico ? "botao" : "botao primario"}>
           {t("importar.abrirArquivo")}
           <input type="file" accept=".html,.htm,text/html" onChange={abrirArquivo} hidden />
         </label>

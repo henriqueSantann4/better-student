@@ -3,5 +3,11 @@
   "identifier": "default",
   "description": "Permissões da janela principal. Adicione permissões só quando uma funcionalidade precisar delas.",
   "windows": ["main"],
-  "permissions": ["core:default", "sql:default", "sql:allow-execute"]
+  "permissions": [
+    "core:default",
+    "sql:default",
+    "sql:allow-execute",
+    "allow-versao-nucleo",
+    "allow-abrir-suap"
+  ]
 }

@@ -1,0 +1,70 @@
+{
+  "formato": 1,
+  "id": "ifsp-votuporanga-superiores-2026",
+  "instituicao": "IFSP – Campus Votuporanga",
+  "cursos": "Cursos superiores (semestrais)",
+  "fonte": "https://vtp.ifsp.edu.br/images/Calendarios/2026/ifsp_votuporanga_calendario_letivo_cursos_superiores_2026.pdf",
+  "observacao": "Transcrito à mão do PDF oficial do campus (que é uma imagem). Em caso de dúvida, vale o PDF.",
+  "semestres": [
+    {
+      "periodo": "2026/1",
+      "inicio": "2026-02-04",
+      "fim": "2026-07-02",
+      "eventos": [
+        { "tipo": "inicio_aulas", "titulo": "Início das aulas", "inicio": "2026-02-04" },
+        { "tipo": "recesso", "titulo": "Recesso de Carnaval", "inicio": "2026-02-16", "fim": "2026-02-18" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de sexta-feira)", "inicio": "2026-03-21", "segueDiaSemana": 5 },
+        { "tipo": "evento", "titulo": "IV Semana das Engenharias", "inicio": "2026-03-23", "fim": "2026-03-27" },
+        { "tipo": "prazo", "titulo": "Data limite para certificação e aproveitamento de estudos", "inicio": "2026-03-27" },
+        { "tipo": "feriado", "titulo": "Paixão de Cristo", "inicio": "2026-04-03" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-04-11", "segueDiaSemana": 1 },
+        { "tipo": "recesso", "titulo": "Recesso", "inicio": "2026-04-20" },
+        { "tipo": "feriado", "titulo": "Tiradentes", "inicio": "2026-04-21" },
+        { "tipo": "prazo", "titulo": "Data limite para trancamento de matrícula / cancelamento de disciplina", "inicio": "2026-04-24" },
+        { "tipo": "feriado", "titulo": "Dia do Trabalho", "inicio": "2026-05-01" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de terça-feira)", "inicio": "2026-05-09", "segueDiaSemana": 2 },
+        { "tipo": "evento", "titulo": "COTESI", "inicio": "2026-05-11", "fim": "2026-05-15" },
+        { "tipo": "feriado", "titulo": "Corpus Christi", "inicio": "2026-06-04" },
+        { "tipo": "recesso", "titulo": "Recesso", "inicio": "2026-06-05" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de sexta-feira) / Festa Junina", "inicio": "2026-06-13", "segueDiaSemana": 5 },
+        { "tipo": "prazo", "titulo": "Encerramento da 1ª etapa", "inicio": "2026-06-30" },
+        { "tipo": "prova_final", "titulo": "Prova final (IFA)", "inicio": "2026-07-01", "fim": "2026-07-02" },
+        { "tipo": "fim_aulas", "titulo": "Fechamento do período", "inicio": "2026-07-02" }
+      ]
+    },
+    {
+      "periodo": "2026/2",
+      "inicio": "2026-07-28",
+      "fim": "2026-12-17",
+      "eventos": [
+        { "tipo": "inicio_aulas", "titulo": "Retorno das aulas", "inicio": "2026-07-28" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-08-15", "segueDiaSemana": 1 },
+        { "tipo": "prazo", "titulo": "Data limite para certificação e aproveitamento de estudos", "inicio": "2026-08-28" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de quarta-feira)", "inicio": "2026-08-29", "segueDiaSemana": 3 },
+        { "tipo": "evento", "titulo": "IX Semana Internacional da Física", "inicio": "2026-08-31", "fim": "2026-09-04" },
+        { "tipo": "feriado", "titulo": "Independência do Brasil", "inicio": "2026-09-07" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de sexta-feira)", "inicio": "2026-09-19", "segueDiaSemana": 5 },
+        { "tipo": "evento", "titulo": "Simpósio de Inclusão", "inicio": "2026-09-22", "fim": "2026-09-23" },
+        { "tipo": "prazo", "titulo": "Data limite para trancamento de matrícula / cancelamento de disciplina", "inicio": "2026-09-25" },
+        { "tipo": "evento", "titulo": "Festival Entretodos", "inicio": "2026-09-29", "fim": "2026-10-03" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-10-03", "segueDiaSemana": 1 },
+        { "tipo": "feriado", "titulo": "Nossa Senhora Aparecida", "inicio": "2026-10-12" },
+        { "tipo": "recesso", "titulo": "Recesso acadêmico e administrativo", "inicio": "2026-10-13" },
+        { "tipo": "recesso", "titulo": "Dia do Servidor Público (ponto facultativo)", "inicio": "2026-10-14" },
+        { "tipo": "recesso", "titulo": "Dia do Professor", "inicio": "2026-10-15" },
+        { "tipo": "recesso", "titulo": "Recesso acadêmico e administrativo", "inicio": "2026-10-16" },
+        { "tipo": "evento", "titulo": "Semana Nacional de Ciência e Tecnologia", "inicio": "2026-10-19", "fim": "2026-10-23" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de quinta-feira)", "inicio": "2026-10-24", "segueDiaSemana": 4 },
+        { "tipo": "feriado", "titulo": "Finados", "inicio": "2026-11-02" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de segunda-feira)", "inicio": "2026-11-14", "segueDiaSemana": 1 },
+        { "tipo": "feriado", "titulo": "Proclamação da República", "inicio": "2026-11-15" },
+        { "tipo": "feriado", "titulo": "Dia Nacional de Zumbi e da Consciência Negra", "inicio": "2026-11-20" },
+        { "tipo": "evento", "titulo": "Semana de Educação para a Vida", "inicio": "2026-11-23", "fim": "2026-11-27" },
+        { "tipo": "sabado_letivo", "titulo": "Sábado letivo (aulas de sexta-feira)", "inicio": "2026-12-05", "segueDiaSemana": 5 },
+        { "tipo": "prazo", "titulo": "Encerramento da 1ª etapa", "inicio": "2026-12-15" },
+        { "tipo": "prova_final", "titulo": "Prova final (IFA)", "inicio": "2026-12-16", "fim": "2026-12-17" },
+        { "tipo": "fim_aulas", "titulo": "Fechamento do período", "inicio": "2026-12-17" }
+      ]
+    }
+  ]
+}
