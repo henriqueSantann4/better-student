@@ -28,7 +28,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Estrutura do monorepo criada e com o primeiro commit.
 - ✅ Desktop "olá mundo": React com menu lateral (Agenda, Grade, Faltas, Notas, Materiais) e um comando Tauri `versao_nucleo` de exemplo.
 - ✅ `packages/shared/src/tipos.ts`: rascunho dos tipos (Semestre, Disciplina, HorarioAula, Tarefa, Subtarefa, RegraLembrete).
-- ✅ TypeScript passa na checagem e o Rust compila (`cargo check`). O app ainda **não foi aberto no Windows**: o primeiro `pnpm dev` é o teste real.
+- ✅ O app abre no Windows com `pnpm dev`, e o banco é criado em `%APPDATA%\io.github.betterstudent.app\better-student.db` com a migration 0001 aplicada.
 - ✅ Modelo de dados do SQLite: migration `packages/shared/src/banco/migrations/0001_inicial.sql`, carregada pelo `tauri-plugin-sql` (o Rust só roda as migrations; as consultas vêm do TypeScript).
 - ✅ Regras de média, faltas e situação (com IFA) em `packages/shared/src/regras/`, com testes (`node:test`, sem dependência extra).
 - ⏭️ **Próximo passo:** camada de acesso ao banco no desktop (repositórios TypeScript sobre `@tauri-apps/plugin-sql`) e as primeiras telas (Grade e Faltas).
