@@ -120,6 +120,8 @@ describe("nivelFaltas", () => {
   it("tranquilo com poucas faltas", () => assert.equal(nivel(8, 4), "ok"));
   it("atenção a partir de 75% do limite", () => assert.equal(nivel(19), "atencao"));
   it("atenção se mais um encontro estoura o limite", () => assert.equal(nivel(16, 10), "atencao"));
+  it("atenção se só restam 2 dias de aula", () => assert.equal(nivel(8, 8), "atencao")); // 17 aulas ÷ 8 = 2 dias
+  it("tranquilo com 3 dias ou mais", () => assert.equal(nivel(4, 6), "ok")); // 21 aulas ÷ 6 = 3 dias
   it("reprovado depois do limite", () => assert.equal(nivel(26), "reprovado"));
 });
 

@@ -75,13 +75,13 @@ export type NivelFaltas = "ok" | "atencao" | "reprovado";
 /**
  * Nível de alerta das faltas, para a interface:
  * - "reprovado": passou do limite;
- * - "atencao": já usou 75% do limite, ou mais uma falta de um encontro
- *   (`aulasPorEncontro`) estoura o limite;
+ * - "atencao": já usou 75% do limite, ou só dá para faltar mais 2 dias de
+ *   aula ou menos (cada dia vale `aulasPorEncontro` aulas);
  * - "ok": o resto.
  */
 export function nivelFaltas(resumo: ResumoFaltas, aulasPorEncontro = 0): NivelFaltas {
   if (resumo.reprovadoPorFalta) return "reprovado";
   if (resumo.faltas >= resumo.limite * 0.75) return "atencao";
-  if (aulasPorEncontro > 0 && resumo.restantes < aulasPorEncontro) return "atencao";
+  if (aulasPorEncontro > 0 && encontrosRestantes(resumo.restantes, aulasPorEncontro) <= 2) return "atencao";
   return "ok";
 }

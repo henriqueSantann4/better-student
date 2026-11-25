@@ -96,11 +96,8 @@
     "registrada": "Falta registrada",
     "desfazer": "Desfazer",
     "porDisciplina": "Por disciplina",
-    "resumo": "{{faltas}} de {{limite}} aulas permitidas",
     "podeFaltar_one": "Pode faltar mais {{count}} aula",
     "podeFaltar_other": "Pode faltar mais {{count}} aulas",
-    "encontros_one": "≈ {{count}} encontro de {{aulas}} aulas",
-    "encontros_other": "≈ {{count}} encontros de {{aulas}} aulas",
     "nivel": {
       "ok": "Tranquilo",
       "atencao": "Atenção",
@@ -131,7 +128,15 @@
     "hojeSemAula": "Hoje não tem aula: {{evento}}.",
     "hojeSabadoLetivo": "Hoje é {{evento}}.",
     "encontrosRestantes_one": "Falta {{count}} encontro até o fim das aulas (de {{total}})",
-    "encontrosRestantes_other": "Faltam {{count}} encontros até o fim das aulas (de {{total}})"
+    "encontrosRestantes_other": "Faltam {{count}} encontros até o fim das aulas (de {{total}})",
+    "podeFaltarDias_one": "Pode faltar mais {{count}} dia de aula",
+    "podeFaltarDias_other": "Pode faltar mais {{count}} dias de aula",
+    "resumoAulas": "{{faltas}} de {{limite}} aulas de falta já usadas",
+    "cadaDia_one": "cada dia de aula vale {{count}} aula",
+    "cadaDia_other": "cada dia de aula vale {{count}} aulas",
+    "semGradeDias": "Cadastre os dias dessa disciplina na Grade horária para ver isso em dias de aula.",
+    "nenhumDiaInteiro_one": "Não pode faltar mais nenhum dia inteiro (sobra {{count}} aula)",
+    "nenhumDiaInteiro_other": "Não pode faltar mais nenhum dia inteiro (sobram {{count}} aulas)"
   },
   "importar": {
     "botao": "Importar do SUAP",

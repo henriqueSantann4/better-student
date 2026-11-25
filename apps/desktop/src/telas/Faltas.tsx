@@ -169,20 +169,35 @@ function ResumoDisciplina({ disciplina }: { disciplina: Disciplina }) {
       >
         <div style={{ width: `${proporcao * 100}%` }} />
       </div>
-      <span>{t("faltas.resumo", { faltas: resumo.faltas, limite: resumo.limite })}</span>
+      {/*
+        O número principal é em DIAS de aula, não em aulas: "pode faltar 10
+        aulas" parece 10 dias, mas se cada dia vale 4 aulas, são só 2.
+      */}
       {resumo.reprovadoPorFalta ? (
-        <span className="pequeno">{t("faltas.reprovadoDetalhe", { limite: resumo.limite })}</span>
+        <strong className="destaque-faltas texto-perigo">{t("faltas.nivel.reprovado")}</strong>
       ) : resumo.restantes === 0 ? (
-        <strong className="pequeno texto-perigo">{t("faltas.noLimite")}</strong>
+        <strong className="destaque-faltas texto-perigo">{t("faltas.noLimite")}</strong>
+      ) : aulasPorEncontro > 0 && encontrosRestantes(resumo.restantes, aulasPorEncontro) === 0 ? (
+        // Sobram algumas aulas, mas menos que um dia inteiro: faltar um dia já reprova.
+        <strong className="destaque-faltas texto-perigo">
+          {t("faltas.nenhumDiaInteiro", { count: resumo.restantes })}
+        </strong>
+      ) : aulasPorEncontro > 0 ? (
+        <strong className="destaque-faltas">
+          {t("faltas.podeFaltarDias", { count: encontrosRestantes(resumo.restantes, aulasPorEncontro) })}
+        </strong>
       ) : (
-        <span className="pequeno">
-          {t("faltas.podeFaltar", { count: resumo.restantes })}
-          {aulasPorEncontro > 0 &&
-            ` (${t("faltas.encontros", {
-              count: encontrosRestantes(resumo.restantes, aulasPorEncontro),
-              aulas: aulasPorEncontro,
-            })})`}
-        </span>
+        <strong className="destaque-faltas">{t("faltas.podeFaltar", { count: resumo.restantes })}</strong>
+      )}
+      <span className="pequeno">
+        {t("faltas.resumoAulas", { faltas: resumo.faltas, limite: resumo.limite })}
+        {aulasPorEncontro > 0 && ` · ${t("faltas.cadaDia", { count: aulasPorEncontro })}`}
+      </span>
+      {aulasPorEncontro === 0 && !resumo.reprovadoPorFalta && (
+        <span className="pequeno suave">{t("faltas.semGradeDias")}</span>
+      )}
+      {resumo.reprovadoPorFalta && (
+        <span className="pequeno">{t("faltas.reprovadoDetalhe", { limite: resumo.limite })}</span>
       )}
       {plano.total > 0 && (
         <span className="pequeno suave">
