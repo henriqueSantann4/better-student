@@ -35,6 +35,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0002_dados_suap.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "datas estimadas do semestre",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0003_datas_estimadas.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

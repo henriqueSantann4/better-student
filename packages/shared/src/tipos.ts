@@ -60,6 +60,8 @@ export interface Semestre extends Registro, RegrasAcademicas {
   nome: string;
   inicio: DataIso;
   fim: DataIso;
+  /** As datas foram sugeridas pelo app e ainda não foram confirmadas. */
+  datasEstimadas: boolean;
 }
 
 export interface Disciplina extends Registro {

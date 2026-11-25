@@ -34,6 +34,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ Camada de acesso: repositórios em `packages/shared/src/banco/` sobre a interface `Banco` (desktop usa `@tauri-apps/plugin-sql`; testes usam `node:sqlite`).
 - ✅ Telas de **Grade** (disciplinas + semana) e **Faltas** (aulas de hoje com "Faltei", resumo por disciplina, lançamento manual, histórico). Criação do primeiro semestre.
 - ✅ **Importação do boletim do SUAP** (página salva ou colada): leitor em `packages/shared/src/importacao/`, migration 0002 com o "retrato" do SUAP em cada disciplina. As faltas do app e as do SUAP ficam separadas; o limite usa a maior das duas.
+- ✅ Primeiro acesso pelo boletim: o semestre é criado a partir do período do boletim, com **datas estimadas** (o SUAP não informa início/fim; migration 0003 marca isso), editáveis em Grade → Editar semestre.
 - ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)

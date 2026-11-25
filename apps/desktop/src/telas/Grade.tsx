@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   disciplinas as repoDisciplinas,
   horarios as repoHorarios,
+  semestres as repoSemestres,
   type DadosDisciplina,
   type DiaSemana,
   type Disciplina,
@@ -11,7 +12,6 @@ import { useSemestre } from "../contexto";
 import { CORES } from "../cores";
 import { formatarDataCompleta, formatarNota, nomeDia } from "../formatos";
 import { ImportarSuap } from "./ImportarSuap";
-
 
 /** Segunda a sábado; domingo só aparece se tiver aula. */
 const DIAS_UTEIS: DiaSemana[] = [1, 2, 3, 4, 5, 6];
@@ -23,6 +23,7 @@ export function Grade() {
   // Sem disciplinas, a importação já aparece aberta: é o jeito mais rápido de começar.
   const [importando, setImportando] = useState<boolean | null>(null);
   const mostrarImportar = importando ?? disciplinas.length === 0;
+  const [editandoSemestre, setEditandoSemestre] = useState(false);
 
   return (
     <>
@@ -35,6 +36,10 @@ export function Grade() {
             fim: formatarDataCompleta(semestre.fim),
           })}
         </span>
+        {semestre.datasEstimadas && <span className="etiqueta atencao">{t("semestre.estimadas")}</span>}
+        <button type="button" className="link pequeno" onClick={() => setEditandoSemestre(!editandoSemestre)}>
+          {t("semestre.editar")}
+        </button>
         {!mostrarImportar && (
           <button type="button" className="botao empurrar-direita" onClick={() => setImportando(true)}>
             {t("importar.botao")}
@@ -42,6 +47,7 @@ export function Grade() {
         )}
       </header>
 
+      {editandoSemestre && <EditarSemestre aoTerminar={() => setEditandoSemestre(false)} />}
       {mostrarImportar && <ImportarSuap aoFechar={() => setImportando(false)} />}
       <Semana />
       {disciplinas.length > 0 && <FormHorario />}
@@ -331,5 +337,57 @@ function FormDisciplina({
         )}
       </div>
     </form>
+  );
+}
+
+/** Corrige nome e datas do semestre. Salvar tira a marca de "datas estimadas". */
+function EditarSemestre({ aoTerminar }: { aoTerminar: () => void }) {
+  const { t } = useTranslation();
+  const { banco, acao, semestre } = useSemestre();
+  const [nome, setNome] = useState(semestre.nome);
+  const [inicio, setInicio] = useState(semestre.inicio);
+  const [fim, setFim] = useState(semestre.fim);
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    if (fim < inicio) {
+      setAviso(t("semestre.fimAntesInicio"));
+      return;
+    }
+    const ok = await acao(() => repoSemestres.atualizar(banco, semestre.id, { nome: nome.trim(), inicio, fim }));
+    if (ok) aoTerminar();
+  }
+
+  return (
+    <section className="cartao">
+      <h2>{t("semestre.editarTitulo")}</h2>
+      {semestre.datasEstimadas && <p className="pequeno suave">{t("semestre.datasEstimadasDica")}</p>}
+      <form className="formulario" onSubmit={enviar}>
+        <div className="linha">
+          <label>
+            {t("semestre.nome")}
+            <input value={nome} onChange={(e) => setNome(e.target.value)} required />
+          </label>
+          <label>
+            {t("semestre.inicio")}
+            <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} required />
+          </label>
+          <label>
+            {t("semestre.fim")}
+            <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} required />
+          </label>
+        </div>
+        {aviso && <p className="aviso">{aviso}</p>}
+        <div className="acoes">
+          <button type="submit" className="botao primario">
+            {t("comum.salvar")}
+          </button>
+          <button type="button" className="botao" onClick={aoTerminar}>
+            {t("comum.cancelar")}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }

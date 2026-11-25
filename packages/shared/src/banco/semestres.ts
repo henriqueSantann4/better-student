@@ -1,5 +1,5 @@
 import { REGRAS_PADRAO_IFSP, type RegrasAcademicas, type Semestre } from "../tipos.ts";
-import { agora, lerRegistro, novoId, type Banco, type LinhaRegistro } from "./banco.ts";
+import { agora, lerRegistro, novoId, paraBooleano, type Banco, type LinhaRegistro } from "./banco.ts";
 import { configuracao } from "./configuracao.ts";
 
 interface LinhaSemestre extends LinhaRegistro {
@@ -11,6 +11,7 @@ interface LinhaSemestre extends LinhaRegistro {
   media_minima_ifa: number;
   nota_minima_ifa: number;
   teto_apos_ifa: number;
+  datas_estimadas: number;
 }
 
 function lerSemestre(l: LinhaSemestre): Semestre {
@@ -24,6 +25,7 @@ function lerSemestre(l: LinhaSemestre): Semestre {
     mediaMinimaIfa: l.media_minima_ifa,
     notaMinimaIfa: l.nota_minima_ifa,
     tetoAposIfa: l.teto_apos_ifa,
+    datasEstimadas: paraBooleano(l.datas_estimadas),
   };
 }
 
@@ -33,6 +35,8 @@ export interface NovoSemestre {
   fim: string;
   /** Se omitidas, usa as regras padrão do IFSP. */
   regras?: Partial<RegrasAcademicas>;
+  /** Datas sugeridas pelo app, a confirmar com o calendário do campus. */
+  datasEstimadas?: boolean;
 }
 
 export const semestres = {
@@ -68,12 +72,20 @@ export const semestres = {
     const r = { ...REGRAS_PADRAO_IFSP, ...dados.regras };
     await banco.executar(
       `INSERT INTO semestre (id, nome, inicio, fim, frequencia_minima, media_aprovacao,
-         media_minima_ifa, nota_minima_ifa, teto_apos_ifa, criado_em, atualizado_em)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         media_minima_ifa, nota_minima_ifa, teto_apos_ifa, datas_estimadas, criado_em, atualizado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, dados.nome, dados.inicio, dados.fim, r.frequenciaMinima, r.mediaAprovacao,
-        r.mediaMinimaIfa, r.notaMinimaIfa, r.tetoAposIfa, momento, momento],
+        r.mediaMinimaIfa, r.notaMinimaIfa, r.tetoAposIfa, dados.datasEstimadas ? 1 : 0, momento, momento],
     );
     await semestres.definirAtual(banco, id);
     return (await semestres.obter(banco, id))!;
+  },
+
+  /** Edita nome e datas. Datas informadas pelo usuário deixam de ser estimadas. */
+  async atualizar(banco: Banco, id: string, dados: { nome: string; inicio: string; fim: string }): Promise<void> {
+    await banco.executar(
+      "UPDATE semestre SET nome = ?, inicio = ?, fim = ?, datas_estimadas = 0, atualizado_em = ? WHERE id = ?",
+      [dados.nome, dados.inicio, dados.fim, agora(), id],
+    );
   },
 };

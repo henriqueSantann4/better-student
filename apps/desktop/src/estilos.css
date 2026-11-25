@@ -499,3 +499,13 @@ button:focus-visible {
 .texto-perigo {
   color: var(--perigo);
 }
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--destaque);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

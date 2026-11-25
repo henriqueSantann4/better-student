@@ -1,6 +1,8 @@
 import type { Disciplina, Semestre } from "../tipos.ts";
 import type { Banco } from "../banco/banco.ts";
 import { disciplinas as repoDisciplinas } from "../banco/disciplinas.ts";
+import type { NovoSemestre } from "../banco/semestres.ts";
+import { estimarDatas, nomeDoPeriodo, periodoDaData, periodoDoNome } from "../regras/semestre.ts";
 import { normalizar, type BoletimSuap, type DisciplinaSuap } from "./boletimSuap.ts";
 
 export interface ItemImportacao {
@@ -39,9 +41,19 @@ export function planejarImportacao(boletim: BoletimSuap, existentes: readonly Di
  * `null` quando não dá para saber (ex.: semestre com nome livre).
  */
 export function periodoConfere(boletim: BoletimSuap, semestre: Pick<Semestre, "nome">): boolean | null {
-  const nome = /(\d{4})\s*[./-]\s*(\d)/.exec(semestre.nome);
-  if (!boletim.periodo || !nome) return null;
-  return Number(nome[1]) === boletim.periodo.ano && Number(nome[2]) === boletim.periodo.periodo;
+  const doNome = periodoDoNome(semestre.nome);
+  if (!boletim.periodo || !doNome) return null;
+  return doNome.ano === boletim.periodo.ano && doNome.periodo === boletim.periodo.periodo;
+}
+
+/**
+ * Semestre a criar a partir do boletim, para quem começa pelo SUAP: o nome
+ * vem do período do boletim ("2026/2" → "2026.2") e as datas são estimadas,
+ * porque o boletim não informa início nem fim das aulas.
+ */
+export function semestreDoBoletim(boletim: BoletimSuap, hoje: Date = new Date()): NovoSemestre {
+  const periodo = boletim.periodo ?? periodoDaData(hoje);
+  return { nome: nomeDoPeriodo(periodo), ...estimarDatas(periodo), datasEstimadas: true };
 }
 
 export interface ResultadoImportacao {

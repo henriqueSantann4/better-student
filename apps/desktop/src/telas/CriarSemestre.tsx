@@ -1,19 +1,103 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { semestres } from "@better-student/shared";
+import {
+  aplicarImportacao,
+  estimarDatas,
+  periodoDaData,
+  periodoDoNome,
+  planejarImportacao,
+  semestreDoBoletim,
+  semestres,
+  type BoletimSuap,
+} from "@better-student/shared";
 import { useApp } from "../contexto";
+import { CORES } from "../cores";
+import { formatarDataCompleta } from "../formatos";
+import { EntradaBoletim, PreviaImportacao } from "./ImportarSuap";
 
-/** Sugere "2026.1" no primeiro semestre do ano e "2026.2" a partir de julho. */
-function nomeSugerido(hoje = new Date()): string {
-  return `${hoje.getFullYear()}.${hoje.getMonth() >= 6 ? 2 : 1}`;
-}
-
+/**
+ * Primeiro acesso. Dois caminhos:
+ *  - começar pelo boletim do SUAP: o semestre (nome) e as disciplinas vêm
+ *    dele; as datas, que o boletim não traz, são estimadas;
+ *  - criar o semestre à mão, já com as datas estimadas preenchidas.
+ */
 export function CriarSemestre() {
   const { t } = useTranslation();
+  const [manual, setManual] = useState(false);
+
+  return (
+    <section className="cartao estreito">
+      <h1>{t("semestre.titulo")}</h1>
+      <p className="suave">{t("semestre.descricao")}</p>
+      {manual ? <FormManual /> : <ComecarPeloSuap />}
+      <p className="pequeno">
+        <button type="button" className="link" onClick={() => setManual(!manual)}>
+          {manual ? t("semestre.preferoSuap") : t("semestre.preferoManual")}
+        </button>
+      </p>
+    </section>
+  );
+}
+
+function ComecarPeloSuap() {
+  const { t } = useTranslation();
   const { banco, acao } = useApp();
-  const [nome, setNome] = useState(nomeSugerido);
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
+  const [boletim, setBoletim] = useState<BoletimSuap | null>(null);
+
+  if (!boletim) {
+    return (
+      <>
+        <h2>{t("semestre.comecarSuap")}</h2>
+        <EntradaBoletim aoLer={setBoletim} />
+      </>
+    );
+  }
+
+  const novo = semestreDoBoletim(boletim);
+  const plano = planejarImportacao(boletim, []);
+
+  async function confirmar() {
+    if (!boletim) return;
+    await acao(async () => {
+      const semestre = await semestres.criar(banco, novo);
+      await aplicarImportacao(banco, semestre.id, boletim, plano, CORES);
+    });
+  }
+
+  return (
+    <>
+      <p>
+        {t("semestre.seraCriado", {
+          nome: novo.nome,
+          inicio: formatarDataCompleta(novo.inicio),
+          fim: formatarDataCompleta(novo.fim),
+        })}
+      </p>
+      <p className="pequeno suave">{t("semestre.datasEstimadasDica")}</p>
+      <PreviaImportacao boletim={boletim} plano={plano} />
+      <div className="acoes">
+        <button type="button" className="botao primario" onClick={confirmar}>
+          {t("semestre.criarEImportar", { count: plano.length })}
+        </button>
+        <button type="button" className="botao" onClick={() => setBoletim(null)}>
+          {t("comum.cancelar")}
+        </button>
+      </div>
+    </>
+  );
+}
+
+function FormManual() {
+  const { t } = useTranslation();
+  const { banco, acao } = useApp();
+  const [nome, setNome] = useState(() => {
+    const { ano, periodo } = periodoDaData();
+    return `${ano}.${periodo}`;
+  });
+  // Enquanto o usuário não mexer nas datas, elas acompanham o nome (estimadas).
+  const [datas, setDatas] = useState<{ inicio: string; fim: string } | null>(null);
+  const estimadas = estimarDatas(periodoDoNome(nome) ?? periodoDaData());
+  const { inicio, fim } = datas ?? estimadas;
   const [aviso, setAviso] = useState<string | null>(null);
 
   async function enviar(e: FormEvent) {
@@ -23,33 +107,30 @@ export function CriarSemestre() {
       setAviso(t("semestre.fimAntesInicio"));
       return;
     }
-    await acao(() => semestres.criar(banco, { nome: nome.trim(), inicio, fim }));
+    await acao(() => semestres.criar(banco, { nome: nome.trim(), inicio, fim, datasEstimadas: datas === null }));
   }
 
   return (
-    <section className="cartao estreito">
-      <h1>{t("semestre.titulo")}</h1>
-      <p className="suave">{t("semestre.descricao")}</p>
-      <form className="formulario" onSubmit={enviar}>
+    <form className="formulario" onSubmit={enviar}>
+      <label>
+        {t("semestre.nome")}
+        <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder={t("semestre.nomeDica")} required />
+      </label>
+      <div className="linha">
         <label>
-          {t("semestre.nome")}
-          <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder={t("semestre.nomeDica")} required />
+          {t("semestre.inicio")}
+          <input type="date" value={inicio} onChange={(e) => setDatas({ inicio: e.target.value, fim })} required />
         </label>
-        <div className="linha">
-          <label>
-            {t("semestre.inicio")}
-            <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} required />
-          </label>
-          <label>
-            {t("semestre.fim")}
-            <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} required />
-          </label>
-        </div>
-        {aviso && <p className="aviso">{aviso}</p>}
-        <button type="submit" className="botao primario">
-          {t("semestre.criar")}
-        </button>
-      </form>
-    </section>
+        <label>
+          {t("semestre.fim")}
+          <input type="date" value={fim} onChange={(e) => setDatas({ inicio, fim: e.target.value })} required />
+        </label>
+      </div>
+      {datas === null && <p className="pequeno suave">{t("semestre.datasEstimadasDica")}</p>}
+      {aviso && <p className="aviso">{aviso}</p>}
+      <button type="submit" className="botao primario">
+        {t("semestre.criar")}
+      </button>
+    </form>
   );
 }

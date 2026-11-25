@@ -8,7 +8,7 @@ import { semestres } from "../banco/semestres.ts";
 import { disciplinas } from "../banco/disciplinas.ts";
 import { faltas } from "../banco/faltas.ts";
 import { lerBoletimSuap } from "./boletimSuap.ts";
-import { aplicarImportacao, periodoConfere, planejarImportacao } from "./importarSuap.ts";
+import { aplicarImportacao, periodoConfere, planejarImportacao, semestreDoBoletim } from "./importarSuap.ts";
 
 const boletim = lerBoletimSuap(readFileSync(new URL("./fixtures/boletim-suap.html", import.meta.url), "utf8"));
 
@@ -70,5 +70,24 @@ describe("importação do boletim do SUAP", () => {
     assert.equal(periodoConfere(boletim, { nome: "2026.2" }), true);
     assert.equal(periodoConfere(boletim, { nome: "2026/1" }), false);
     assert.equal(periodoConfere(boletim, { nome: "Segundo semestre" }), null);
+  });
+
+  it("começar pelo SUAP: cria o semestre do boletim com datas estimadas", async () => {
+    const novo = await semestres.criar(bancoEmMemoria(), semestreDoBoletim(boletim));
+    assert.equal(novo.nome, "2026.2");
+    assert.deepEqual([novo.inicio, novo.fim, novo.datasEstimadas], ["2026-08-01", "2026-12-20", true]);
+  });
+
+  it("boletim sem período usa o período da data de hoje", () => {
+    const semPeriodo = { ...boletim, periodo: null };
+    assert.equal(semestreDoBoletim(semPeriodo, new Date(2027, 2, 10)).nome, "2027.1");
+  });
+
+  it("editar as datas tira a marca de estimadas", async () => {
+    const b = bancoEmMemoria();
+    const s = await semestres.criar(b, semestreDoBoletim(boletim));
+    await semestres.atualizar(b, s.id, { nome: "2026.2", inicio: "2026-08-04", fim: "2026-12-12" });
+    const editado = await semestres.atual(b);
+    assert.deepEqual([editado?.inicio, editado?.datasEstimadas], ["2026-08-04", false]);
   });
 });

@@ -27,14 +27,24 @@
   },
   "semestre": {
     "titulo": "Vamos começar pelo semestre",
-    "descricao": "O Better Student organiza tudo por semestre. Os anteriores ficam guardados como histórico.",
+    "descricao": "O Better Student organiza tudo por semestre. O jeito mais rápido de começar é pelo boletim do SUAP: ele já traz as disciplinas, o total de aulas e as faltas.",
     "nome": "Nome",
     "nomeDica": "Ex.: 2026.2",
     "inicio": "Início das aulas",
     "fim": "Fim das aulas",
     "criar": "Criar semestre",
     "periodo": "{{inicio}} a {{fim}}",
-    "fimAntesInicio": "O fim do semestre precisa ser depois do início."
+    "fimAntesInicio": "O fim do semestre precisa ser depois do início.",
+    "comecarSuap": "Começar pelo boletim do SUAP",
+    "preferoManual": "Prefiro criar o semestre à mão",
+    "preferoSuap": "Prefiro começar pelo boletim do SUAP",
+    "seraCriado": "Vou criar o semestre {{nome}}, de {{inicio}} a {{fim}}, e importar as disciplinas abaixo.",
+    "datasEstimadasDica": "O boletim não informa quando as aulas começam e terminam, então essas datas são uma estimativa. Corrija quando souber o calendário do campus (em Grade horária → Editar semestre).",
+    "criarEImportar_one": "Criar semestre e importar {{count}} disciplina",
+    "criarEImportar_other": "Criar semestre e importar {{count}} disciplinas",
+    "estimadas": "Datas estimadas",
+    "editar": "Editar semestre",
+    "editarTitulo": "Editar semestre"
   },
   "grade": {
     "titulo": "Grade horária",
