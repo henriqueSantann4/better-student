@@ -7,3 +7,4 @@ export * from "./encontros.ts";
 export * from "./agenda.ts";
 export * from "./frase.ts";
 export * from "./lembretes.ts";
+export * from "./inicio.ts";

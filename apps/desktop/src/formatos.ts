@@ -24,6 +24,11 @@ export function formatarData(data: DataIso): string {
   );
 }
 
+/** Ex.: "30/11" */
+export function formatarDiaMes(data: DataIso): string {
+  return new Intl.DateTimeFormat(i18n.language, { day: "2-digit", month: "2-digit" }).format(deDataIso(data));
+}
+
 /** Ex.: "01/08/2026" */
 export function formatarDataCompleta(data: DataIso): string {
   return new Intl.DateTimeFormat(i18n.language).format(deDataIso(data));
@@ -65,6 +70,25 @@ export function formatarDataEmail(iso: string, completa = false): string {
     return new Intl.DateTimeFormat(lingua, { day: "numeric", month: "short" }).format(data);
   }
   return new Intl.DateTimeFormat(lingua).format(data);
+}
+
+/**
+ * Prazo curto, para listas: "hoje, 19:00", "amanhã, 07:00", "sex., 07:00"
+ * (até 6 dias) ou "sex., 12/12". Prazo às 23:59 é "o dia todo": sem hora.
+ */
+export function formatarPrazo(iso: string, agora: Date = new Date()): string {
+  const data = new Date(iso);
+  const lingua = i18n.language;
+  const hora =
+    data.getHours() === 23 && data.getMinutes() === 59
+      ? ""
+      : `, ${new Intl.DateTimeFormat(lingua, { hour: "2-digit", minute: "2-digit" }).format(data)}`;
+  const inicioDoDia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dias = Math.round((inicioDoDia(data) - inicioDoDia(agora)) / 86_400_000);
+  if (dias === 0) return `${i18n.t("comum.hoje")}${hora}`;
+  if (dias === 1) return `${i18n.t("comum.amanha")}${hora}`;
+  if (dias > 1 && dias < 7) return `${new Intl.DateTimeFormat(lingua, { weekday: "short" }).format(data)}${hora}`;
+  return `${new Intl.DateTimeFormat(lingua, { weekday: "short", day: "2-digit", month: "2-digit" }).format(data)}${hora}`;
 }
 
 /** Erros do SQLite chegam como texto; isto identifica a violação de um índice único. */

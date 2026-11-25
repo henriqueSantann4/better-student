@@ -1408,3 +1408,84 @@ textarea {
 .opcao-tema input {
   accent-color: var(--destaque);
 }
+
+/* ---------- Início ---------- */
+
+.inicio-cabecalho {
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inicio-cabecalho .suave::first-letter {
+  text-transform: uppercase;
+}
+
+.inicio-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.inicio-cartao h2 {
+  margin-top: 0;
+}
+
+.inicio-hora {
+  flex: none;
+  width: 3.2em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.inicio-fila + .inicio-fila {
+  margin-top: 10px;
+}
+
+.inicio-fila h3 {
+  margin: 0 0 2px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.inicio-quando {
+  flex: none;
+  white-space: nowrap;
+}
+
+.inicio-avisos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.inicio-aviso {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--destaque);
+  background: color-mix(in srgb, var(--destaque) 12%, transparent);
+}
+
+.inicio-aviso.atencao {
+  color: var(--atencao-texto);
+  background: color-mix(in srgb, var(--atencao) 18%, transparent);
+}
+
+.inicio-aviso.perigo {
+  color: var(--perigo);
+  background: color-mix(in srgb, var(--perigo) 14%, transparent);
+}
+
+.inicio-aviso:hover {
+  border-color: currentColor;
+}
+

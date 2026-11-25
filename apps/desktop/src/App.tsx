@@ -13,10 +13,11 @@ import { Email } from "./telas/Email";
 import { EscolherInstituicao } from "./telas/EscolherInstituicao";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
+import { Inicio } from "./telas/Inicio";
 import { Moodle } from "./telas/Moodle";
 import { Notas } from "./telas/Notas";
 
-const SECOES = ["agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email", "configuracoes"] as const;
+const SECOES = ["inicio", "agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email", "configuracoes"] as const;
 type Secao = (typeof SECOES)[number];
 
 export function App() {
@@ -63,7 +64,7 @@ function Layout() {
   // é cadastrada.
   useEffect(() => {
     if (secao === null && dados !== undefined) {
-      setSecao(dados && dados.disciplinas.length > 0 ? "faltas" : "grade");
+      setSecao(dados && dados.disciplinas.length > 0 ? "inicio" : "grade");
     }
   }, [dados, secao]);
 
@@ -105,6 +106,8 @@ function Layout() {
           <Configuracoes />
         ) : dados === null ? (
           <CriarSemestre />
+        ) : secaoAtiva === "inicio" ? (
+          <Inicio aoIr={setSecao} />
         ) : secaoAtiva === "agenda" ? (
           <Agenda />
         ) : secaoAtiva === "grade" ? (

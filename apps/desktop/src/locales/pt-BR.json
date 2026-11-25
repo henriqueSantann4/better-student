@@ -7,6 +7,7 @@
     "versaoNucleo": "Núcleo nativo: {{versao}}"
   },
   "menu": {
+    "inicio": "Início",
     "agenda": "Agenda",
     "grade": "Grade horária",
     "faltas": "Faltas",
@@ -27,7 +28,9 @@
     "remover": "Remover",
     "opcional": "opcional",
     "fechar": "Fechar",
-    "erro": "Algo deu errado: {{mensagem}}"
+    "erro": "Algo deu errado: {{mensagem}}",
+    "hoje": "hoje",
+    "amanha": "amanhã"
   },
   "semestre": {
     "titulo": "Vamos começar pelo semestre",
@@ -505,6 +508,39 @@
       "titulo": "Materiais",
       "dica": "Pasta onde ficam os arquivos de cada disciplina (e as fotos do quadro, quando o app do celular chegar).",
       "pasta": "Pasta dos materiais"
+    }
+  },
+  "inicio": {
+    "bomDia": "Bom dia!",
+    "boaTarde": "Boa tarde!",
+    "boaNoite": "Boa noite!",
+    "aulas": "Aulas",
+    "hoje": "Hoje · {{dia}}",
+    "amanha": "Amanhã · {{dia}}",
+    "proximaAula": "{{dia}} · {{data}}",
+    "agora": "agora",
+    "sabadoLetivo": "{{evento}}",
+    "semGrade": "Seus horários de aula ainda não estão no app.",
+    "irGrade": "Importar do SUAP ou cadastrar na Grade",
+    "semAulas": "Nenhuma aula nas próximas semanas.",
+    "proximos": "Próximos prazos",
+    "verAgenda": "Ver agenda",
+    "semPrazos": "Nada marcado por enquanto. Anote provas e trabalhos na Agenda.",
+    "fila": {
+      "provas": "Provas",
+      "trabalhos": "Trabalhos",
+      "tarefas": "Tarefas"
+    },
+    "aviso": {
+      "reprovadoFalta": "{{nome}}: reprovado por falta",
+      "noLimite": "{{nome}}: no limite de faltas",
+      "pertoLimite": "{{nome}}: perto do limite de faltas",
+      "recuperacao": "{{nome}}: indo {{paraRec}}",
+      "atrasadas_one": "{{count}} tarefa atrasada",
+      "atrasadas_other": "{{count}} tarefas atrasadas",
+      "evento": "{{quando}}: {{titulo}}",
+      "mais_one": "+{{count}} aviso",
+      "mais_other": "+{{count}} avisos"
     }
   }
 }
