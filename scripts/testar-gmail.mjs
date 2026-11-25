@@ -251,6 +251,19 @@ try {
     if (qtd === 0) {
       console.log("  Nenhuma ainda. O encaminhamento só vale para e-mails que chegarem DEPOIS de ativado.");
     }
+
+    // Diagnóstico: só contagens, com outras buscas, para descobrir se o
+    // encaminhamento está ativo e qual filtro reconhece os encaminhados.
+    const contar = async (q) => {
+      const r = await gmail(`messages?maxResults=100&q=${encodeURIComponent(q)}`, token);
+      return r.resultSizeEstimate ?? (r.messages ?? []).length;
+    };
+    const dominioInst = institucional.split("@")[1] ?? "";
+    console.log("  Diagnóstico (só contagens, últimos 7 dias):");
+    console.log(`    endereçadas ao institucional (to:): ${await contar(`to:${institucional} newer_than:7d`)}`);
+    console.log(`    mencionam o domínio ${dominioInst}: ${await contar(`${dominioInst} newer_than:7d`)}`);
+    console.log(`    e-mails do Google sobre encaminhamento: ${await contar("from:forwarding-noreply@google.com newer_than:7d")}`);
+    console.log(`    chegaram nas últimas 24 h (total): ${await contar("newer_than:1d")}`);
   }
   const lista = await gmail(`messages?maxResults=20&q=${encodeURIComponent(busca)}`, token);
   const ids = (lista.messages ?? []).map((m) => m.id);
