@@ -9,6 +9,7 @@
     "build": "pnpm --filter @better-student/desktop tauri build",
     "dev:web": "pnpm --filter @better-student/desktop dev",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "testar:suap": "node scripts/testar-suap.mjs"
   }
 }
