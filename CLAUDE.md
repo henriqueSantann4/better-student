@@ -38,6 +38,8 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - ✅ **Calendário acadêmico** como pacote de dados (`packages/shared/calendarios/*.json`, nada fixo no código): datas reais do semestre, feriados/recessos (sem aula) e sábados letivos (grade de outro dia). Migration 0004 recria `evento_calendario` com os tipos novos. Tela "Calendário".
 - 🧪 **Modo automático do SUAP** (precisa testar no Tauri): janela do SUAP dentro do app; o usuário entra na página real (o login tem reCAPTCHA invisível, então o app NÃO guarda senha nem faz login sozinho). O script `src-tauri/src/suap.js` busca `/edu/aluno/<matrícula>/boletins/` e entrega pelo comando `entregar_suap`, o único que a capability `suap.json` libera.
 - ✅ App abre maximizado.
+- ✅ Calendário com visão de **mês** (padrão, como no SUAP: grade pintada pela legenda + eventos ao lado) e de **lista**.
+- 🧪 **E-mail:** campo do e-mail institucional (salvo em `configuracao`) e caixa de entrada estilo Gmail (abas Principal/Atualizações/Divulgação, estrela, busca, leitura). Ainda **sem conexão com o Google**: no modo navegador aparecem e-mails de exemplo inventados (`src/email/exemplos.ts`, fora do build). Próximo passo do e-mail: OAuth do Google + Gmail API (questão em aberto 5).
 - ⏭️ **Próximo passo:** tela de **Notas** (avaliações, média e situação com IFA, já aproveitando as notas por etapa do SUAP) e edição do semestre/regras. Depois: importar "Locais e Horários de Aula" (grade) e o "Relatório de Faltas do Período" (faltas por data); janela do SUAP dentro do app (modo automático).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)

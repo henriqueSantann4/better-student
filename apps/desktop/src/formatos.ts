@@ -46,6 +46,27 @@ export function formatarNota(valor: number | null | undefined): string {
   return new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 }).format(valor);
 }
 
+/**
+ * Data na lista de e-mails, como no Gmail: só a hora se for hoje, dia e mês
+ * se for deste ano, data completa se for de outro ano. Com `completa`, usada
+ * ao abrir o e-mail: data e hora sempre.
+ */
+export function formatarDataEmail(iso: string, completa = false): string {
+  const data = new Date(iso);
+  const agora = new Date();
+  const lingua = i18n.language;
+  if (completa) {
+    return new Intl.DateTimeFormat(lingua, { dateStyle: "medium", timeStyle: "short" }).format(data);
+  }
+  if (data.toDateString() === agora.toDateString()) {
+    return new Intl.DateTimeFormat(lingua, { hour: "2-digit", minute: "2-digit" }).format(data);
+  }
+  if (data.getFullYear() === agora.getFullYear()) {
+    return new Intl.DateTimeFormat(lingua, { day: "numeric", month: "short" }).format(data);
+  }
+  return new Intl.DateTimeFormat(lingua).format(data);
+}
+
 /** Erros do SQLite chegam como texto; isto identifica a violação de um índice único. */
 export function ehDuplicado(erro: unknown): boolean {
   return /UNIQUE/i.test(String(erro));

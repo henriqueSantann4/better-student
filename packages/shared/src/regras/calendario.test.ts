@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import type { EventoCalendario, HorarioAula } from "../tipos.ts";
-import { aulasDoDia, diaLetivo, proximosEventos } from "./calendario.ts";
+import { aulasDoDia, diaLetivo, marcarDia, proximosEventos } from "./calendario.ts";
 
 const registro = { id: "e", criadoEm: "", atualizadoEm: "", excluidoEm: null };
 function evento(e: Partial<EventoCalendario>): EventoCalendario {
@@ -35,5 +35,30 @@ describe("dia letivo", () => {
 
   it("lista os próximos eventos a partir de hoje", () => {
     assert.deepEqual(proximosEventos(eventos, "2026-10-14").map((e) => e.titulo), ["Recesso", "Finados", "Sábado letivo"]);
+  });
+});
+
+describe("marcarDia (visão de mês)", () => {
+  const semestre = { inicio: "2026-07-28", fim: "2026-12-17" };
+  const comFinal = [
+    ...eventos,
+    evento({ tipo: "prova_final", titulo: "Prova final", dataInicio: "2026-12-16", dataFim: "2026-12-17" }),
+    evento({ tipo: "fim_aulas", titulo: "Fechamento", dataInicio: "2026-12-17", dataFim: "2026-12-17" }),
+    evento({ tipo: "outro", titulo: "Reunião de Gestão", dataInicio: "2026-11-23", dataFim: "2026-11-23" }),
+  ];
+  const tipo = (d: string) => marcarDia(d, comFinal, semestre).tipo;
+
+  it("pinta cada tipo de dia", () => {
+    assert.equal(tipo("2026-11-23"), "letivo");
+    assert.equal(tipo("2026-11-02"), "sem_aula");
+    assert.equal(tipo("2026-11-14"), "sabado_letivo");
+    assert.equal(tipo("2026-11-21"), "fora"); // sábado comum
+    assert.equal(tipo("2026-07-27"), "fora"); // antes do semestre
+    assert.equal(tipo("2026-12-16"), "prova_final");
+    assert.equal(tipo("2026-12-17"), "fechamento"); // fechamento vence a prova final
+  });
+
+  it("não lista eventos internos no dia", () => {
+    assert.deepEqual(marcarDia("2026-11-23", comFinal, semestre).eventos, []);
   });
 });

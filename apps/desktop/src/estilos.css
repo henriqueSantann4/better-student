@@ -594,3 +594,412 @@ button:focus-visible {
   padding-top: 12px;
   border-top: 1px solid var(--borda);
 }
+
+/* ---------- Calendário: visão de mês ---------- */
+
+:root {
+  --dia-letivo: color-mix(in srgb, var(--ok) 16%, transparent);
+  --dia-sem-aula: color-mix(in srgb, var(--perigo) 22%, transparent);
+  --dia-sabado: color-mix(in srgb, var(--destaque) 24%, transparent);
+  --dia-prova: color-mix(in srgb, var(--atencao) 38%, transparent);
+  --dia-fechamento: color-mix(in srgb, #e8590c 60%, transparent);
+}
+
+.alternador {
+  display: inline-flex;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.alternador button {
+  padding: 6px 14px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.alternador button + button {
+  border-left: 1px solid var(--borda-forte);
+}
+
+.alternador button.ativo {
+  background: var(--destaque);
+  color: #fff;
+}
+
+.legenda-calendario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 12px;
+  color: var(--suave);
+}
+
+.legenda-calendario span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.amostra {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--borda);
+  border-radius: 3px;
+}
+
+.mes-cartao {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 28px;
+  align-items: start;
+  scroll-margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .mes-cartao {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grade-mes {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+}
+
+.grade-mes th {
+  padding-bottom: 4px;
+  color: var(--suave);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.grade-mes td {
+  position: relative;
+  height: 40px;
+  border-radius: 6px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.grade-mes td[title] {
+  cursor: help;
+}
+
+.ponto {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.dia-letivo { background: var(--dia-letivo); }
+.dia-sem_aula { background: var(--dia-sem-aula); }
+.dia-sabado_letivo { background: var(--dia-sabado); }
+.dia-prova_final { background: var(--dia-prova); }
+.dia-fechamento { background: var(--dia-fechamento); }
+.grade-mes td.dia-fora { color: var(--suave); }
+
+.dia-hoje {
+  outline: 2px solid var(--texto);
+  outline-offset: -2px;
+  font-weight: 700;
+}
+
+.mes-eventos .item {
+  padding: 8px 0;
+}
+
+/* ---------- E-mail (estilo Gmail) ---------- */
+
+.email {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  min-height: calc(100vh - 64px);
+}
+
+.email-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.email-conta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quebra {
+  overflow-wrap: anywhere;
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--destaque);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.email-pastas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.email-pasta {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 0 999px 999px 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.email-pasta:hover {
+  background: color-mix(in srgb, var(--texto) 7%, transparent);
+}
+
+.email-pasta.ativo {
+  background: color-mix(in srgb, var(--destaque) 20%, transparent);
+  font-weight: 700;
+}
+
+.email-principal {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--painel);
+  overflow: hidden;
+}
+
+.email-topo {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.email-busca {
+  width: 100%;
+  max-width: 640px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--texto) 8%, transparent);
+}
+
+.email-aviso {
+  margin: 0;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--atencao) 15%, transparent);
+  color: var(--atencao-texto);
+}
+
+.email-abas {
+  display: flex;
+  border-bottom: 1px solid var(--borda);
+}
+
+.email-aba {
+  display: flex;
+  flex: 0 1 220px;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--suave);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.email-aba:hover {
+  background: color-mix(in srgb, var(--texto) 5%, transparent);
+}
+
+.email-aba.ativo {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.email-aba.ativo.aba-principal { border-bottom-color: var(--destaque); }
+.email-aba.ativo.aba-atualizacoes { border-bottom-color: var(--atencao); }
+.email-aba.ativo.aba-divulgacao { border-bottom-color: var(--ok); }
+
+.contador {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--destaque);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.email-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.email-linha {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--borda);
+}
+
+.email-linha.lido {
+  background: color-mix(in srgb, var(--texto) 3%, transparent);
+}
+
+.email-linha:hover {
+  box-shadow: inset 1px 0 0 var(--borda-forte), inset -1px 0 0 var(--borda-forte), 0 1px 3px rgb(0 0 0 / 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.estrela {
+  flex: none;
+  width: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--suave);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.estrela.marcada {
+  color: #f4b400;
+}
+
+.email-linha-conteudo {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 200px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+  padding: 11px 16px 11px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.email-remetente,
+.email-resumo {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.email-trecho {
+  color: var(--suave);
+}
+
+.email-data {
+  font-size: 0.8rem;
+  color: var(--suave);
+}
+
+.email-linha.nao-lido .email-remetente,
+.email-linha.nao-lido .email-assunto,
+.email-linha.nao-lido .email-data {
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.email-vazio {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.email-leitura {
+  padding: 16px 24px 32px;
+}
+
+.email-leitura-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.email-leitura-titulo h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.email-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.email-corpo {
+  max-width: 760px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.etiqueta.aba-principal {
+  color: var(--destaque);
+  background: color-mix(in srgb, var(--destaque) 14%, transparent);
+}
+
+.etiqueta.aba-atualizacoes {
+  color: var(--atencao-texto);
+  background: color-mix(in srgb, var(--atencao) 20%, transparent);
+}
+
+.etiqueta.aba-divulgacao {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 15%, transparent);
+}
+
+@media (max-width: 900px) {
+  .email {
+    grid-template-columns: 1fr;
+  }
+
+  .email-linha-conteudo {
+    grid-template-columns: 1fr auto;
+  }
+
+  .email-resumo {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A caixa de entrada usa a largura toda, como um cliente de e-mail. */
+.conteudo:has(.email) {
+  max-width: none;
+}

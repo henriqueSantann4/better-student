@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type ClipboardEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   calendario as repoCalendario,
@@ -7,6 +7,8 @@ import {
   hojeIso,
   lerCalendarioSuap,
   lerPacoteCalendario,
+  marcarDia,
+  paraDataIso,
   periodoDoNome,
   proximosEventos,
   semestreDoPacote,
@@ -33,12 +35,34 @@ function nomeMes(mes: string): string {
   return nome.charAt(0).toUpperCase() + nome.slice(1);
 }
 
+type Visao = "mes" | "lista";
+const CHAVE_VISAO = "better-student:visao-calendario";
+
+/** A visão escolhida fica salva neste computador (é só uma preferência de tela). */
+function visaoSalva(): Visao {
+  try {
+    return localStorage.getItem(CHAVE_VISAO) === "lista" ? "lista" : "mes";
+  } catch {
+    return "mes";
+  }
+}
+
 export function Calendario() {
   const { t } = useTranslation();
   const { semestre, eventos } = useSemestre();
   const [escolhendo, setEscolhendo] = useState(false);
+  const [visao, setVisao] = useState<Visao>(visaoSalva);
   const hoje = hojeIso();
   const mostrarEscolha = escolhendo || eventos.length === 0;
+
+  function trocarVisao(nova: Visao) {
+    setVisao(nova);
+    try {
+      localStorage.setItem(CHAVE_VISAO, nova);
+    } catch {
+      // Sem armazenamento: a escolha vale só até fechar o app.
+    }
+  }
 
   // Agrupa por mês, na ordem.
   const porMes = new Map<string, EventoCalendario[]>();
@@ -52,8 +76,23 @@ export function Calendario() {
       <header className="cabecalho">
         <h1>{t("calendario.titulo")}</h1>
         <span className="suave">{semestre.nome}</span>
+        {eventos.length > 0 && (
+          <div className="alternador empurrar-direita" role="group" aria-label={t("calendario.visao")}>
+            {(["mes", "lista"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                className={visao === v ? "ativo" : ""}
+                aria-pressed={visao === v}
+                onClick={() => trocarVisao(v)}
+              >
+                {t(`calendario.visoes.${v}`)}
+              </button>
+            ))}
+          </div>
+        )}
         {eventos.length > 0 && !escolhendo && (
-          <button type="button" className="botao empurrar-direita" onClick={() => setEscolhendo(true)}>
+          <button type="button" className="botao" onClick={() => setEscolhendo(true)}>
             {t("calendario.trocar")}
           </button>
         )}
@@ -61,7 +100,9 @@ export function Calendario() {
 
       {mostrarEscolha && <EscolherCalendario aoTerminar={() => setEscolhendo(false)} />}
 
-      {eventos.length > 0 && (
+      {eventos.length > 0 && visao === "mes" && <VisaoMes />}
+
+      {eventos.length > 0 && visao === "lista" && (
         <>
           <section className="cartao">
             <h2>{t("calendario.proximos")}</h2>
@@ -87,6 +128,108 @@ export function Calendario() {
           </section>
         </>
       )}
+    </>
+  );
+}
+
+/** Meses do semestre, de início a fim (ex.: ["2026-07", ..., "2026-12"]). */
+function mesesEntre(inicio: string, fim: string): string[] {
+  const meses: string[] = [];
+  const atual = new Date(Number(inicio.slice(0, 4)), Number(inicio.slice(5, 7)) - 1, 1);
+  const ultimo = fim.slice(0, 7);
+  while (paraDataIso(atual).slice(0, 7) <= ultimo) {
+    meses.push(paraDataIso(atual).slice(0, 7));
+    atual.setMonth(atual.getMonth() + 1);
+  }
+  return meses;
+}
+
+const DIAS_CABECALHO = [0, 1, 2, 3, 4, 5, 6] as const;
+const LEGENDA = ["letivo", "sem_aula", "sabado_letivo", "prova_final", "fechamento"] as const;
+
+/**
+ * Visão de mês, como a página do SUAP: a grade do mês com os dias pintados
+ * pela legenda e, ao lado, os eventos daquele mês. Abre já no mês atual.
+ */
+function VisaoMes() {
+  const { t } = useTranslation();
+  const { semestre, eventos } = useSemestre();
+  const hoje = hojeIso();
+  const mesAtual = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    mesAtual.current?.scrollIntoView({ block: "start" });
+  }, []);
+
+  return (
+    <>
+      <div className="legenda-calendario pequeno" aria-hidden="true">
+        {LEGENDA.map((tipo) => (
+          <span key={tipo}>
+            <i className={`amostra dia-${tipo}`} />
+            {t(`calendario.legenda.${tipo}`)}
+          </span>
+        ))}
+        <span>
+          <i className="amostra dia-hoje" />
+          {t("calendario.legenda.hoje")}
+        </span>
+      </div>
+      {mesesEntre(semestre.inicio, semestre.fim).map((mes) => {
+        const primeiro = new Date(Number(mes.slice(0, 4)), Number(mes.slice(5, 7)) - 1, 1);
+        const diasNoMes = new Date(primeiro.getFullYear(), primeiro.getMonth() + 1, 0).getDate();
+        const celulas: (string | null)[] = [
+          ...Array.from({ length: primeiro.getDay() }, () => null),
+          ...Array.from({ length: diasNoMes }, (_, i) => `${mes}-${String(i + 1).padStart(2, "0")}`),
+        ];
+        const semanas = Array.from({ length: Math.ceil(celulas.length / 7) }, (_, s) => celulas.slice(s * 7, s * 7 + 7));
+        const doMes = eventos.filter((e) => e.dataInicio.slice(0, 7) <= mes && e.dataFim.slice(0, 7) >= mes);
+
+        return (
+          <section key={mes} className="cartao mes-cartao" ref={mes === hoje.slice(0, 7) ? mesAtual : undefined}>
+            <div>
+              <h2>{nomeMes(mes)}</h2>
+              <table className="grade-mes">
+                <thead>
+                  <tr>
+                    {DIAS_CABECALHO.map((d) => (
+                      <th key={d} scope="col">
+                        {nomeDia(d, "short").replace(".", "")}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {semanas.map((semana, s) => (
+                    <tr key={s}>
+                      {semana.map((data, i) => {
+                        if (!data) return <td key={`vazio-${i}`} />;
+                        const marcacao = marcarDia(data, eventos, semestre);
+                        return (
+                          <td
+                            key={data}
+                            className={`dia-${marcacao.tipo}${data === hoje ? " dia-hoje" : ""}`}
+                            title={marcacao.eventos.map((e) => e.titulo).join(" · ") || undefined}
+                          >
+                            <span>{Number(data.slice(8))}</span>
+                            {marcacao.eventos.length > 0 && <i className="ponto" />}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ul className="lista mes-eventos">
+              {doMes.length === 0 && <li className="pequeno suave">{t("calendario.semEventos")}</li>}
+              {doMes.map((e) => (
+                <ItemEvento key={e.id} evento={e} passado={e.dataFim < hoje || e.tipo === "outro"} />
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </>
   );
 }

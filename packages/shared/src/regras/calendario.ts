@@ -55,3 +55,47 @@ export function proximosEventos(
     .sort((a, b) => a.dataInicio.localeCompare(b.dataInicio))
     .slice(0, limite);
 }
+
+export type TipoDia =
+  /** Dia de aula normal, dentro do semestre. */
+  | "letivo"
+  /** Feriado ou recesso: sem aula. */
+  | "sem_aula"
+  | "sabado_letivo"
+  | "prova_final"
+  | "fechamento"
+  /** Fim de semana ou fora do semestre. */
+  | "fora";
+
+export interface MarcacaoDia {
+  tipo: TipoDia;
+  /** Eventos que cobrem o dia (sem os internos, do tipo "outro"). */
+  eventos: EventoCalendario[];
+}
+
+/**
+ * Como pintar um dia na visão de mês, na mesma lógica da legenda do SUAP.
+ * A ordem importa: fechamento e prova final vencem o resto; um feriado
+ * vence o fato de ser dia de semana dentro do semestre.
+ */
+export function marcarDia(
+  data: DataIso,
+  eventos: readonly EventoCalendario[],
+  semestre: { inicio: DataIso; fim: DataIso },
+): MarcacaoDia {
+  const doDia = eventos.filter((e) => cobre(e, data));
+  const tem = (tipo: EventoCalendario["tipo"]) => doDia.some((e) => e.tipo === tipo);
+  const visiveis = doDia.filter((e) => e.tipo !== "outro");
+
+  let tipo: TipoDia;
+  if (tem("fim_aulas")) tipo = "fechamento";
+  else if (tem("prova_final")) tipo = "prova_final";
+  else if (doDia.some((e) => e.suspendeAulas)) tipo = "sem_aula";
+  else if (tem("sabado_letivo")) tipo = "sabado_letivo";
+  else {
+    const diaSemana = diaSemanaDe(data);
+    const noSemestre = semestre.inicio <= data && data <= semestre.fim;
+    tipo = noSemestre && diaSemana >= 1 && diaSemana <= 5 ? "letivo" : "fora";
+  }
+  return { tipo, eventos: visiveis };
+}

@@ -12,7 +12,8 @@
     "faltas": "Faltas",
     "notas": "Notas",
     "materiais": "Materiais",
-    "calendario": "Calendário"
+    "calendario": "Calendário",
+    "email": "E-mail"
   },
   "emBreve": "Esta seção chega nas próximas versões.",
   "comum": {
@@ -188,6 +189,49 @@
     "doSuapDica": "É o mais atualizado: muda quando sai uma portaria nova. No SUAP, abra o calendário acadêmico do seu curso e salve a página (Ctrl+S, \"somente HTML\") ou copie tudo (Ctrl+A, Ctrl+C) e cole ao lado.",
     "embutidos": "Ou use um calendário que já vem com o app",
     "outroPeriodo": "Esse calendário é de {{periodo}}, mas o semestre atual é {{semestre}}.",
-    "suapInvalido": "Não reconheci essa página como o calendário acadêmico do SUAP."
+    "suapInvalido": "Não reconheci essa página como o calendário acadêmico do SUAP.",
+    "visao": "Visão do calendário",
+    "visoes": {
+      "mes": "Mês",
+      "lista": "Lista"
+    },
+    "semEventos": "Nenhum evento neste mês.",
+    "legenda": {
+      "letivo": "Dia letivo",
+      "sem_aula": "Feriado / recesso",
+      "sabado_letivo": "Sábado letivo",
+      "prova_final": "Prova final",
+      "fechamento": "Fechamento",
+      "hoje": "Hoje"
+    }
+  },
+  "email": {
+    "titulo": "E-mail da faculdade",
+    "configurarDescricao": "Informe o seu e-mail institucional. A caixa de entrada fica aqui no app, separada por assunto: professores e coordenação em Principal, avisos de sistemas em Atualizações e eventos em Divulgação.",
+    "endereco": "E-mail institucional",
+    "enderecoDica": "seu.nome@aluno.ifsp.edu.br",
+    "invalido": "Esse endereço não parece um e-mail válido.",
+    "privacidade": "O endereço fica só neste computador. A senha nunca é pedida aqui: a conexão com o Google vai usar o login do próprio Google.",
+    "trocar": "Trocar e-mail",
+    "buscar": "Pesquisar e-mails",
+    "pastas": {
+      "entrada": "Caixa de entrada",
+      "estrela": "Com estrela",
+      "naoLidos": "Não lidos"
+    },
+    "categorias": {
+      "principal": "Principal",
+      "atualizacoes": "Atualizações",
+      "divulgacao": "Divulgação"
+    },
+    "avisoExemplo": "Modo de desenvolvimento: estes e-mails são exemplos inventados, só para ver a tela.",
+    "naoConectadoTitulo": "Sua caixa de entrada vai aparecer aqui",
+    "naoConectado": "A conexão com o Google (para ler os e-mails da conta institucional) é a próxima etapa do app. Por enquanto, o seu endereço já fica salvo.",
+    "pastaVazia": "Nada por aqui.",
+    "nadaEncontrado": "Nenhum e-mail encontrado.",
+    "marcarEstrela": "Marcar com estrela",
+    "tirarEstrela": "Tirar a estrela",
+    "voltar": "Voltar",
+    "paraVoce": "para você"
   }
 }

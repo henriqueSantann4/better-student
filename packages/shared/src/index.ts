@@ -4,3 +4,4 @@ export * from "./banco/index.ts";
 export * from "./datas.ts";
 export * from "./importacao/index.ts";
 export * from "./calendario/index.ts";
+export * from "./email/email.ts";
