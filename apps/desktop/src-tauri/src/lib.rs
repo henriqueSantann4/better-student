@@ -115,6 +115,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0005_email.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "origem da tarefa",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0006_tarefa_origem.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

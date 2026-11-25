@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ErroMoodle, type AtividadeMoodle } from "@better-student/shared";
+import { casarDisciplinaMoodle, ErroMoodle, type AtividadeMoodle } from "@better-student/shared";
 import { useApp } from "../contexto";
 import { formatarDataEmail } from "../formatos";
 import {
@@ -136,6 +136,8 @@ function ConectarMoodle({
 
 function PainelConectado({ site, aoDesconectar }: { site: string; aoDesconectar: () => void }) {
   const { t } = useTranslation();
+  const { dados } = useApp();
+  const disciplinasApp = dados?.disciplinas ?? [];
   const [painel, setPainel] = useState<PainelMoodle | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -206,18 +208,26 @@ function PainelConectado({ site, aoDesconectar }: { site: string; aoDesconectar:
           <section className="cartao">
             <h2>{t("moodle.disciplinas", { count: painel.disciplinas.length })}</h2>
             <ul className="lista">
-              {painel.disciplinas.map((d) => (
-                <li key={d.id} className="item">
-                  <div className="item-texto">
-                    <strong>{d.nome}</strong>
-                    <span className="pequeno suave">
-                      {[d.sigla, d.progresso !== null ? t("moodle.progresso", { valor: d.progresso }) : null]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                  </div>
-                </li>
-              ))}
+              {painel.disciplinas.map((d) => {
+                // Mostra o nome da disciplina do app (com a cor), quando a sala casa com uma.
+                const doApp = casarDisciplinaMoodle(d, disciplinasApp);
+                return (
+                  <li key={d.id} className={`item ${doApp ? "" : "passado"}`}>
+                    <span className="bolinha" style={{ background: doApp?.cor ?? undefined }} />
+                    <div className="item-texto">
+                      <strong>{doApp?.nome ?? d.nome}</strong>
+                      <span className="pequeno suave">
+                        {[
+                          doApp ? d.nome : t("moodle.semDisciplina"),
+                          d.progresso !== null ? t("moodle.progresso", { valor: d.progresso }) : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </>

@@ -180,6 +180,12 @@ export interface Tarefa extends Registro {
   concluidaEm: DataHoraIso | null;
   /** Lembretes próprios desta tarefa. `null` = usa o padrão do tipo. */
   lembretes: RegraLembrete | null;
+  /** De onde veio: `null` = criada no app; "moodle" = importada. */
+  origem: string | null;
+  /** Id na origem (para reimportar sem duplicar). */
+  origemId: string | null;
+  /** Link para abrir na origem (ex.: a atividade no Moodle). */
+  url: string | null;
 }
 
 export interface Subtarefa extends Registro {

@@ -1059,3 +1059,134 @@ button:focus-visible {
   font-family: ui-monospace, Consolas, monospace;
   letter-spacing: 0.1em;
 }
+
+/* ---------- Agenda ---------- */
+
+.contagem {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--suave) 18%, transparent);
+  color: var(--suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.grupo-atrasadas h2 { color: var(--perigo); }
+.grupo-hoje h2 { color: var(--atencao-texto); }
+
+.tarefa {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--borda-forte);
+  border-radius: 8px;
+  list-style: none;
+}
+
+.tarefa.concluida {
+  opacity: 0.6;
+}
+
+.tarefa.concluida .tarefa-titulo {
+  text-decoration: line-through;
+}
+
+.tarefa-linha {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.marcar {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  accent-color: var(--destaque);
+  cursor: pointer;
+}
+
+.tarefa-resumo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tarefa-titulo {
+  font-weight: 600;
+}
+
+.prioridade-alta {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--perigo);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.tarefa-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 2px 30px;
+}
+
+.tarefa-descricao {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.subtarefas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subtarefas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.subtarefas label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.riscado {
+  color: var(--suave);
+  text-decoration: line-through;
+}
+
+.nova-subtarefa {
+  display: flex;
+  gap: 8px;
+}
+
+.nova-subtarefa input {
+  flex: 1;
+}
+
+textarea {
+  padding: 7px 9px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  background: var(--fundo);
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}

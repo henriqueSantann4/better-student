@@ -6,3 +6,4 @@ export * from "./horarios.ts";
 export * from "./faltas.ts";
 export * from "./calendario.ts";
 export * from "./emails.ts";
+export * from "./tarefas.ts";

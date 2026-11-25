@@ -5,6 +5,7 @@ import type { Banco } from "@better-student/shared";
 import { abrirBanco } from "./banco";
 import { ProvedorApp, useApp } from "./contexto";
 import { ehDuplicado } from "./formatos";
+import { Agenda } from "./telas/Agenda";
 import { Calendario } from "./telas/Calendario";
 import { CriarSemestre } from "./telas/CriarSemestre";
 import { Email } from "./telas/Email";
@@ -91,6 +92,8 @@ function Layout() {
           <p className="suave">{t("app.carregando")}</p>
         ) : dados === null ? (
           <CriarSemestre />
+        ) : secaoAtiva === "agenda" ? (
+          <Agenda />
         ) : secaoAtiva === "grade" ? (
           <Grade />
         ) : secaoAtiva === "faltas" ? (

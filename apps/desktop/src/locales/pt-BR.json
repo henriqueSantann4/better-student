@@ -306,6 +306,60 @@
       "choice": "Escolha",
       "feedback": "Pesquisa",
       "outro": "Atividade"
+    },
+    "semDisciplina": "sala sem disciplina correspondente no app"
+  },
+  "agenda": {
+    "titulo": "Agenda",
+    "pendentes_one": "{{count}} pendente",
+    "pendentes_other": "{{count}} pendentes",
+    "nova": "Nova tarefa",
+    "editar": "Editar tarefa",
+    "vazia": "Nada na agenda. Crie uma tarefa ou conecte o Moodle para trazer as atividades com prazo.",
+    "atualizarMoodle": "Atualizar do Moodle",
+    "buscandoMoodle": "Buscando no Moodle…",
+    "novasMoodle_one": "{{count}} atividade nova do Moodle.",
+    "novasMoodle_other": "{{count}} atividades novas do Moodle.",
+    "erroMoodle": "Não consegui buscar as atividades do Moodle: {{mensagem}}",
+    "grupos": {
+      "atrasadas": "Atrasadas",
+      "hoje": "Hoje",
+      "amanha": "Amanhã",
+      "semana": "Próximos 7 dias",
+      "depois": "Mais para frente",
+      "semPrazo": "Sem prazo",
+      "concluidas": "Concluídas"
+    },
+    "tipos": {
+      "prova": "Prova",
+      "trabalho": "Trabalho",
+      "lista": "Lista",
+      "apresentacao": "Apresentação",
+      "atividade_moodle": "Moodle",
+      "outro": "Outro"
+    },
+    "prioridades": {
+      "baixa": "Baixa",
+      "media": "Média",
+      "alta": "Alta"
+    },
+    "concluir": "Marcar como concluída",
+    "reabrir": "Reabrir",
+    "subtarefasFeitas": "{{feitas}}/{{total}} passos",
+    "novaSubtarefa": "Novo passo (ex.: pesquisar, escrever, revisar)",
+    "abrirMoodle": "Abrir no Moodle",
+    "confirmarExcluir": "Excluir \"{{titulo}}\"?",
+    "veioDoMoodle": "Veio do Moodle: o título e o prazo são atualizados de lá. Quando você entrega no Moodle, ela some da linha do tempo e é marcada como concluída aqui.",
+    "semDisciplina": "Sem disciplina",
+    "campos": {
+      "titulo": "O que é",
+      "tituloDica": "Ex.: Prova de Banco de Dados",
+      "tipo": "Tipo",
+      "disciplina": "Disciplina",
+      "data": "Prazo",
+      "hora": "Hora",
+      "prioridade": "Prioridade",
+      "descricao": "Anotações"
     }
   }
 }
