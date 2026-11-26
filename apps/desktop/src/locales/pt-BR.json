@@ -227,7 +227,11 @@
     },
     "mesAnterior": "Mês anterior",
     "mesSeguinte": "Mês seguinte",
-    "semCalendario": "O calendário acadêmico (feriados, sábados letivos) ainda não está no app."
+    "semCalendario": "O calendário acadêmico (feriados, sábados letivos) ainda não está no app.",
+    "escolherMes": "Escolher o mês",
+    "escolherAno": "Escolher o ano",
+    "anterior": "Anterior",
+    "seguinte": "Seguinte"
   },
   "email": {
     "titulo": "E-mail da faculdade",

@@ -1837,3 +1837,64 @@ textarea {
   height: 7px;
   margin-left: -3.5px;
 }
+
+/* Título do mês clicável e escolha de mês/ano (como no calendário do Windows). */
+.mini-titulo {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mini-titulo:hover {
+  background: color-mix(in srgb, var(--destaque) 14%, transparent);
+}
+
+.seletor-grade {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.seletor-item {
+  position: relative;
+  height: 84px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--painel);
+  color: var(--texto);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.seletor-item:hover {
+  border-color: var(--destaque);
+}
+
+.seletor-item.aberto {
+  border-color: var(--destaque);
+  color: var(--destaque);
+  font-weight: 700;
+}
+
+.seletor-item.atual {
+  outline: 2px solid var(--texto);
+  outline-offset: -2px;
+}
+
+.seletor-item.fora {
+  color: var(--suave);
+}
+
+.seletor-item .marca-tarefa {
+  top: 8px;
+  right: 8px;
+}
+

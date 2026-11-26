@@ -69,6 +69,24 @@ export function MiniCalendario({
   const { t } = useTranslation();
   const { semestre, eventos } = useSemestre();
   const hoje = hojeIso();
+  // Como no Windows: clicar no título sobe para os meses do ano, e de novo para os anos.
+  const [nivel, setNivel] = useState<"dias" | "meses" | "anos">("dias");
+  const [ano, setAno] = useState(Number(mes.slice(0, 4)));
+
+  if (nivel !== "dias") {
+    return (
+      <SeletorMesAno
+        nivel={nivel}
+        ano={ano}
+        mesAberto={mes}
+        tarefas={tarefas}
+        aoMudarAno={setAno}
+        aoSubir={() => setNivel("anos")}
+        aoEscolherAno={(a) => (setAno(a), setNivel("meses"))}
+        aoEscolherMes={(m) => (aoMudarMes(m), aoEscolherDia(null), setNivel("dias"))}
+      />
+    );
+  }
 
   const primeiro = new Date(Number(mes.slice(0, 4)), Number(mes.slice(5, 7)) - 1, 1);
   const diasNoMes = new Date(primeiro.getFullYear(), primeiro.getMonth() + 1, 0).getDate();
@@ -84,7 +102,14 @@ export function MiniCalendario({
         <button type="button" className="botao-icone" onClick={() => aoMudarMes(somarMes(mes, -1))} aria-label={t("calendario.mesAnterior")}>
           ‹
         </button>
-        <h2>{nomeMes(mes)}</h2>
+        <button
+          type="button"
+          className="mini-titulo"
+          onClick={() => (setAno(Number(mes.slice(0, 4))), setNivel("meses"))}
+          title={t("calendario.escolherMes")}
+        >
+          {nomeMes(mes)}
+        </button>
         <button type="button" className="botao-icone" onClick={() => aoMudarMes(somarMes(mes, 1))} aria-label={t("calendario.mesSeguinte")}>
           ›
         </button>
@@ -146,6 +171,87 @@ export function MiniCalendario({
           <i className="amostra amostra-tarefa" />
           {t("calendario.legenda.tarefa")}
         </span>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Escolha rápida de mês e ano (como no calendário do Windows): os 12 meses
+ * do ano, com setas para trocar o ano; clicar no ano mostra os anos.
+ * Meses com prova ou entrega pendente ganham a marca.
+ */
+function SeletorMesAno({
+  nivel,
+  ano,
+  mesAberto,
+  tarefas,
+  aoMudarAno,
+  aoSubir,
+  aoEscolherAno,
+  aoEscolherMes,
+}: {
+  nivel: "meses" | "anos";
+  ano: number;
+  mesAberto: string;
+  tarefas: Tarefa[];
+  aoMudarAno: (ano: number) => void;
+  aoSubir: () => void;
+  aoEscolherAno: (ano: number) => void;
+  aoEscolherMes: (mes: string) => void;
+}) {
+  const { t } = useTranslation();
+  const hoje = hojeIso();
+  const comTarefa = new Set(tarefas.filter((x) => x.prazo && !x.concluidaEm).map((x) => diaDoPrazo(x).slice(0, 7)));
+  // Anos: a década do ano aberto, com um a mais de cada lado (12 quadros).
+  const inicioDecada = Math.floor(ano / 10) * 10;
+  const passo = nivel === "meses" ? 1 : 10;
+
+  return (
+    <section className="cartao mini-calendario">
+      <div className="mini-topo">
+        <button type="button" className="botao-icone" onClick={() => aoMudarAno(ano - passo)} aria-label={t("calendario.anterior")}>
+          ‹
+        </button>
+        {nivel === "meses" ? (
+          <button type="button" className="mini-titulo" onClick={aoSubir} title={t("calendario.escolherAno")}>
+            {ano}
+          </button>
+        ) : (
+          <h2>
+            {inicioDecada} – {inicioDecada + 9}
+          </h2>
+        )}
+        <button type="button" className="botao-icone" onClick={() => aoMudarAno(ano + passo)} aria-label={t("calendario.seguinte")}>
+          ›
+        </button>
+      </div>
+      <div className="seletor-grade">
+        {nivel === "meses"
+          ? Array.from({ length: 12 }, (_, i) => {
+              const mes = `${ano}-${String(i + 1).padStart(2, "0")}`;
+              const nome = new Intl.DateTimeFormat(i18n.language, { month: "short" }).format(new Date(ano, i, 15)).replace(".", "");
+              const rotulo = nome.charAt(0).toUpperCase() + nome.slice(1);
+              const classes = [mes === hoje.slice(0, 7) && "atual", mes === mesAberto && "aberto"].filter(Boolean).join(" ");
+              return (
+                <button key={mes} type="button" className={`seletor-item ${classes}`} onClick={() => aoEscolherMes(mes)}>
+                  <span>{rotulo}</span>
+                  {comTarefa.has(mes) && <i className="marca-tarefa" />}
+                </button>
+              );
+            })
+          : Array.from({ length: 12 }, (_, i) => {
+              const a = inicioDecada - 1 + i;
+              const fora = a < inicioDecada || a > inicioDecada + 9;
+              const classes = [a === Number(hoje.slice(0, 4)) && "atual", a === Number(mesAberto.slice(0, 4)) && "aberto", fora && "fora"]
+                .filter(Boolean)
+                .join(" ");
+              return (
+                <button key={a} type="button" className={`seletor-item ${classes}`} onClick={() => aoEscolherAno(a)}>
+                  {a}
+                </button>
+              );
+            })}
       </div>
     </section>
   );
