@@ -98,6 +98,8 @@ jobs:
           # Liga a geração dos arquivos de atualização só aqui (no PC, `pnpm build` não precisa da chave).
           args: --config src-tauri/tauri.release.conf.json
           includeUpdaterJson: true
+          # O padrão do latest.json passa a ser o instalador .exe (o que o README manda baixar).
+          updaterJsonPreferNsis: true
           tagName: ${{ env.TAG }}
           releaseName: "Better Student __VERSION__"
           releaseBody: |

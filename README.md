@@ -12,7 +12,7 @@
 ## Como instalar (Windows 10 e 11)
 
 1. Abra a página de **[versões do app](../../releases/latest)** (aba *Releases* do GitHub).
-2. Em **Assets**, baixe o arquivo que termina em **`x64-setup.exe`** (por exemplo, `Better Student_1.1.0_x64-setup.exe`).
+2. Em **Assets**, baixe o arquivo que termina em **`x64-setup.exe`** (por exemplo, `Better.Student_1.1.0_x64-setup.exe`).
 3. Abra o arquivo baixado. O Windows pode mostrar **"O Windows protegeu o computador"**: isso acontece porque o instalador não tem assinatura digital (que é paga), não porque tem algo errado. Clique em **Mais informações** e depois em **Executar assim mesmo**.
 4. Siga o instalador. Ele não pede senha de administrador: instala só para o seu usuário.
 5. Abra o **Better Student**. Na primeira vez ele pergunta a sua faculdade e o seu campus e pede para você entrar no SUAP uma vez; daí em diante, ele busca suas disciplinas, horários, notas e provas sozinho sempre que você abrir.
