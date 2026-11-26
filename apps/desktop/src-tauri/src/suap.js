@@ -12,6 +12,8 @@
   var AVISO_ID = "better-student-aviso";
   // Janela escondida, aberta pelo app para atualizar sozinho (ver `abrir_suap`).
   var SILENCIOSO = window.__BETTER_STUDENT_SILENCIOSO__ === true;
+  // Busca completa (horários, calendário, critérios das turmas) ou só o que muda.
+  var COMPLETO = window.__BETTER_STUDENT_COMPLETO__ !== false;
 
   /** Na janela escondida, quando não dá para seguir: avisa o app, que fecha a janela. */
   function desistir(motivo) {
@@ -70,8 +72,14 @@
       var nada = function () {
         return null;
       };
-      var horarios = await buscarHorarios(matricula).catch(nada);
-      var calendario = await buscarCalendario(periodoDoBoletim(html)).catch(nada);
+      var horarios = COMPLETO ? await buscarHorarios(matricula).catch(nada) : null;
+      var calendario = COMPLETO ? await buscarCalendario(periodoDoBoletim(html)).catch(nada) : null;
+      if (COMPLETO) aviso("buscando os critérios de avaliação das disciplinas…");
+      var turmas = COMPLETO
+        ? await buscarCriterios(html).catch(function () {
+            return [];
+          })
+        : [];
       aviso("buscando o detalhamento das notas…");
       var detalhes = await buscarDetalhes(html).catch(function () {
         return [];
@@ -80,12 +88,14 @@
       if (horarios) achados.push("horários");
       if (calendario) achados.push("calendário");
       if (detalhes.length) achados.push("notas detalhadas");
+      if (turmas.length) achados.push("critérios de avaliação");
       aviso(achados.join(", ").replace(/, ([^,]*)$/, " e $1") + " encontrados! Voltando para o app…", "ok");
       await window.__TAURI_INTERNALS__.invoke("entregar_suap", {
         boletim: html,
         horarios: horarios,
         calendario: calendario,
         detalhes: detalhes,
+        turmas: turmas,
       });
     } catch (erro) {
       var mensagem = erro && erro.message ? erro.message : erro;
@@ -125,6 +135,35 @@
       if (resposta.ok && html.indexOf("Detalhamento das Notas") >= 0) detalhes.push({ diario: diario, html: html });
     }
     return detalhes;
+  }
+
+  /**
+   * Da Turma Virtual de cada disciplina (link no boletim), só a seção
+   * "Instrumentos e Critérios de Avaliação da Aprendizagem" do plano de
+   * ensino. O resto da página (lista de colegas etc.) não sai daqui.
+   * Página aberta sem a seção = o professor não preencheu: vai vazia.
+   */
+  async function buscarCriterios(htmlBoletim) {
+    var pagina = new DOMParser().parseFromString(htmlBoletim, "text/html");
+    var vistos = {};
+    var turmas = [];
+    var links = pagina.querySelectorAll('a[href*="/edu/sala_virtual/"]');
+    for (var i = 0; i < links.length && turmas.length < 40; i++) {
+      var achado = /\/edu\/sala_virtual\/(\d+)\//.exec(links[i].getAttribute("href") || "");
+      if (!achado || vistos[achado[1]]) continue;
+      vistos[achado[1]] = true;
+      var resposta = await fetch("/edu/sala_virtual/" + achado[1] + "/?tab=dados_gerais", { credentials: "same-origin" });
+      if (!resposta.ok) continue;
+      var doc = new DOMParser().parseFromString(await resposta.text(), "text/html");
+      var secao = "";
+      doc.querySelectorAll("h3").forEach(function (h) {
+        if (!secao && /Instrumentos\s+e\s+Crit/i.test(h.textContent || "")) {
+          secao = (h.closest(".box") || h.parentElement).outerHTML;
+        }
+      });
+      turmas.push({ diario: achado[1], html: secao });
+    }
+    return turmas;
   }
 
   /** Período do boletim, ex.: { ano: "2026", periodo: "2" }. */

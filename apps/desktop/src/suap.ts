@@ -6,6 +6,7 @@ import {
   lerCalendarioSuap,
   lerDetalheNotasSuap,
   lerHorariosSuap,
+  lerCriteriosAvaliacao,
   type Banco,
   type BoletimSuap,
   type ExtrasSuap,
@@ -33,6 +34,8 @@ export interface PacoteSuap {
   calendario: string | null;
   /** "Detalhar" de cada disciplina, com o número do diário. */
   detalhes: { diario: string; html: string }[];
+  /** Seção dos critérios de avaliação de cada turma virtual (só na busca completa). */
+  turmas?: { diario: string; html: string }[];
 }
 
 /**
@@ -43,13 +46,14 @@ export interface PacoteSuap {
 export async function buscarBoletimNoSuap(
   servidor: string,
   aoReceber: (pacote: PacoteSuap) => void,
+  completo = true,
 ): Promise<UnlistenFn> {
   const parar = await listen<PacoteSuap>("suap:boletim", (evento) => {
     parar();
     aoReceber(evento.payload);
   });
   try {
-    await invoke("abrir_suap", { servidor });
+    await invoke("abrir_suap", { servidor, completo });
   } catch (erro) {
     parar();
     throw erro;
@@ -82,6 +86,8 @@ export function lerPacoteSuap(pacote: PacoteSuap): { boletim: BoletimSuap; extra
         const detalhe = tentar(() => lerDetalheNotasSuap(html));
         return detalhe && detalhe.etapas.length > 0 ? [{ diario, detalhe }] : [];
       }),
+      // Página sem a seção = o professor não preencheu: guarda vazio, para não buscar de novo.
+      criterios: (pacote.turmas ?? []).map(({ diario, html }) => ({ diario, texto: lerCriteriosAvaliacao(html) ?? "" })),
     },
   };
 }
@@ -97,7 +103,7 @@ const ESPERA_ESCONDIDO_MS = 120_000;
  * sessão ainda aberta do site. Se o SUAP pedir login (sessão expirou),
  * devolve `{ semSessao: "login" }` e o app mostra o botão para entrar.
  */
-export function buscarSuapEscondido(servidor: string): Promise<RespostaSuapEscondido> {
+export function buscarSuapEscondido(servidor: string, completo: boolean): Promise<RespostaSuapEscondido> {
   return new Promise((resolver, rejeitar) => {
     const paradas: UnlistenFn[] = [];
     let terminou = false;
@@ -117,7 +123,7 @@ export function buscarSuapEscondido(servidor: string): Promise<RespostaSuapEscon
       try {
         paradas.push(await listen<PacoteSuap>("suap:boletim", (e) => terminar(() => resolver({ pacote: e.payload }))));
         paradas.push(await listen<string>("suap:sem_sessao", (e) => terminar(() => resolver({ semSessao: e.payload }))));
-        await invoke("abrir_suap", { servidor, silencioso: true });
+        await invoke("abrir_suap", { servidor, silencioso: true, completo });
       } catch (erro) {
         terminar(() => rejeitar(erro));
       }

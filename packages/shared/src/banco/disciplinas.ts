@@ -23,6 +23,8 @@ interface LinhaDisciplina extends LinhaRegistro {
   suap_atualizado_em: string | null;
   suap_importado_em: string | null;
   suap_detalhe: string | null;
+  suap_criterios: string | null;
+  criterios_editados: string | null;
 }
 
 function lerSuap(l: LinhaDisciplina): DadosSuap | null {
@@ -56,6 +58,7 @@ function lerDisciplina(l: LinhaDisciplina): Disciplina {
     cor: l.cor,
     notaIfa: l.nota_ifa,
     suap: lerSuap(l),
+    criterios: { suap: l.suap_criterios ?? null, editados: l.criterios_editados ?? null },
   };
 }
 
@@ -108,6 +111,17 @@ export const disciplinas = {
       agora(),
       id,
     ]);
+  },
+
+  /** Texto dos critérios de avaliação vindo do SUAP (`""` = o professor não preencheu). */
+  async gravarCriteriosSuap(banco: Banco, id: string, texto: string): Promise<void> {
+    await banco.executar("UPDATE disciplina SET suap_criterios = ?, atualizado_em = ? WHERE id = ?", [texto, agora(), id]);
+  },
+
+  /** Versão do aluno dos critérios; `null` volta ao texto do SUAP. */
+  async editarCriterios(banco: Banco, id: string, texto: string | null): Promise<void> {
+    const limpo = texto?.trim() || null;
+    await banco.executar("UPDATE disciplina SET criterios_editados = ?, atualizado_em = ? WHERE id = ?", [limpo, agora(), id]);
   },
 
   /** Nota tirada no IFA (`null` = não fez). */

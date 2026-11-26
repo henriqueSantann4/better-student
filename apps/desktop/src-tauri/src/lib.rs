@@ -34,6 +34,11 @@ fn versao_nucleo() -> String {
 /// Abre (ou traz para frente) a janela do SUAP. O usuário faz o login na
 /// página do próprio SUAP; o script injetado busca o boletim depois disso.
 ///
+/// `completo`: além do boletim e do "Detalhar" (que mudam ao longo do
+/// semestre), busca também horários, calendário e os critérios de avaliação
+/// das turmas virtuais, que quase não mudam. O app pede completo só na
+/// primeira vez (ou quando o aluno manda buscar tudo de novo).
+///
 /// `silencioso`: abre a janela ESCONDIDA, para atualizar ao abrir o app sem
 /// incomodar. Se a sessão do SUAP ainda vale (o WebView guarda os cookies do
 /// site, como um navegador), o script busca tudo e entrega; se pedir login,
@@ -43,8 +48,14 @@ fn versao_nucleo() -> String {
 /// É `async` de propósito: no Windows, criar uma janela dentro de um comando
 /// síncrono trava o app (problema conhecido do WebView2, wry#583).
 #[tauri::command]
-async fn abrir_suap(app: AppHandle, servidor: String, silencioso: Option<bool>) -> Result<(), String> {
+async fn abrir_suap(
+    app: AppHandle,
+    servidor: String,
+    silencioso: Option<bool>,
+    completo: Option<bool>,
+) -> Result<(), String> {
     let silencioso = silencioso.unwrap_or(false);
+    let completo = completo.unwrap_or(true);
     let url: tauri::Url = servidor.parse().map_err(|_| "endereço do SUAP inválido".to_string())?;
     // Só aceita o SUAP de um instituto, por HTTPS: o mesmo padrão da capability.
     let host = url.host_str().unwrap_or_default();
@@ -57,19 +68,15 @@ async fn abrir_suap(app: AppHandle, servidor: String, silencioso: Option<bool>) 
         if silencioso {
             return Err("a janela do SUAP já está aberta".into());
         }
-        // Se era a escondida, ela fecha e abre de novo visível, sem o modo silencioso.
-        if !janela.is_visible().unwrap_or(true) {
-            let _ = janela.destroy();
-        } else {
-            // Já aberta: recarrega para o script buscar o boletim de novo.
-            janela.navigate(url).map_err(|e| e.to_string())?;
-            janela.set_focus().map_err(|e| e.to_string())?;
-            return Ok(());
-        }
+        // Já aberta: fecha e abre de novo, para o script valer com o modo
+        // pedido agora. Os cookies (a sessão do SUAP) continuam.
+        let _ = janela.destroy();
     }
 
     // O modo vai num script à parte, que roda antes do `suap.js`.
-    let modo = format!("window.__BETTER_STUDENT_SILENCIOSO__ = {silencioso};");
+    let modo = format!(
+        "window.__BETTER_STUDENT_SILENCIOSO__ = {silencioso}; window.__BETTER_STUDENT_COMPLETO__ = {completo};"
+    );
     WebviewWindowBuilder::new(&app, JANELA_SUAP, WebviewUrl::External(url))
         .title("SUAP · Better Student")
         .inner_size(1100.0, 800.0)
@@ -124,6 +131,9 @@ struct PacoteSuap {
     horarios: Option<String>,
     calendario: Option<String>,
     detalhes: Vec<DetalheSuap>,
+    /// Seção "Instrumentos e Critérios de Avaliação" de cada turma virtual
+    /// (só ela: o resto da página tem dados dos colegas, que o app não quer).
+    turmas: Vec<DetalheSuap>,
 }
 
 /// Recebido da janela do SUAP: repassa o boletim (e horários/calendário, se vieram)
@@ -138,22 +148,26 @@ fn entregar_suap(
     horarios: Option<String>,
     calendario: Option<String>,
     detalhes: Option<Vec<DetalheSuap>>,
+    turmas: Option<Vec<DetalheSuap>>,
 ) -> Result<(), String> {
     if janela.label() != JANELA_SUAP {
         return Err("comando exclusivo da janela do SUAP".into());
     }
     let grande = |texto: &str| texto.len() > TAMANHO_MAXIMO_BOLETIM;
     let detalhes = detalhes.unwrap_or_default();
+    let turmas = turmas.unwrap_or_default();
     if grande(&boletim)
         || horarios.as_deref().is_some_and(grande)
         || calendario.as_deref().is_some_and(grande)
         || detalhes.len() > MAXIMO_DETALHES
         || detalhes.iter().any(|d| grande(&d.html) || d.diario.len() > 32)
+        || turmas.len() > MAXIMO_DETALHES
+        || turmas.iter().any(|d| grande(&d.html) || d.diario.len() > 32)
     {
         return Err("página do SUAP grande demais".into());
     }
     let escondida = !janela.is_visible().unwrap_or(true);
-    app.emit_to("main", "suap:boletim", PacoteSuap { boletim, horarios, calendario, detalhes })
+    app.emit_to("main", "suap:boletim", PacoteSuap { boletim, horarios, calendario, detalhes, turmas })
         .map_err(|e| e.to_string())?;
     if !escondida {
         if let Some(principal) = app.get_webview_window("main") {
@@ -221,6 +235,12 @@ fn migrations() -> Vec<Migration> {
             version: 9,
             description: "novidades para a caixa ao abrir o app",
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0009_novidades.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 10,
+            description: "criterios de avaliacao das disciplinas",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0010_criterios.sql"),
             kind: MigrationKind::Up,
         },
     ]

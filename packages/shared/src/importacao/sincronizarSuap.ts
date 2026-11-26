@@ -29,9 +29,11 @@ export interface ExtrasSuap {
   calendario: SemestrePacote | null;
   /** "Detalhar" de cada disciplina (as avaliações e a forma de cálculo). */
   detalhes: DetalheDoDiario[];
+  /** Critérios de avaliação do plano de ensino de cada turma virtual (só na busca completa). */
+  criterios: { diario: string; texto: string }[];
 }
 
-export const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null, detalhes: [] };
+export const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null, detalhes: [], criterios: [] };
 
 type Periodo = { ano: number; periodo: number } | null;
 
@@ -118,6 +120,13 @@ export async function sincronizarSuap(
   const horarios = grade ? await importarHorarios(banco, semestre.id, grade) : null;
   // O detalhamento casa pelo número do diário, gravado logo acima pelo boletim.
   if (extras.detalhes.length > 0) await aplicarDetalhesSuap(banco, semestre.id, extras.detalhes);
+  if (extras.criterios.length > 0) {
+    const lista = await repoDisciplinas.listar(banco, semestre.id);
+    for (const { diario, texto } of extras.criterios) {
+      const d = lista.find((x) => x.suap?.diario === diario);
+      if (d) await repoDisciplinas.gravarCriteriosSuap(banco, d.id, texto);
+    }
+  }
   if (extras.calendario && calendarioServe(extras.calendario, semestre)) {
     await repoCalendario.aplicarPacote(banco, semestre, "suap", extras.calendario);
   }
@@ -131,4 +140,20 @@ export async function sincronizarSuap(
     opcoes.agora,
   );
   return { importacao, horarios, provas, notasNovas: notasNovas(antes, depois) };
+}
+
+/**
+ * Se a próxima busca no SUAP precisa ser COMPLETA: falta algo que só a busca
+ * completa traz (horários, calendário acadêmico ou os critérios de avaliação
+ * de alguma disciplina). Depois de trazido, isso quase não muda, então as
+ * buscas seguintes pegam só o que muda (boletim e notas).
+ */
+export function precisaBuscaCompleta(
+  disciplinas: readonly Disciplina[],
+  temHorarios: boolean,
+  temCalendario: boolean,
+): boolean {
+  const doSuap = disciplinas.filter((d) => d.suap?.diario);
+  if (doSuap.length === 0) return true;
+  return !temHorarios || !temCalendario || doSuap.some((d) => d.criterios.suap === null);
 }

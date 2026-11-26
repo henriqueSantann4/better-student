@@ -426,6 +426,18 @@
       "nenhumaComNota": "Nenhuma atividade corrigida ainda.",
       "semNota_one": "{{count}} atividade ainda sem nota.",
       "semNota_other": "{{count}} atividades ainda sem nota."
+    },
+    "criterios": {
+      "ver": "Como a nota é calculada",
+      "esconder": "Esconder como a nota é calculada",
+      "editado": "editado por você",
+      "doSuap": "Texto do professor no plano de ensino (Turma Virtual do SUAP):",
+      "daVoce": "Sua versão. O texto do SUAP continua guardado: dá para voltar a ele.",
+      "vazioSuap": "O professor não preencheu os critérios de avaliação no SUAP.",
+      "naoBuscado": "Ainda não buscado no SUAP. Em Configurações, use \"Buscar tudo do SUAP de novo\".",
+      "escrever": "Escrever",
+      "voltar": "Voltar ao texto do SUAP",
+      "confirmarVoltar": "Apagar a sua versão e voltar ao texto do SUAP?"
     }
   },
   "instituicao": {
@@ -498,6 +510,11 @@
       "pasta": "Pasta dos materiais",
       "vazioPadrao": "Deixe em branco para usar a pasta padrão (Documentos\\Better Student\\Materiais).",
       "caminhoCompleto": "Use o caminho completo da pasta, começando pela unidade (ex.: C:\\Users\\voce\\OneDrive\\Materiais)."
+    },
+    "suapTudo": {
+      "botao": "Buscar tudo do SUAP de novo",
+      "dica": "Ao abrir, o app busca só o que muda (boletim, notas e datas de prova). Horários, calendário acadêmico e critérios de avaliação são buscados na primeira vez; use este botão se algo deles mudou.",
+      "buscando": "Buscando no SUAP…"
     }
   },
   "inicio": {

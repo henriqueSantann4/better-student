@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   casarDisciplinaMoodle,
+  disciplinas as repoDisciplinas,
   explicarEtapa,
   tarefas as repoTarefas,
   textosRecuperacao,
@@ -192,6 +193,8 @@ function CartaoNotas({
       )}
       {detalhe && aberto && <DetalheDaNota detalhe={detalhe} />}
 
+      <ComoCalcula disciplina={disciplina} />
+
       {notasMoodle.length > 0 && <NotasDoMoodle notas={notasMoodle} />}
 
       <h3 className="pequeno suave notas-subtitulo">{t("notas.proximas")}</h3>
@@ -345,6 +348,87 @@ function NotasDoMoodle({ notas }: { notas: NotaMoodle[] }) {
       )}
       {semNota > 0 && comNota.length > 0 && <p className="pequeno suave">{t("notas.moodle.semNota", { count: semNota })}</p>}
     </>
+  );
+}
+
+/**
+ * "Como a nota é calculada": o texto do professor no plano de ensino da Turma
+ * Virtual do SUAP. Se o professor mudou as regras no meio do semestre, o
+ * aluno reescreve; a versão dele vale até ele voltar ao texto do SUAP.
+ */
+function ComoCalcula({ disciplina }: { disciplina: Disciplina }) {
+  const { t } = useTranslation();
+  const { banco, acao } = useSemestre();
+  const { suap: doSuap, editados } = disciplina.criterios;
+  const [aberto, setAberto] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const [rascunho, setRascunho] = useState("");
+  const texto = editados ?? (doSuap || null);
+
+  function comecarEdicao() {
+    setRascunho(texto ?? "");
+    setEditando(true);
+    setAberto(true);
+  }
+
+  async function salvar() {
+    // Igual ao do SUAP = não há edição (fica no padrão).
+    const valor = rascunho.trim() && rascunho.trim() !== (doSuap ?? "").trim() ? rascunho : null;
+    if (await acao(() => repoDisciplinas.editarCriterios(banco, disciplina.id, valor))) setEditando(false);
+  }
+
+  return (
+    <div className="como-calcula">
+      <button type="button" className="link pequeno notas-ver" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+        {aberto ? t("notas.criterios.esconder") : t("notas.criterios.ver")}
+        {editados !== null && ` (${t("notas.criterios.editado")})`}
+      </button>
+      {aberto &&
+        (editando ? (
+          <div className="formulario">
+            <textarea value={rascunho} onChange={(e) => setRascunho(e.target.value)} rows={8} autoFocus />
+            <div className="acoes">
+              <button type="button" className="botao primario" onClick={() => void salvar()}>
+                {t("comum.salvar")}
+              </button>
+              <button type="button" className="botao" onClick={() => setEditando(false)}>
+                {t("comum.cancelar")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="pequeno suave">
+              {editados !== null
+                ? t("notas.criterios.daVoce")
+                : doSuap
+                  ? t("notas.criterios.doSuap")
+                  : doSuap === ""
+                    ? t("notas.criterios.vazioSuap")
+                    : t("notas.criterios.naoBuscado")}
+            </p>
+            {texto && <p className="criterios-texto">{texto}</p>}
+            <div className="acoes">
+              <button type="button" className="botao pequeno" onClick={comecarEdicao}>
+                {texto ? t("comum.editar") : t("notas.criterios.escrever")}
+              </button>
+              {editados !== null && (
+                <button
+                  type="button"
+                  className="botao pequeno"
+                  onClick={() => {
+                    if (window.confirm(t("notas.criterios.confirmarVoltar"))) {
+                      void acao(() => repoDisciplinas.editarCriterios(banco, disciplina.id, null));
+                    }
+                  }}
+                >
+                  {t("notas.criterios.voltar")}
+                </button>
+              )}
+            </div>
+          </>
+        ))}
+    </div>
   );
 }
 

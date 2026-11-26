@@ -10,8 +10,11 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import {
+  calendario as repoCalendario,
   casarDisciplinaMoodle,
   configuracao,
+  horarios as repoHorarios,
+  precisaBuscaCompleta,
   ErroBoletim,
   novidades,
   periodoConfere,
@@ -49,6 +52,8 @@ interface Sincronizacao {
   atualizar: () => Promise<void>;
   /** Abre a janela do SUAP visível para o aluno entrar; ao terminar, grava tudo. */
   entrarNoSuap: () => Promise<void>;
+  /** Busca de novo TUDO do SUAP (horários, calendário, critérios), não só o que muda. */
+  buscarTudoDoSuap: () => Promise<void>;
 }
 
 const ContextoSincronizacao = createContext<Sincronizacao | null>(null);
@@ -85,19 +90,35 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
     [banco, avisarTelas],
   );
 
-  const atualizarSuap = useCallback(async () => {
+  /**
+   * Na primeira vez (ou se falta algo), a busca é completa; depois, só o que
+   * muda ao longo do semestre (boletim, notas, datas de prova).
+   */
+  const buscaCompleta = useCallback(async (forcar: boolean) => {
+    if (forcar) return true;
+    const semestre = await semestres.atual(banco);
+    if (!semestre) return true;
+    const [lista, grade, eventos] = await Promise.all([
+      repoDisciplinas.listar(banco, semestre.id),
+      repoHorarios.listarDoSemestre(banco, semestre.id),
+      repoCalendario.listar(banco, semestre.id),
+    ]);
+    return precisaBuscaCompleta(lista, grade.length > 0, eventos.length > 0);
+  }, [banco]);
+
+  const atualizarSuap = useCallback(async (forcarCompleta = false) => {
     const servidor = isTauri() ? await lerServidorSuap(banco) : null;
     if (!servidor) return marcar("suap", INATIVO);
     marcar("suap", { estado: "buscando" });
     try {
-      const resposta = await buscarSuapEscondido(servidor);
+      const resposta = await buscarSuapEscondido(servidor, await buscaCompleta(forcarCompleta));
       if ("semSessao" in resposta) return marcar("suap", { estado: "entrar" });
       await aplicarPacote(resposta.pacote);
       marcar("suap", { estado: "ok", em: new Date() });
     } catch (erro) {
       marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) });
     }
-  }, [banco, marcar, aplicarPacote]);
+  }, [banco, marcar, aplicarPacote, buscaCompleta]);
 
   const atualizarMoodle = useCallback(async () => {
     const site = isTauri() ? await lerSiteMoodle(banco) : null;
@@ -155,7 +176,7 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
     if (rodando.current) return;
     rodando.current = true;
     try {
-      await Promise.all([atualizarSuap(), atualizarMoodle(), atualizarEmail()]);
+      await Promise.all([atualizarSuap(false), atualizarMoodle(), atualizarEmail()]);
     } finally {
       rodando.current = false;
       setPrimeiraFeita(true);
@@ -168,16 +189,30 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
     pararEspera.current?.();
     marcar("suap", { estado: "buscando" });
     try {
-      pararEspera.current = await buscarBoletimNoSuap(servidor, (pacote) => {
-        pararEspera.current = null;
-        aplicarPacote(pacote)
-          .then(() => marcar("suap", { estado: "ok", em: new Date() }))
-          .catch((erro) => marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) }));
-      });
+      pararEspera.current = await buscarBoletimNoSuap(
+        servidor,
+        (pacote) => {
+          pararEspera.current = null;
+          aplicarPacote(pacote)
+            .then(() => marcar("suap", { estado: "ok", em: new Date() }))
+            .catch((erro) => marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) }));
+        },
+        await buscaCompleta(false),
+      );
     } catch (erro) {
       marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) });
     }
-  }, [banco, marcar, aplicarPacote]);
+  }, [banco, marcar, aplicarPacote, buscaCompleta]);
+
+  const buscarTudoDoSuap = useCallback(async () => {
+    if (rodando.current) return;
+    rodando.current = true;
+    try {
+      await atualizarSuap(true);
+    } finally {
+      rodando.current = false;
+    }
+  }, [atualizarSuap]);
 
   // Uma vez ao abrir o app, quando já existe semestre e faculdade escolhida.
   const comecou = useRef(false);
@@ -192,7 +227,7 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
 
   const buscando = Object.values(fontes).some((f) => f.estado === "buscando");
   return (
-    <ContextoSincronizacao.Provider value={{ fontes, buscando, versao, primeiraFeita, atualizar, entrarNoSuap }}>
+    <ContextoSincronizacao.Provider value={{ fontes, buscando, versao, primeiraFeita, atualizar, entrarNoSuap, buscarTudoDoSuap }}>
       {children}
     </ContextoSincronizacao.Provider>
   );

@@ -1889,3 +1889,21 @@ textarea {
   right: 8px;
 }
 
+/* Como a nota é calculada (texto do professor, com as quebras de linha). */
+.como-calcula {
+  margin-top: 4px;
+}
+
+.criterios-texto {
+  margin: 6px 0;
+  white-space: pre-line;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.como-calcula textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+}
+

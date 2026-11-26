@@ -9,7 +9,7 @@ import { tarefas } from "../banco/tarefas.ts";
 import type { Disciplina } from "../tipos.ts";
 import { lerBoletimSuap } from "./boletimSuap.ts";
 import { lerDetalheNotasSuap } from "./detalheNotasSuap.ts";
-import { notasNovas, sincronizarSuap, SEM_EXTRAS } from "./sincronizarSuap.ts";
+import { notasNovas, precisaBuscaCompleta, sincronizarSuap, SEM_EXTRAS } from "./sincronizarSuap.ts";
 
 const fixture = (nome: string) => readFileSync(new URL(`./fixtures/${nome}`, import.meta.url), "utf8");
 const boletim = lerBoletimSuap(fixture("boletim-suap.html"));
@@ -53,5 +53,35 @@ describe("sincronizar com o SUAP", () => {
     const [prova] = await tarefas.listar(banco);
     assert.equal(prova?.titulo, "Prova 1");
     assert.ok(prova?.concluidaEm);
+  });
+});
+
+describe("critérios de avaliação e busca completa", () => {
+  it("grava o texto do SUAP pelo diário; a versão do aluno fica à parte e pode ser desfeita", async () => {
+    const banco = bancoEmMemoria();
+    const semestre = await semestres.criar(banco, { nome: "2026.2", inicio: "2026-08-03", fim: "2026-12-18" });
+    const diario = boletim.disciplinas[0]!.diario!;
+    await sincronizarSuap(banco, semestre, boletim, { ...SEM_EXTRAS, criterios: [{ diario, texto: "Nota Final = P1 + P2" }] });
+    let d = (await disciplinas.listar(banco, semestre.id)).find((x) => x.suap?.diario === diario)!;
+    assert.deepEqual(d.criterios, { suap: "Nota Final = P1 + P2", editados: null });
+
+    await disciplinas.editarCriterios(banco, d.id, "Agora P1 vale 6 e P2 vale 4");
+    // Uma nova busca do SUAP não apaga a versão do aluno.
+    await sincronizarSuap(banco, semestre, boletim, { ...SEM_EXTRAS, criterios: [{ diario, texto: "Nota Final = P1 + P2" }] });
+    d = (await disciplinas.listar(banco, semestre.id)).find((x) => x.id === d.id)!;
+    assert.equal(d.criterios.editados, "Agora P1 vale 6 e P2 vale 4");
+
+    await disciplinas.editarCriterios(banco, d.id, null);
+    d = (await disciplinas.listar(banco, semestre.id)).find((x) => x.id === d.id)!;
+    assert.deepEqual(d.criterios, { suap: "Nota Final = P1 + P2", editados: null });
+  });
+
+  it("busca completa só enquanto falta algo que quase não muda", () => {
+    const com = (suap: string | null) => ({ suap: { diario: "1" }, criterios: { suap, editados: null } }) as Disciplina;
+    assert.equal(precisaBuscaCompleta([], true, true), true);
+    assert.equal(precisaBuscaCompleta([com(null)], true, true), true);
+    assert.equal(precisaBuscaCompleta([com("")], false, true), true);
+    // Professor que não preencheu ("") não força buscar de novo toda vez.
+    assert.equal(precisaBuscaCompleta([com(""), com("texto")], true, true), false);
   });
 });

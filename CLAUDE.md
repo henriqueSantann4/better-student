@@ -58,13 +58,16 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - [testar] **Atualização ao abrir** (1.1, `apps/desktop/src/sincronizacao.tsx`): SUAP, Moodle e e-mail em paralelo, uma vez ao abrir e no botão Atualizar do menu. O SUAP abre a janela ESCONDIDA (`abrir_suap` com `silencioso`), que aproveita os cookies da sessão; se pedir login, o script chama `suap_sem_sessao` e o app mostra "Entrar no SUAP". A gravação sem prévia é `sincronizarSuap` (`shared/importacao/sincronizarSuap.ts`), que recusa boletim de outro período. O Moodle guarda salas, notas e lista de arquivos em `configuracao.cacheMoodle` (`moodle/cache.ts`); Notas e Materiais leem dali.
 - [testar] **Novidades e avisos vistos** (1.1): cada fonte registra o que trouxe de novo na tabela `novidade` (migration 0009, `banco/novidades.ts`); a primeira busca de cada fonte não gera novidade. A caixa "Enquanto você estava fora" (`telas/Novidades.tsx`) abre junto com o app, sempre. Avisos (`shared/regras/avisos.ts`) têm `chave` e `nivel`; o check grava o nível em `configuracao.avisosDispensados`, e o aviso volta se o nível subir.
 - [testar] **Provas do SUAP na Agenda** (1.1, `shared/importacao/provasSuap.ts`, migration 0008 com `tarefa.suap_chave`/`suap_data`): avaliações com data no "Detalhar" viram tarefas (origem "suap"), no horário da aula do dia; juntam com a anotação do aluno (mesma disciplina, tipo e dia); data mudada no SUAP muda o prazo (só quando o SUAP muda, para não desfazer ajuste do aluno); sumiu do SUAP, a criada pelo SUAP é apagada e a do aluno só perde a marca. Data passada entra concluída.
+- [testar] **Critérios de avaliação** (1.1): a Turma Virtual (`/edu/sala_virtual/<diário>/?tab=dados_gerais`; o número é o mesmo diário do boletim) tem no plano de ensino a seção "Instrumentos e Critérios de Avaliação da Aprendizagem", texto livre do professor com a fórmula da nota. O script da janela do SUAP manda SÓ essa seção (a página tem a lista de colegas). Leitor `lerCriteriosAvaliacao` (`shared/importacao/criteriosSuap.ts`), migration 0010 (`suap_criterios`, `criterios_editados`); na tela de Notas, "Como a nota é calculada" com editar e voltar ao do SUAP.
+- [testar] **Busca completa x parcial no SUAP** (1.1): `abrir_suap` recebe `completo`; completa (horários, calendário, critérios) só quando `precisaBuscaCompleta` diz que falta algo, ou pelo botão "Buscar tudo do SUAP de novo" em Configurações. Nas outras vezes, só boletim e "Detalhar".
+- [próximo] **Também na Turma Virtual, ainda não usado:** "Aulas Ministradas" (cada aula com data, faltas e conteúdo, inclusive as futuras como "Prova 3": datas de prova e o relatório de faltas por data), "Materiais de Aula" (arquivos do professor no SUAP) e "Desenvolvimento das Aulas" (conteúdo de cada semana).
 - [próximo] **Candidatos para a 1.1** (a definir com o Antonio): perfis de outras universidades públicas (ex.: UNESP, que também usa Moodle), conferindo regras e endereços em fontes oficiais; notificações agendadas no Windows (questão 6); o "Relatório de Faltas do Período" (faltas por data).
 
 ## Regras de domínio importantes (padrão IFSP, sempre configuráveis)
 
 - **Semestral.** O foco é o semestre atual; os anteriores ficam como histórico de menor importância.
 - **Faltas contam por aula, não por dia.** Cada disciplina tem `totalAulas` (ex.: Projeto de Extensão 1 = 100 aulas), e cada encontro da grade vale `quantidadeAulas`. O limite é `totalAulas × 25%`. Frequência abaixo de 75% significa reprovação automática.
-- **Notas:** média ≥ 6 aprova. Média entre 4 e 6 vai para o **IFA** (recuperação); quem passa no IFA fica com média final **limitada a 6**. Média < 4 reprova direto. *Em aberto: qual nota é preciso tirar no IFA.*
+- **Notas:** média ≥ 6 aprova. Média entre 4 e 6 vai para o **IFA** (recuperação); para passar no IFA é preciso tirar **6,0** nele, e a nota final é **a maior entre a nota semestral e a do IFA** (texto padrão dos planos de ensino do IFSP, visto na Turma Virtual em 26/11/2026). Média < 4 reprova direto.
 - **Parser de linguagem natural, sem IA:** "prova dia 12" resolve a data e consulta a grade. Uma aula no dia preenche a disciplina e o horário; várias aulas mostram botões de escolha; nenhuma aula mostra um aviso. O que o usuário escreveu sempre vence a dedução.
 - **Foto do quadro:** a disciplina é definida pelo horário da foto, com tolerância de 15 min após o fim da aula (desde que a próxima aula não tenha começado). Fora de qualquer janela, a foto vai para `_Sem disciplina`.
 - **Notificações:** configuráveis (quantidade, antecedência, intervalo), com padrão por tipo de tarefa. Os lembretes são **agendados no SO**, porque o app **não roda em segundo plano**.
@@ -114,7 +117,7 @@ pnpm build        # gera o instalador para Windows
 
 ## Questões em aberto
 
-1. Nota mínima no IFA para aprovação.
+1. ~~Nota mínima no IFA para aprovação.~~ Resolvido (26/11/2026): 6,0 no IFA; a nota final é a maior entre a semestral e a do IFA (plano de ensino na Turma Virtual).
 2. Meta e categorias das horas complementares do curso de SI (consultar o PPC).
 3. Quais funções ficam fora do app do celular (decidir na fase 3).
 4. O que a API do SUAP do IFSP expõe; se o Moodle do campus aceita o app oficial do Moodle.

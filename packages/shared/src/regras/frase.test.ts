@@ -9,7 +9,7 @@ const agora = new Date(2026, 10, 25, 14, 0);
 const registro = { criadoEm: "", atualizadoEm: "", excluidoEm: null };
 function disciplina(id: string, nome: string, codigo: string | null = null): Disciplina {
   return {
-    ...registro, id, semestreId: "s", nome, sigla: null, professor: null, totalAulas: 80, frequenciaMinima: null, cor: null, notaIfa: null,
+    ...registro, id, semestreId: "s", nome, sigla: null, professor: null, totalAulas: 80, frequenciaMinima: null, cor: null, notaIfa: null, criterios: { suap: null, editados: null },
     suap: codigo ? { codigo, diario: null, aulasCumpridas: null, faltas: null, frequencia: null, situacao: null, etapas: [], media: null, naf: null, mfd: null, atualizadoEm: null, importadoEm: "", detalhe: null } : null,
   };
 }

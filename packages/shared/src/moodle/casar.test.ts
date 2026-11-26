@@ -7,7 +7,7 @@ import { casarDisciplinaMoodle } from "./casar.ts";
 function disciplina(nome: string, codigo: string | null): Disciplina {
   return {
     id: nome, criadoEm: "", atualizadoEm: "", excluidoEm: null, semestreId: "s", nome, sigla: null,
-    professor: null, totalAulas: 80, frequenciaMinima: null, cor: null, notaIfa: null,
+    professor: null, totalAulas: 80, frequenciaMinima: null, cor: null, notaIfa: null, criterios: { suap: null, editados: null },
     suap: codigo
       ? { codigo, diario: null, aulasCumpridas: null, faltas: null, frequencia: null, situacao: null, etapas: [], media: null, naf: null, mfd: null, atualizadoEm: null, importadoEm: "", detalhe: null }
       : null,

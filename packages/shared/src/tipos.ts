@@ -80,6 +80,19 @@ export interface Disciplina extends Registro {
   notaIfa: number | null;
   /** Última importação do SUAP. `null` = nunca importada. */
   suap: DadosSuap | null;
+  /** Como a nota é calculada (texto do plano de ensino). */
+  criterios: CriteriosAvaliacao;
+}
+
+/**
+ * "Instrumentos e Critérios de Avaliação" da disciplina. O texto do SUAP é o
+ * padrão; se o aluno reescrever, vale o dele até ele voltar ao padrão.
+ */
+export interface CriteriosAvaliacao {
+  /** Texto do SUAP. `null` = nunca buscado; `""` = o professor não preencheu. */
+  suap: string | null;
+  /** Versão reescrita pelo aluno. `null` = vale a do SUAP. */
+  editados: string | null;
 }
 
 /**

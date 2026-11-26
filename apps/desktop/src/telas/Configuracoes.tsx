@@ -12,6 +12,8 @@ import {
   type RegrasAcademicas,
   type Semestre,
 } from "@better-student/shared";
+import { isTauri } from "@tauri-apps/api/core";
+import { useSincronizacao } from "../sincronizacao";
 import { useApp } from "../contexto";
 import { conexaoDisponivel, desconectar as desconectarEmail, estaConectado as emailConectado } from "../email/conexao";
 import { formatarNota } from "../formatos";
@@ -190,6 +192,7 @@ function Contas() {
   const [moodleOk, setMoodleOk] = useState<boolean | null>(null);
   const [emailOk, setEmailOk] = useState<boolean | null>(null);
   const [salvo, setSalvo] = useState(false);
+  const { fontes, buscando, buscarTudoDoSuap } = useSincronizacao();
 
   useEffect(() => {
     void (async () => {
@@ -237,6 +240,22 @@ function Contas() {
       </form>
 
       <ul className="lista config-contas">
+        {suap && (
+          <li className="item">
+            <div className="item-texto">
+              <strong>{t("config.contas.suap")}</strong>
+              <span className="pequeno suave">{t("config.suapTudo.dica")}</span>
+            </div>
+            <button
+              type="button"
+              className="botao"
+              disabled={!isTauri() || buscando}
+              onClick={() => void buscarTudoDoSuap()}
+            >
+              {fontes.suap.estado === "buscando" ? t("config.suapTudo.buscando") : t("config.suapTudo.botao")}
+            </button>
+          </li>
+        )}
         <li className="item">
           <div className="item-texto">
             <strong>{t("config.contas.moodle")}</strong>
