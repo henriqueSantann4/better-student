@@ -73,9 +73,9 @@ export function formatarDataEmail(iso: string, completa = false): string {
 }
 
 /**
- * Prazo curto, para listas: "hoje, 19:00", "amanhã, 07:00" ou, daí em diante,
- * sempre com a data: "seg., 30/11, 07:00" (só o dia da semana deixava em
- * dúvida qual segunda era). Prazo às 23:59 é "o dia todo": sem hora.
+ * Prazo curto, para listas, sempre com a data: "hoje, 26/11, 19:00",
+ * "amanhã, 27/11, 07:00", "seg., 30/11, 07:00" (só o dia da semana deixava
+ * em dúvida qual segunda era). Prazo às 23:59 é "o dia todo": sem hora.
  */
 export function formatarPrazo(iso: string, agora: Date = new Date()): string {
   const data = new Date(iso);
@@ -86,8 +86,9 @@ export function formatarPrazo(iso: string, agora: Date = new Date()): string {
       : `, ${new Intl.DateTimeFormat(lingua, { hour: "2-digit", minute: "2-digit" }).format(data)}`;
   const inicioDoDia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const dias = Math.round((inicioDoDia(data) - inicioDoDia(agora)) / 86_400_000);
-  if (dias === 0) return `${i18n.t("comum.hoje")}${hora}`;
-  if (dias === 1) return `${i18n.t("comum.amanha")}${hora}`;
+  const diaMes = new Intl.DateTimeFormat(lingua, { day: "2-digit", month: "2-digit" }).format(data);
+  if (dias === 0) return `${i18n.t("comum.hoje")}, ${diaMes}${hora}`;
+  if (dias === 1) return `${i18n.t("comum.amanha")}, ${diaMes}${hora}`;
   return `${new Intl.DateTimeFormat(lingua, { weekday: "short", day: "2-digit", month: "2-digit" }).format(data)}${hora}`;
 }
 
