@@ -14,6 +14,7 @@ import { EscolherInstituicao } from "./telas/EscolherInstituicao";
 import { Faltas } from "./telas/Faltas";
 import { Grade } from "./telas/Grade";
 import { Inicio } from "./telas/Inicio";
+import { Materiais } from "./telas/Materiais";
 import { Moodle } from "./telas/Moodle";
 import { Notas } from "./telas/Notas";
 
@@ -118,15 +119,12 @@ function Layout() {
           <Notas aoIrAgenda={() => setSecao("agenda")} />
         ) : secaoAtiva === "calendario" ? (
           <Calendario />
+        ) : secaoAtiva === "materiais" ? (
+          <Materiais />
         ) : secaoAtiva === "email" ? (
           <Email />
-        ) : secaoAtiva === "moodle" ? (
-          <Moodle />
         ) : (
-          <>
-            <h1>{t(`menu.${secaoAtiva}`)}</h1>
-            <p className="suave">{t("emBreve")}</p>
-          </>
+          <Moodle />
         )}
       </main>
     </div>

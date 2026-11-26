@@ -5,6 +5,7 @@
 //! senhas). Regras de negócio ficam em TypeScript, no pacote `shared`.
 
 mod email;
+mod materiais;
 mod moodle;
 
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
@@ -186,7 +187,12 @@ pub fn run() {
             moodle::moodle_conectar,
             moodle::moodle_conectado,
             moodle::moodle_chave,
-            moodle::moodle_desconectar
+            moodle::moodle_desconectar,
+            materiais::materiais_pasta_padrao,
+            materiais::materiais_listar,
+            materiais::materiais_copiar,
+            materiais::materiais_abrir,
+            materiais::materiais_baixar_moodle
         ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o Better Student");

@@ -32,6 +32,9 @@ keyring = "4"
 base64 = "0.22"
 md-5 = "0.10"
 getrandom = "0.3"
+# Download dos arquivos do Moodle para a pasta de materiais. Cliente HTTP
+# pequeno, usando o mesmo TLS do Windows do e-mail (native-tls).
+ureq = { version = "2", default-features = false, features = ["native-tls"] }
 
 [profile.release]
 # Prioriza um executável pequeno, de acordo com a proposta de app leve.

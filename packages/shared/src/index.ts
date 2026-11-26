@@ -8,3 +8,4 @@ export * from "./instituicao/perfil.ts";
 export * from "./email/email.ts";
 export * from "./moodle/moodle.ts";
 export * from "./moodle/casar.ts";
+export * from "./materiais/materiais.ts";

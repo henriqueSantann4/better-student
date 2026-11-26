@@ -17,6 +17,11 @@
     "allow-moodle-conectado",
     "allow-moodle-chave",
     "allow-moodle-desconectar",
+    "allow-materiais-pasta-padrao",
+    "allow-materiais-listar",
+    "allow-materiais-copiar",
+    "allow-materiais-abrir",
+    "allow-materiais-baixar-moodle",
     {
       "identifier": "opener:allow-open-url",
       "allow": [{ "url": "https://myaccount.google.com/*" }, { "url": "https://*.edu.br/*" }]

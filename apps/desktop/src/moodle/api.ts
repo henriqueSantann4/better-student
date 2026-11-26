@@ -13,11 +13,13 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   configuracao,
   conferirResposta,
+  lerArquivosMoodle,
   lerAtividadesMoodle,
   lerDisciplinasMoodle,
   lerInfoSite,
   lerNotasMoodle,
   parametrosMoodle,
+  type ArquivoMoodle,
   type AtividadeMoodle,
   type Banco,
   type DisciplinaMoodle,
@@ -135,6 +137,17 @@ export async function carregarNotas(site: string): Promise<NotasDaSala[]> {
       }
     }),
   );
+}
+
+/** As salas em que o aluno está inscrito. */
+export async function carregarSalas(site: string): Promise<DisciplinaMoodle[]> {
+  const info = lerInfoSite(await chamar(site, "core_webservice_get_site_info"));
+  return lerDisciplinasMoodle(await chamar(site, "core_enrol_get_users_courses", { userid: info.idUsuario }));
+}
+
+/** Arquivos que os professores postaram numa sala (slides, PDFs, listas). */
+export async function carregarArquivosDaSala(site: string, salaId: number): Promise<ArquivoMoodle[]> {
+  return lerArquivosMoodle(await chamar(site, "core_course_get_contents", { courseid: salaId }));
 }
 
 /** Abre uma atividade no navegador do sistema (o plugin só abre https://*.edu.br). */

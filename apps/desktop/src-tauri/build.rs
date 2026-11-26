@@ -16,6 +16,11 @@ fn main() {
             "moodle_conectado",
             "moodle_chave",
             "moodle_desconectar",
+            "materiais_pasta_padrao",
+            "materiais_listar",
+            "materiais_copiar",
+            "materiais_abrir",
+            "materiais_baixar_moodle",
         ]),
     ))
     .expect("erro ao preparar o build do Tauri");

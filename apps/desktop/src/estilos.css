@@ -1522,3 +1522,90 @@ textarea {
   border-color: currentColor;
 }
 
+/* ---------- Materiais ---------- */
+
+.materiais-busca {
+  width: 100%;
+  max-width: 420px;
+  margin: 4px 0 14px;
+}
+
+.materiais-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .materiais-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.materiais-pastas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.materiais-pasta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--painel);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.materiais-pasta:hover {
+  border-color: var(--borda-forte);
+}
+
+.materiais-pasta.ativa {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+.materiais-painel {
+  min-height: 240px;
+  border: 1px solid transparent;
+}
+
+.materiais-painel.soltando {
+  border: 2px dashed var(--destaque);
+}
+
+.materiais-soltar {
+  margin: 4px 0;
+  font-weight: 600;
+  color: var(--destaque);
+}
+
+.materiais-nome {
+  text-align: left;
+  word-break: break-word;
+}
+
+.materiais-moodle {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+.etiqueta.neutra-tipo {
+  min-width: 3.2em;
+  text-align: center;
+  color: var(--suave);
+  background: color-mix(in srgb, var(--suave) 15%, transparent);
+}
+

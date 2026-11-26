@@ -6,6 +6,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ### Novo
 
+- **Materiais:** uma pasta por disciplina no computador (em Documentos\Better Student\Materiais, trocável em Configurações), mais a "Sem disciplina". A aba lista os arquivos de cada pasta, abre no programa padrão, abre a pasta no Explorer, busca pelo nome em todas as disciplinas e copia para a pasta os arquivos arrastados para a janela. Também lista os arquivos que os professores postaram na sala do Moodle e baixa um a um ou todos de uma vez, marcando os que já foram baixados.
 - **Notas do Moodle:** a tela de Notas mostra, em cada disciplina, as atividades do Moodle que já têm nota (como "5,7 de 7") e quantas ainda não foram corrigidas. Clicar no nome abre a atividade no Moodle. As notas são buscadas na hora, com o app aberto e o Moodle conectado.
 - **Notas detalhadas:** o "Atualizar do SUAP" também traz o "Detalhar" de cada disciplina. Na tela de Notas, clicar na nota mostra as avaliações de cada etapa (sigla, descrição, data e nota) e a conta que o SUAP faz: a soma, na "Soma Simples", ou a média. Na "Fórmula", o app avisa que o SUAP não publica qual é. Quando a etapa ainda não fechou mas já há avaliações com nota, o detalhamento aparece aberto.
 

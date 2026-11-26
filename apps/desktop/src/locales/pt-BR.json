@@ -18,7 +18,6 @@
     "moodle": "Moodle",
     "configuracoes": "Configurações"
   },
-  "emBreve": "Esta seção chega nas próximas versões.",
   "comum": {
     "salvar": "Salvar",
     "cancelar": "Cancelar",
@@ -495,8 +494,10 @@
     },
     "materiais": {
       "titulo": "Materiais",
-      "dica": "Pasta onde ficam os arquivos de cada disciplina (e as fotos do quadro, quando o app do celular chegar).",
-      "pasta": "Pasta dos materiais"
+      "dica": "Pasta onde fica uma subpasta para cada disciplina. Dá para escolher uma pasta do OneDrive ou do Google Drive e ganhar backup.",
+      "pasta": "Pasta dos materiais",
+      "vazioPadrao": "Deixe em branco para usar a pasta padrão (Documentos\\Better Student\\Materiais).",
+      "caminhoCompleto": "Use o caminho completo da pasta, começando pela unidade (ex.: C:\\Users\\voce\\OneDrive\\Materiais)."
     }
   },
   "inicio": {
@@ -530,5 +531,39 @@
       "mais_one": "+{{count}} aviso",
       "mais_other": "+{{count}} avisos"
     }
+  },
+  "materiais": {
+    "titulo": "Materiais",
+    "soNoApp": "A aba Materiais mexe em pastas do computador, então só funciona no app.",
+    "exemplo": "Modo navegador: estes arquivos são exemplos inventados, só para ver a tela.",
+    "local": "Pasta: {{pasta}}",
+    "abrirPastaGeral": "Abrir pasta de materiais",
+    "abrirPasta": "Abrir pasta",
+    "buscar": "Buscar arquivo pelo nome, em todas as disciplinas",
+    "nadaEncontrado": "Nenhum arquivo com esse nome.",
+    "semDisciplina": "Sem disciplina",
+    "arquivos_one": "{{count}} arquivo",
+    "arquivos_other": "{{count}} arquivos",
+    "escolha": "Escolha uma disciplina para ver os arquivos.",
+    "arraste": "Arraste arquivos para cá para copiar para esta pasta.",
+    "solte": "Solte para copiar para {{pasta}}",
+    "copiados_one": "{{count}} arquivo copiado.",
+    "copiados_other": "{{count}} arquivos copiados.",
+    "vazia": "Nenhum arquivo ainda.",
+    "moodle": {
+      "ver": "Ver arquivos do Moodle",
+      "titulo": "No Moodle",
+      "carregando": "Buscando os arquivos da sala no Moodle…",
+      "sem_conexao": "Conecte o Moodle (na aba Moodle) para baixar os arquivos dos professores.",
+      "sem_sala": "Não achei a sala do Moodle desta disciplina.",
+      "nenhum": "Os professores ainda não postaram arquivos nesta sala.",
+      "baixar": "Baixar",
+      "baixado": "baixado",
+      "baixarTodos_one": "Baixar {{count}} arquivo",
+      "baixarTodos_other": "Baixar {{count}} arquivos",
+      "baixando": "Baixando {{feitos}} de {{total}}…",
+      "falhou": "Não consegui baixar {{nome}}: {{erro}}"
+    },
+    "arquivos_zero": "nenhum arquivo"
   }
 }

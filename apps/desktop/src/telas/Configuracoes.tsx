@@ -17,6 +17,7 @@ import { conexaoDisponivel, desconectar as desconectarEmail, estaConectado as em
 import { formatarNota } from "../formatos";
 import { PERFIS } from "../instituicoes";
 import { desconectar as desconectarMoodle, estaConectado as moodleConectado, moodleDisponivel } from "../moodle/api";
+import { caminhoCompleto, materiaisDisponivel, pastaPadrao } from "../materiais";
 import { aplicarTema, temaSalvo, type Tema } from "../tema";
 import { SeletorInstituicao } from "./EscolherInstituicao";
 
@@ -386,10 +387,14 @@ function Materiais() {
   const { t } = useTranslation();
   const { banco, acao } = useApp();
   const [pasta, setPasta] = useState("");
+  const [padrao, setPadrao] = useState(PASTA_PADRAO);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
 
   useEffect(() => {
-    void configuracao.ler<string>(banco, "pastaMateriais").then((p) => setPasta(p ?? PASTA_PADRAO));
+    // No app, o caminho padrão de verdade (a pasta Documentos de quem usa).
+    if (materiaisDisponivel()) void pastaPadrao().then(setPadrao).catch(() => undefined);
+    void configuracao.ler<string>(banco, "pastaMateriais").then((p) => setPasta(p && caminhoCompleto(p) ? p : ""));
   }, [banco]);
 
   return (
@@ -398,13 +403,22 @@ function Materiais() {
         className="formulario"
         onSubmit={async (e) => {
           e.preventDefault();
-          setSalvo(await acao(() => configuracao.gravar(banco, "pastaMateriais", pasta.trim() || PASTA_PADRAO)));
+          const valor = pasta.trim();
+          if (valor && !caminhoCompleto(valor)) {
+            setAviso(t("config.materiais.caminhoCompleto"));
+            return;
+          }
+          setAviso(null);
+          // Vazio = volta para a pasta padrão.
+          setSalvo(await acao(() => configuracao.gravar(banco, "pastaMateriais", valor || null)));
         }}
       >
         <label>
           {t("config.materiais.pasta")}
-          <input value={pasta} onChange={(e) => (setSalvo(false), setPasta(e.target.value))} />
+          <input value={pasta} placeholder={padrao} onChange={(e) => (setSalvo(false), setPasta(e.target.value))} />
         </label>
+        <p className="pequeno suave">{t("config.materiais.vazioPadrao")}</p>
+        {aviso && <p className="aviso">{aviso}</p>}
         <div className="acoes">
           <button type="submit" className="botao">
             {t("comum.salvar")}
