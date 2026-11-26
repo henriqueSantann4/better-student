@@ -31,7 +31,7 @@
       ]
     },
     "updater": {
-      "pubkey": "COLE_AQUI_A_CHAVE_PUBLICA",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJBNEIwRjk3OUIwQTE0QTMKUldTakZBcWJsdzlMS3BZS2RJZkRBdklJSnZHSmpScGtjOFR1Q1RxWXpVWHVnMDlVZ0ZveStod2UK",
       "endpoints": [
         "https://github.com/henriqueSantann4/better-student/releases/latest/download/latest.json"
       ],
