@@ -564,7 +564,9 @@
       "semConta": "Conecte o e-mail institucional na aba E-mail para ver os mais recentes aqui.",
       "marcarLido": "Marcar como lido",
       "exemplo": "Modo navegador: e-mails de exemplo."
-    }
+    },
+    "proximasAulas_one": "Próxima aula",
+    "proximasAulas_other": "Próximas aulas"
   },
   "materiais": {
     "titulo": "Materiais",

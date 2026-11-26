@@ -95,6 +95,8 @@ function ProximasAulas({
   else if (dia.distancia === 0) titulo = t("inicio.hoje", { dia: nomeDia(diaSemanaDe(dia.data)) });
   else if (dia.distancia === 1) titulo = t("inicio.amanha", { dia: nomeDia(diaSemanaDe(dia.data)) });
   else titulo = t("inicio.proximaAula", { dia: nomeDia(diaSemanaDe(dia.data)), data: formatarDiaMes(dia.data) });
+  // "Próxima aula" ou "Próximas aulas" na frente do dia, para o quadro se explicar sozinho.
+  if (dia) titulo = `${t("inicio.proximasAulas", { count: dia.aulas.length })} · ${titulo}`;
 
   return (
     <section className="cartao inicio-cartao">
