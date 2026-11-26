@@ -35,6 +35,11 @@ getrandom = "0.3"
 # Download dos arquivos do Moodle para a pasta de materiais. Cliente HTTP
 # pequeno, usando o mesmo TLS do Windows do e-mail (native-tls).
 ureq = { version = "2", default-features = false, features = ["native-tls"] }
+# Atualização automática: confere no GitHub se há versão nova, baixa, confere
+# a assinatura (só aceita instalador assinado com a chave do projeto) e instala.
+tauri-plugin-updater = "2"
+# Reabrir o app depois de atualizar.
+tauri-plugin-process = "2"
 
 [profile.release]
 # Prioriza um executável pequeno, de acordo com a proposta de app leve.

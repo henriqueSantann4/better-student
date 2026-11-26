@@ -2032,3 +2032,38 @@ textarea {
   margin: 0;
 }
 
+/* ---------- Atualização obrigatória ---------- */
+
+.atualizando {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.atualizando-caixa {
+  width: 100%;
+  max-width: 520px;
+}
+
+.atualizando-caixa h1 {
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+
+.barra-atualizacao {
+  height: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--borda);
+}
+
+.barra-atualizacao > div {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--destaque);
+  transition: width 0.2s;
+}
+

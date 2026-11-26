@@ -6,6 +6,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ### Novo
 
+- **Atualização automática:** ao abrir, o app confere se há versão nova no GitHub e, se houver, atualiza antes de abrir (baixa, confere a assinatura, instala e reabre). Sem internet, abre normalmente.
 - **Instalador na aba Releases do GitHub:** cada versão é compilada e publicada sozinha ao criar a tag (ex.: `v1.1.0`), com o instalador para Windows. O README ganhou a seção "Como instalar".
 - **Atualiza sozinho ao abrir:** SUAP, Moodle e e-mail são buscados toda vez que o app abre, sem precisar entrar em cada aba. O SUAP aproveita a sessão que ainda vale (numa janela escondida); se ela expirou, o app mostra "Entrar no SUAP" e, depois do login, grava tudo sem pedir confirmação. No menu fica o botão **Atualizar**, com o estado de cada fonte, para buscar de novo quando quiser.
 - **Enquanto você estava fora:** ao abrir o app, uma caixa mostra o que chegou desde a última vez (provas marcadas ou remarcadas no SUAP, notas novas do SUAP e do Moodle, atividades e arquivos novos do Moodle, e-mails da aba Principal) e os avisos de agora. Mesmo sem nada novo ela aparece, para dizer que nada foi perdido.

@@ -656,5 +656,14 @@
     "ultima": "Atualizado às {{hora}}",
     "nadaNovo": "nada de novo",
     "periodoDiferente": "o boletim é de outro semestre (importe pela Grade)"
+  },
+  "atualizacao": {
+    "titulo": "Atualizando o Better Student para a versão {{versao}}",
+    "baixando": "Baixando a versão nova…",
+    "instalando": "Instalando. O app vai fechar e abrir de novo sozinho.",
+    "dados": "Seus dados continuam onde estão: só o programa é trocado.",
+    "falhou": "Não consegui atualizar: {{mensagem}}",
+    "tentarDeNovo": "Tentar de novo",
+    "continuar": "Abrir sem atualizar desta vez"
   }
 }

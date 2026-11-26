@@ -7,7 +7,8 @@
 #   git push origin v1.1.0
 #
 # O GitHub compila o app num Windows deles, roda os testes e cria a Release
-# "Better Student 1.1.0" com o instalador (.exe) e o .msi anexados. Também dá
+# "Better Student 1.1.0" com o instalador (.exe), o .msi e o latest.json, que
+# é o arquivo que o app consulta ao abrir para se atualizar sozinho. Também dá
 # para rodar à mão na aba Actions ("Run workflow"), informando a tag.
 
 name: Publicar versão
@@ -82,13 +83,21 @@ jobs:
           pnpm typecheck
           pnpm test
 
-      - name: Compilar e publicar a Release
+      # Os arquivos de atualização (e o latest.json que o app consulta ao abrir)
+      # são assinados com a chave privada guardada nos segredos do repositório
+      # (Settings > Secrets and variables > Actions). Sem ela, o passo falha.
+      - name: Compilar, assinar e publicar a Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop
           tauriScript: pnpm tauri
+          # Liga a geração dos arquivos de atualização só aqui (no PC, `pnpm build` não precisa da chave).
+          args: --config src-tauri/tauri.release.conf.json
+          includeUpdaterJson: true
           tagName: ${{ env.TAG }}
           releaseName: "Better Student __VERSION__"
           releaseBody: |

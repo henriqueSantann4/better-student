@@ -26,12 +26,26 @@
   },
   "plugins": {
     "sql": {
-      "preload": ["sqlite:better-student.db"]
+      "preload": [
+        "sqlite:better-student.db"
+      ]
+    },
+    "updater": {
+      "pubkey": "COLE_AQUI_A_CHAVE_PUBLICA",
+      "endpoints": [
+        "https://github.com/henriqueSantann4/better-student/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -41,7 +55,9 @@
     ],
     "windows": {
       "nsis": {
-        "languages": ["PortugueseBR"]
+        "languages": [
+          "PortugueseBR"
+        ]
       }
     }
   }

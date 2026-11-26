@@ -17,7 +17,7 @@
 4. Siga o instalador. Ele não pede senha de administrador: instala só para o seu usuário.
 5. Abra o **Better Student**. Na primeira vez ele pergunta a sua faculdade e o seu campus e pede para você entrar no SUAP uma vez; daí em diante, ele busca suas disciplinas, horários, notas e provas sozinho sempre que você abrir.
 
-Para atualizar, baixe e instale a versão nova do mesmo jeito: seus dados continuam onde estavam. Para desinstalar, use *Configurações do Windows → Aplicativos*.
+Depois de instalado, o app **se atualiza sozinho**: ao abrir, se houver versão nova, ele baixa, instala e reabre (sem internet, abre normalmente). Seus dados continuam onde estavam. Para desinstalar, use *Configurações do Windows → Aplicativos*.
 
 > Seus dados ficam só no seu computador. A senha do SUAP nunca passa pelo app (você entra na página do próprio SUAP), e as senhas do e-mail e a chave do Moodle ficam no cofre do Windows.
 
@@ -91,7 +91,9 @@ A primeira execução de `pnpm dev` demora alguns minutos porque compila o Rust.
    git push origin v1.1.0
    ```
 
-O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) compila o app num Windows do GitHub, roda os testes e publica a versão na aba Releases, com o instalador anexado. Se a tag não bater com a versão dos quatro arquivos, ele para antes de compilar.
+O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) compila o app num Windows do GitHub, roda os testes e publica a versão na aba Releases, com o instalador e o `latest.json` (que os apps instalados consultam para se atualizar). Se a tag não bater com a versão dos quatro arquivos, ele para antes de compilar.
+
+**Assinatura das atualizações:** o app só instala atualização assinada com a chave do projeto. A chave pública fica em `plugins.updater.pubkey` no `tauri.conf.json`; a privada e a senha dela ficam só com o mantenedor e nos segredos do repositório (`TAURI_SIGNING_PRIVATE_KEY` e `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). Para gerar o par: `pnpm --filter @better-student/desktop tauri signer generate -w %USERPROFILE%\.tauri\better-student.key`. Perder a chave privada impede atualizar quem já instalou (seria preciso reinstalar à mão).
 
 ## Contribuindo
 

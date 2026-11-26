@@ -8,6 +8,8 @@
     "sql:default",
     "sql:allow-execute",
     "allow-versao-nucleo",
+    "updater:default",
+    "process:allow-restart",
     "allow-abrir-suap",
     "allow-fechar-suap-escondido",
     "allow-email-conectar",
