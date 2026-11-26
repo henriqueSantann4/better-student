@@ -18,6 +18,10 @@ use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 const JANELA_MOODLE: &str = "moodle";
 const SERVICO_COFRE: &str = "Better Student (Moodle)";
 const ESQUEMA: &str = "betterstudent";
+/// Clica sozinho no botão "SUAP IFSP" da página de login (ver `moodle.js`).
+const SCRIPT_MOODLE: &str = include_str!("moodle.js");
+/// Avisado à janela principal quando, na tentativa escondida, o SUAP pede login.
+const PRECISA_ENTRAR: &str = "precisa_entrar_suap";
 
 fn cofre(site: &str) -> Result<keyring::Entry, String> {
     keyring::Entry::new(SERVICO_COFRE, site).map_err(|e| format!("cofre do sistema indisponível: {e}"))
@@ -66,12 +70,22 @@ fn extrair_chave(endereco: &str, site: &str, passport: &str) -> Result<String, S
 /// Abre a janela de login do Moodle. O resultado chega à janela principal
 /// pelos eventos `moodle:conectado` ou `moodle:erro`.
 ///
+/// `silencioso`: a janela fica ESCONDIDA. Se a sessão do SUAP ainda vale, o
+/// login acontece sozinho (o script clica em "SUAP IFSP" e o SUAP devolve ao
+/// Moodle sem pedir nada). Se o SUAP pedir usuário e senha, a janela fecha e
+/// chega `moodle:erro` com "precisa_entrar_suap": o login é sempre do aluno.
+///
 /// `async` de propósito: no Windows, criar janela em comando síncrono trava (wry#583).
 #[tauri::command]
-pub async fn moodle_conectar(app: AppHandle, site: String) -> Result<(), String> {
+pub async fn moodle_conectar(app: AppHandle, site: String, silencioso: Option<bool>) -> Result<(), String> {
+    let silencioso = silencioso.unwrap_or(false);
     let site = normalizar_site(&site)?;
     if let Some(janela) = app.get_webview_window(JANELA_MOODLE) {
-        let _ = janela.close();
+        // A visível é do aluno: uma tentativa escondida não atrapalha.
+        if silencioso && janela.is_visible().unwrap_or(false) {
+            return Err("a janela do Moodle já está aberta".into());
+        }
+        let _ = janela.destroy();
     }
     let passport = novo_passport();
     let inicio: tauri::Url = format!(
@@ -86,7 +100,21 @@ pub async fn moodle_conectar(app: AppHandle, site: String) -> Result<(), String>
         .title("Moodle · Better Student")
         .inner_size(1000.0, 760.0)
         .center()
+        .visible(!silencioso)
+        .initialization_script(SCRIPT_MOODLE)
         .on_navigation(move |url| {
+            // Escondida e o SUAP pediu login: desiste (a senha é sempre digitada pelo aluno).
+            let host = url.host_str().unwrap_or_default();
+            if silencioso && host.starts_with("suap.") && url.path().starts_with("/accounts/login") {
+                let app = app_navegacao.clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = app.emit_to("main", "moodle:erro", PRECISA_ENTRAR);
+                    if let Some(janela) = app.get_webview_window(JANELA_MOODLE) {
+                        let _ = janela.destroy();
+                    }
+                });
+                return false;
+            }
             // Páginas normais (Moodle, SUAP) seguem; o endereço especial com a
             // chave é capturado e bloqueado. Qualquer esquema que não seja
             // http(s) com "token=" conta (o site pode forçar outro esquema).
@@ -107,10 +135,12 @@ pub async fn moodle_conectar(app: AppHandle, site: String) -> Result<(), String>
                     }
                 }
                 if let Some(janela) = app.get_webview_window(JANELA_MOODLE) {
-                    let _ = janela.close();
+                    let _ = janela.destroy();
                 }
-                if let Some(principal) = app.get_webview_window("main") {
-                    let _ = principal.set_focus();
+                if !silencioso {
+                    if let Some(principal) = app.get_webview_window("main") {
+                        let _ = principal.set_focus();
+                    }
                 }
             });
             false
@@ -118,6 +148,16 @@ pub async fn moodle_conectar(app: AppHandle, site: String) -> Result<(), String>
         .build()
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+/// Fecha a janela do Moodle se ela estiver escondida (o app desistiu de esperar).
+#[tauri::command]
+pub fn moodle_fechar_escondido(app: AppHandle) {
+    if let Some(janela) = app.get_webview_window(JANELA_MOODLE) {
+        if !janela.is_visible().unwrap_or(true) {
+            let _ = janela.destroy();
+        }
+    }
 }
 
 /// Diz se há uma chave guardada para este Moodle.

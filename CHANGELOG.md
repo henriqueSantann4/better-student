@@ -2,6 +2,17 @@
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e as versões seguem o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.1] (26/11/2026)
+
+### Corrigido
+
+- **Materiais e Notas logo depois de conectar o Moodle:** conectar o Moodle (ou clicar em Atualizar na aba Moodle) já busca a lista de arquivos e as notas, sem precisar fechar e abrir o app.
+
+### Novo
+
+- **Moodle entra sozinho pelo SUAP:** se o Moodle ainda não está conectado, o app tenta conectar escondido ao abrir, clicando em "SUAP IFSP" por você. Se a sessão do SUAP vale, a conexão acontece sem nenhum clique; se o SUAP pedir login, o menu mostra "Entrar no SUAP" e, depois de entrar uma vez, o Moodle conecta em seguida.
+- **Atualização automática usa o instalador .exe** como padrão.
+
 ## [1.1.0] (26/11/2026)
 
 ### Novo

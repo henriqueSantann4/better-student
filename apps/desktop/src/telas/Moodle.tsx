@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { casarDisciplinaMoodle, ErroMoodle, type AtividadeMoodle } from "@better-student/shared";
 import { useApp } from "../contexto";
+import { useSincronizacao } from "../sincronizacao";
 import { formatarDataEmail } from "../formatos";
 import {
   abrirNoNavegador,
@@ -22,6 +23,7 @@ import {
 export function Moodle() {
   const { t } = useTranslation();
   const { banco } = useApp();
+  const { atualizarMoodle } = useSincronizacao();
   // undefined = carregando; null = o campus não tem Moodle conhecido (o aluno informa).
   const [site, setSite] = useState<string | null | undefined>(undefined);
   const [conectado, setConectado] = useState<boolean | undefined>(undefined);
@@ -49,7 +51,17 @@ export function Moodle() {
   }
   if (site === undefined || (site && conectado === undefined)) return <p className="suave">{t("app.carregando")}</p>;
   if (!site || !conectado) {
-    return <ConectarMoodle site={site ?? ""} aoMudarSite={setSite} aoConectar={() => setConectado(true)} />;
+    return (
+      <ConectarMoodle
+        site={site ?? ""}
+        aoMudarSite={setSite}
+        aoConectar={() => {
+          setConectado(true);
+          // Já traz atividades, notas e a lista de arquivos (Materiais, Notas, Agenda).
+          void atualizarMoodle();
+        }}
+      />
+    );
   }
   return (
     <PainelConectado
@@ -140,6 +152,7 @@ function ConectarMoodle({
 
 function PainelConectado({ site, aoDesconectar }: { site: string; aoDesconectar: () => void }) {
   const { t } = useTranslation();
+  const { atualizarMoodle } = useSincronizacao();
   const { dados } = useApp();
   const disciplinasApp = dados?.disciplinas ?? [];
   const [painel, setPainel] = useState<PainelMoodle | null>(null);
@@ -154,6 +167,8 @@ function PainelConectado({ site, aoDesconectar }: { site: string; aoDesconectar:
     setErro(null);
     try {
       setPainel(await carregarPainel(site));
+      // O botão Atualizar também refaz a lista de arquivos e as notas guardadas.
+      void atualizarMoodle();
     } catch (falha) {
       // Chave revogada ou expirada: o jeito é entrar de novo.
       if (falha instanceof ErroMoodle && /invalidtoken|accessexception/i.test(falha.codigo)) {
@@ -165,11 +180,23 @@ function PainelConectado({ site, aoDesconectar }: { site: string; aoDesconectar:
       buscando.current = false;
       setCarregando(false);
     }
-  }, [site, t]);
+  }, [site, t, atualizarMoodle]);
 
+  // Ao abrir a aba, só o painel (a lista completa já veio na atualização ao abrir o app).
   useEffect(() => {
-    void atualizar();
-  }, [atualizar]);
+    if (buscando.current) return;
+    buscando.current = true;
+    setCarregando(true);
+    carregarPainel(site)
+      .then(setPainel)
+      .catch((falha) =>
+        setErro(falha instanceof ErroMoodle && /invalidtoken|accessexception/i.test(falha.codigo) ? t("moodle.chaveInvalida") : String(falha)),
+      )
+      .finally(() => {
+        buscando.current = false;
+        setCarregando(false);
+      });
+  }, [site, t]);
 
   return (
     <>

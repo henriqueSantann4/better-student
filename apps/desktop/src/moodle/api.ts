@@ -53,6 +53,7 @@ export async function conectar(
   banco: Banco,
   site: string,
   aoTerminar: (erro: string | null) => void,
+  silencioso = false,
 ): Promise<() => void> {
   await configuracao.gravar(banco, "moodleSite", site);
   const pararOk = await listen("moodle:conectado", () => {
@@ -68,7 +69,7 @@ export async function conectar(
     pararErro();
   };
   try {
-    await invoke("moodle_conectar", { site });
+    await invoke("moodle_conectar", { site, silencioso });
   } catch (erro) {
     parar();
     throw erro;
@@ -129,3 +130,35 @@ export async function abrirNoNavegador(url: string): Promise<void> {
   if (isTauri()) await openUrl(url);
   else window.open(url, "_blank", "noopener");
 }
+
+/** Motivo de falha quando a tentativa escondida esbarra no login do SUAP. */
+export const PRECISA_ENTRAR_SUAP = "precisa_entrar_suap";
+
+/** Tempo máximo esperando o login escondido do Moodle. */
+const ESPERA_ESCONDIDO_MS = 45_000;
+
+/**
+ * Tenta entrar no Moodle sem aparecer, aproveitando a sessão do SUAP (o
+ * Moodle do IFSP entra pelo SUAP). `null` = conectou; senão, o motivo
+ * (`PRECISA_ENTRAR_SUAP` quando o SUAP pediu login).
+ */
+export function conectarEscondido(banco: Banco, site: string): Promise<string | null> {
+  return new Promise((resolver) => {
+    let parar: (() => void) | null = null;
+    const relogio = window.setTimeout(() => {
+      parar?.();
+      void invoke("moodle_fechar_escondido").catch(() => undefined);
+      resolver("demorou");
+    }, ESPERA_ESCONDIDO_MS);
+    conectar(banco, site, (erro) => {
+      window.clearTimeout(relogio);
+      resolver(erro);
+    }, true)
+      .then((desligar) => (parar = desligar))
+      .catch((erro) => {
+        window.clearTimeout(relogio);
+        resolver(String(erro));
+      });
+  });
+}
+

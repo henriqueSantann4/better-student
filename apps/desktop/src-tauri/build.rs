@@ -15,6 +15,7 @@ fn main() {
             "email_desconectar",
             "email_buscar",
             "moodle_conectar",
+            "moodle_fechar_escondido",
             "moodle_conectado",
             "moodle_chave",
             "moodle_desconectar",

@@ -267,6 +267,7 @@ pub fn run() {
             email::email_conectado,
             email::email_desconectar,
             email::email_buscar,
+            moodle::moodle_fechar_escondido,
             moodle::moodle_conectar,
             moodle::moodle_conectado,
             moodle::moodle_chave,

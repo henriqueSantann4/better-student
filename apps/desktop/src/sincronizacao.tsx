@@ -27,7 +27,7 @@ import {
 import { useApp } from "./contexto";
 import { CORES } from "./cores";
 import { sincronizar as sincronizarEmail, estaConectado as emailConectado } from "./email/conexao";
-import { estaConectado as moodleConectado, lerSiteMoodle } from "./moodle/api";
+import { conectarEscondido, estaConectado as moodleConectado, lerSiteMoodle, PRECISA_ENTRAR_SUAP } from "./moodle/api";
 import { buscarMoodle, gravarCacheMoodle, lerCacheMoodle, type CacheMoodle } from "./moodle/cache";
 import { buscarBoletimNoSuap, buscarSuapEscondido, lerPacoteSuap, lerServidorSuap, type PacoteSuap } from "./suap";
 
@@ -54,6 +54,8 @@ interface Sincronizacao {
   entrarNoSuap: () => Promise<void>;
   /** Busca de novo TUDO do SUAP (horários, calendário, critérios), não só o que muda. */
   buscarTudoDoSuap: () => Promise<void>;
+  /** Atualiza só o Moodle (depois de conectar, ou no botão da aba Moodle). */
+  atualizarMoodle: () => Promise<void>;
 }
 
 const ContextoSincronizacao = createContext<Sincronizacao | null>(null);
@@ -122,7 +124,14 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
 
   const atualizarMoodle = useCallback(async () => {
     const site = isTauri() ? await lerSiteMoodle(banco) : null;
-    if (!site || !(await moodleConectado(site).catch(() => false))) return marcar("moodle", INATIVO);
+    if (!site) return marcar("moodle", INATIVO);
+    if (!(await moodleConectado(site).catch(() => false))) {
+      // Ainda sem chave: tenta entrar sozinho pelo SUAP, escondido.
+      marcar("moodle", { estado: "buscando" });
+      const falha = await conectarEscondido(banco, site);
+      if (falha === PRECISA_ENTRAR_SUAP) return marcar("moodle", { estado: "entrar" });
+      if (falha) return marcar("moodle", INATIVO);
+    }
     marcar("moodle", { estado: "buscando" });
     try {
       const anterior = await lerCacheMoodle(banco);
@@ -195,7 +204,9 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
           pararEspera.current = null;
           aplicarPacote(pacote)
             .then(() => marcar("suap", { estado: "ok", em: new Date() }))
-            .catch((erro) => marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) }));
+            .catch((erro) => marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) }))
+            // Com o SUAP aberto, o Moodle (que entra pelo SUAP) conecta sozinho.
+            .finally(() => void atualizarMoodleRef.current());
         },
         await buscaCompleta(false),
       );
@@ -203,6 +214,9 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
       marcar("suap", { estado: "erro", mensagem: mensagemDe(erro) });
     }
   }, [banco, marcar, aplicarPacote, buscaCompleta]);
+
+  const atualizarMoodleRef = useRef(atualizarMoodle);
+  atualizarMoodleRef.current = atualizarMoodle;
 
   const buscarTudoDoSuap = useCallback(async () => {
     if (rodando.current) return;
@@ -227,7 +241,7 @@ export function ProvedorSincronizacao({ children }: { children: ReactNode }) {
 
   const buscando = Object.values(fontes).some((f) => f.estado === "buscando");
   return (
-    <ContextoSincronizacao.Provider value={{ fontes, buscando, versao, primeiraFeita, atualizar, entrarNoSuap, buscarTudoDoSuap }}>
+    <ContextoSincronizacao.Provider value={{ fontes, buscando, versao, primeiraFeita, atualizar, entrarNoSuap, buscarTudoDoSuap, atualizarMoodle }}>
       {children}
     </ContextoSincronizacao.Provider>
   );

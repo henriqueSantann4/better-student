@@ -17,6 +17,7 @@
     "allow-email-desconectar",
     "allow-email-buscar",
     "allow-moodle-conectar",
+    "allow-moodle-fechar-escondido",
     "allow-moodle-conectado",
     "allow-moodle-chave",
     "allow-moodle-desconectar",

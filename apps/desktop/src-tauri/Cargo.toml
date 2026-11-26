@@ -1,6 +1,6 @@
 [package]
 name = "better-student"
-version = "1.1.0"
+version = "1.1.1"
 description = "App de desktop leve para estudantes de graduação"
 authors = ["Antonio Barbieri e contribuidores"]
 license = "MIT"
