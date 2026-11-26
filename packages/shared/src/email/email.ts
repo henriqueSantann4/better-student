@@ -23,8 +23,13 @@ export interface Email {
   assunto: string;
   /** Começo do texto, para a lista. */
   trecho: string;
-  /** Corpo em TEXTO puro. Nunca HTML: é mostrado como texto, sem interpretar. */
+  /** Corpo em texto puro (busca, trecho e e-mails sem HTML). */
   corpo: string;
+  /**
+   * Versão HTML, com as imagens anexadas embutidas. A tela mostra num quadro
+   * isolado (sem scripts, sem formulários). `null` = só há texto.
+   */
+  html: string | null;
   data: DataHoraIso;
   lido: boolean;
   estrela: boolean;

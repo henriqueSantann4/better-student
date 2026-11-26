@@ -28,7 +28,7 @@
     "allow-materiais-baixar-moodle",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://myaccount.google.com/*" }, { "url": "https://*.edu.br/*" }]
+      "allow": [{ "url": "https://*" }, { "url": "http://*" }, { "url": "mailto:*" }]
     }
   ]
 }

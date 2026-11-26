@@ -2067,3 +2067,13 @@ textarea {
   transition: width 0.2s;
 }
 
+/* E-mail em HTML: quadro isolado com fundo branco (os e-mails são feitos para fundo claro). */
+.email-html {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: #fff;
+}
+

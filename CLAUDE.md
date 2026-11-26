@@ -28,6 +28,7 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 - **1.0.0** (25/11/2026, tag `v1.0.0`): tudo o que está marcado [feito] ou [testar] abaixo. Resumo em [`CHANGELOG.md`](CHANGELOG.md).
 - **1.1.0** (26/11/2026, tag `v1.1.0`): primeira versão publicada pelo workflow, com instalador na aba Releases e atualização automática. Resumo em [`CHANGELOG.md`](CHANGELOG.md).
 - **1.1.1** (26/11/2026, tag `v1.1.1`): Moodle conecta sozinho pelo SUAP (janela escondida, `moodle.js` clica em "SUAP IFSP"); conectar ou atualizar o Moodle já busca a lista de arquivos.
+- **1.1.2** (26/11/2026, tag `v1.1.2`): e-mails em HTML (migration 0011 com `email.corpo_html`; `html_com_imagens` no `email.rs` embute as imagens `cid:`), mostrados num `iframe` com `sandbox="allow-same-origin"` (sem scripts); imagens da internet carregam sempre (escolha do Antonio; CSP `img-src` com `https:`/`http:`); links abrem no navegador (opener liberado para http/https/mailto).
 - **1.2.0**: em elaboração. O que entrar nela vai para uma seção `[1.2.0]` nova no CHANGELOG.
 - A versão fica em quatro lugares, que devem andar juntos: `apps/desktop/package.json`, `packages/shared/package.json`, `apps/desktop/src-tauri/tauri.conf.json` e `apps/desktop/src-tauri/Cargo.toml`.
 

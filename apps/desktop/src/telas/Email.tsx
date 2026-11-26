@@ -1,3 +1,4 @@
+import { abrirNoNavegador } from "../moodle/api";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -499,9 +500,65 @@ function LeituraEmail({ email, aoVoltar, aoEstrela }: { email: EmailT; aoVoltar:
           <IconeEstrela cheia={email.estrela} />
         </button>
       </div>
-      {/* Texto puro: o React escapa tudo, então nada do e-mail é interpretado como HTML. */}
-      <div className="email-corpo">{email.corpo}</div>
+      {email.html ? (
+        <CorpoHtml html={email.html} titulo={email.assunto} />
+      ) : (
+        // Texto puro: o React escapa tudo, então nada do e-mail é interpretado como HTML.
+        <div className="email-corpo">{email.corpo}</div>
+      )}
     </article>
+  );
+}
+
+/**
+ * E-mail em HTML (com imagens e formatação), num quadro ISOLADO:
+ * - `sandbox` sem `allow-scripts`: nenhum script do e-mail roda, e
+ *   formulários e janelas novas ficam bloqueados;
+ * - `allow-same-origin` só para o app medir a altura do conteúdo e pegar os
+ *   cliques nos links, que abrem no navegador do sistema (não dentro do app);
+ * - as imagens da internet carregam ao abrir (escolha do Antonio); as
+ *   anexadas já vêm embutidas.
+ * Fundo branco: os e-mails são feitos para fundo claro.
+ */
+function CorpoHtml({ html, titulo }: { html: string; titulo: string }) {
+  const quadro = useRef<HTMLIFrameElement>(null);
+  const [altura, setAltura] = useState(240);
+
+  // Tira o redirecionamento automático (<meta http-equiv="refresh">).
+  const limpo = html.replace(/<meta\b[^>]*http-equiv[^>]*>/gi, "");
+  const documento = `<!doctype html><html><head><meta charset="utf-8"><style>
+    html, body { overflow: hidden; }
+    body { margin: 0; padding: 16px; background: #fff; color: #1c1f24; font: 15px/1.5 system-ui, "Segoe UI", sans-serif; overflow-wrap: anywhere; }
+    img { max-width: 100%; height: auto; }
+    table { max-width: 100%; }
+  </style></head><body>${limpo}</body></html>`;
+
+  function aoCarregar() {
+    const doc = quadro.current?.contentDocument;
+    if (!doc) return;
+    const medir = () => setAltura(Math.max(120, doc.documentElement.scrollHeight + 2));
+    medir();
+    // Imagens chegam depois e a largura muda com a janela: mede de novo sempre que o conteúdo muda de tamanho.
+    new ResizeObserver(medir).observe(doc.body);
+    doc.addEventListener("click", (e) => {
+      const link = (e.target as Element | null)?.closest?.("a");
+      if (!link) return;
+      e.preventDefault();
+      const destino = link.getAttribute("href") ?? "";
+      if (/^(https?:|mailto:)/i.test(destino)) void abrirNoNavegador(destino);
+    });
+  }
+
+  return (
+    <iframe
+      ref={quadro}
+      className="email-html"
+      title={titulo}
+      sandbox="allow-same-origin"
+      srcDoc={documento}
+      onLoad={aoCarregar}
+      style={{ height: altura }}
+    />
   );
 }
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Better Student",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "identifier": "io.github.betterstudent.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: http://asset.localhost; connect-src 'self' ipc: http://ipc.localhost https://*.edu.br"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: http://asset.localhost https: http:; connect-src 'self' ipc: http://ipc.localhost https://*.edu.br"
     }
   },
   "plugins": {

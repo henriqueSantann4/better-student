@@ -2,6 +2,16 @@
 
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e as versões seguem o [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.1.2] (26/11/2026)
+
+### Novo
+
+- **E-mails com imagens e formatação:** o app passa a guardar a versão HTML de cada e-mail e mostra como ele foi feito, com imagens (as anexadas e as da internet), cores e tabelas. O e-mail aparece num quadro isolado: nenhum script dele roda, formulários ficam bloqueados e os links abrem no navegador do sistema.
+
+### Mudou
+
+- A cópia local dos e-mails é baixada de novo na primeira atualização depois de instalar esta versão, já com o HTML (o Gmail continua com tudo; lido e estrela vêm de lá).
+
 ## [1.1.1] (26/11/2026)
 
 ### Corrigido

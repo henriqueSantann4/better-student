@@ -243,6 +243,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0010_criterios.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 11,
+            description: "versao html dos e-mails",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0011_email_html.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

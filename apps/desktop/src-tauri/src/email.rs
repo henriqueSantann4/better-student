@@ -24,6 +24,10 @@ const SERVICO_COFRE: &str = "Better Student (e-mail IMAP)";
 const LOTE_FETCH: usize = 25;
 /// Corpo guardado por e-mail (em caracteres). O resto fica no Gmail.
 const LIMITE_CORPO: usize = 50_000;
+/// Versão HTML guardada (em bytes). Maior que isso, fica só o texto.
+const LIMITE_HTML: usize = 400_000;
+/// Imagens anexadas ao próprio e-mail (as do "cid:") entram no HTML até este total.
+const LIMITE_IMAGENS: usize = 3 * 1024 * 1024;
 
 /// Um e-mail já decodificado, como o TypeScript recebe.
 #[derive(Serialize)]
@@ -36,6 +40,9 @@ pub struct EmailBruto {
     /// ISO 8601. Vem do cabeçalho Date; se faltar, da data de chegada no servidor.
     data: String,
     corpo: String,
+    /// Versão HTML, com as imagens anexadas já embutidas. A tela mostra num
+    /// quadro isolado, sem scripts. `None` = o e-mail só tem texto (ou é grande demais).
+    html: Option<String>,
     lido: bool,
     estrela: bool,
 }
@@ -185,6 +192,7 @@ fn buscar(endereco: &str, uid_validity: Option<u32>, desde_uid: Option<u32>, lim
                 assunto: mensagem.subject().unwrap_or_default().to_string(),
                 data: mensagem.date().map(|d| d.to_rfc3339()).unwrap_or(chegada),
                 corpo: corpo.chars().take(LIMITE_CORPO).collect(),
+                html: html_com_imagens(&mensagem),
                 lido,
                 estrela,
             });
@@ -192,6 +200,47 @@ fn buscar(endereco: &str, uid_validity: Option<u32>, desde_uid: Option<u32>, lim
     }
     let _ = sessao.logout();
     Ok(Lote { uid_validity: validade_servidor, emails })
+}
+
+/// A versão HTML do e-mail, com as imagens anexadas (`src="cid:..."`)
+/// trocadas por `data:` para aparecerem sem buscar nada fora. Imagens da
+/// internet continuam como endereço e carregam ao abrir o e-mail.
+fn html_com_imagens(mensagem: &mail_parser::Message<'_>) -> Option<String> {
+    use base64::Engine;
+
+    let mut html = mensagem.body_html(0)?.into_owned();
+    if html.len() > LIMITE_HTML {
+        return None;
+    }
+    let mut usado = 0usize;
+    for parte in mensagem.attachments() {
+        let Some(id) = parte.content_id() else { continue };
+        let Some(tipo) = parte.content_type() else { continue };
+        if !tipo.ctype().eq_ignore_ascii_case("image") {
+            continue;
+        }
+        // Tamanho antes de decodificar: não gasta tempo com imagem que não vai entrar.
+        if usado + parte.decoded_len() > LIMITE_IMAGENS {
+            continue;
+        }
+        let dados = parte.decoded();
+        if usado + dados.len() > LIMITE_IMAGENS {
+            continue;
+        }
+        let id = id.trim_matches(|c| c == '<' || c == '>');
+        let referencia = format!("cid:{id}");
+        if !html.contains(&referencia) {
+            continue;
+        }
+        let subtipo = tipo.subtype().unwrap_or("png");
+        let embutida = format!(
+            "data:image/{subtipo};base64,{}",
+            base64::engine::general_purpose::STANDARD.encode(&dados)
+        );
+        html = html.replace(&referencia, &embutida);
+        usado += dados.len();
+    }
+    Some(html)
 }
 
 /// Versão em texto de um e-mail que só tem HTML: tira as tags e junta os espaços.
@@ -250,7 +299,7 @@ fn html_para_texto(html: &str) -> String {
 
 #[cfg(test)]
 mod testes {
-    use super::html_para_texto;
+    use super::{html_com_imagens, html_para_texto};
 
     #[test]
     fn html_vira_texto() {
@@ -259,5 +308,29 @@ mod testes {
         assert!(texto.contains("turma!"));
         assert!(texto.contains("Prova quinta."));
         assert!(!texto.contains("color"));
+    }
+
+    #[test]
+    fn embute_imagem_anexada_e_mantem_as_da_internet() {
+        let bruto = concat!(
+            "From: Professora <prof@exemplo.edu.br>\r\n",
+            "Subject: Aula\r\n",
+            "MIME-Version: 1.0\r\n",
+            "Content-Type: multipart/related; boundary=\"b\"\r\n\r\n",
+            "--b\r\n",
+            "Content-Type: text/html; charset=utf-8\r\n\r\n",
+            "<p>Oi</p><img src=\"cid:logo@x\"><img src=\"https://exemplo.edu.br/a.png\">\r\n",
+            "--b\r\n",
+            "Content-Type: image/png\r\n",
+            "Content-ID: <logo@x>\r\n",
+            "Content-Transfer-Encoding: base64\r\n\r\n",
+            "iVBORw0KGgo=\r\n",
+            "--b--\r\n",
+        );
+        let mensagem = mail_parser::MessageParser::default().parse(bruto.as_bytes()).unwrap();
+        let html = html_com_imagens(&mensagem).unwrap();
+        assert!(html.contains("src=\"data:image/png;base64,iVBORw0KGgo=\""));
+        assert!(html.contains("https://exemplo.edu.br/a.png"));
+        assert!(!html.contains("cid:"));
     }
 }

@@ -46,7 +46,7 @@ describe("e-mail", () => {
   });
 
   it("busca sem diferenciar acentos e maiúsculas", () => {
-    const base = { trecho: "", data: "", lido: false, estrela: false, categoria: "principal" as const };
+    const base = { trecho: "", html: null, data: "", lido: false, estrela: false, categoria: "principal" as const };
     const emails: Email[] = [
       { ...base, id: "1", de: { nome: "Coordenação", email: "c@x.br" }, assunto: "Reunião", corpo: "Sobre o estágio" },
       { ...base, id: "2", de: { nome: "Moodle", email: "m@x.br" }, assunto: "Tarefa", corpo: "Prazo amanhã" },

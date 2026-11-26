@@ -10,6 +10,7 @@ export interface EmailRecebido {
   assunto: string;
   data: string;
   corpo: string;
+  html?: string | null;
   lido: boolean;
   estrela: boolean;
 }
@@ -26,6 +27,7 @@ interface LinhaEmail {
   assunto: string;
   trecho: string;
   corpo: string;
+  corpo_html: string | null;
   data: string;
   lido: number;
   estrela: number;
@@ -39,6 +41,7 @@ function lerEmail(l: LinhaEmail): Email {
     assunto: l.assunto,
     trecho: l.trecho,
     corpo: l.corpo,
+    html: l.corpo_html ?? null,
     data: l.data,
     lido: paraBooleano(l.lido),
     estrela: paraBooleano(l.estrela),
@@ -79,12 +82,12 @@ export const emails = {
     const momento = agora();
     for (const e of lote.emails) {
       await banco.executar(
-        `INSERT INTO email (id, conta, uid, uid_validity, de_nome, de_email, assunto, trecho, corpo, data,
+        `INSERT INTO email (id, conta, uid, uid_validity, de_nome, de_email, assunto, trecho, corpo, corpo_html, data,
            lido, estrela, categoria, baixado_em)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (id) DO NOTHING`,
         [`${conta}|${lote.uidValidity}|${e.uid}`, conta, e.uid, lote.uidValidity, e.deNome, e.deEmail, e.assunto,
-          trechoDe(e.corpo), e.corpo, e.data, e.lido ? 1 : 0, e.estrela ? 1 : 0,
+          trechoDe(e.corpo), e.corpo, e.html ?? null, e.data, e.lido ? 1 : 0, e.estrela ? 1 : 0,
           classificarEmail(e.deEmail, e.assunto), momento],
       );
     }

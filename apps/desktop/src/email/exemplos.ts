@@ -9,7 +9,7 @@ function antes(horas: number): string {
   return new Date(Date.now() - horas * 3_600_000).toISOString();
 }
 
-const base = { lido: false, estrela: false } as const;
+const base = { lido: false, estrela: false, html: null } as const;
 
 export function emailsDeExemplo(): Email[] {
   return [
@@ -21,6 +21,11 @@ export function emailsDeExemplo(): Email[] {
       trecho: "Pessoal, por causa do recesso a prova foi remarcada para quinta-feira, 19h, na sala de sempre.",
       corpo:
         "Pessoal,\n\nPor causa do recesso, a prova de Estrutura de Dados foi remarcada para quinta-feira, às 19h, na sala de sempre.\n\nO conteúdo continua o mesmo: listas, pilhas e filas. Tragam documento com foto.\n\nAbraços,\nHelena",
+      // Exemplo com HTML: formatação, uma imagem (embutida) e um link.
+      html:
+        '<h2 style="color:#2b4c9b">Prova remarcada</h2><p>Pessoal, por causa do recesso a prova de <b>Estrutura de Dados</b> foi remarcada para <b>quinta-feira, 19h</b>.</p>' +
+        '<p><img alt="faixa" width="320" height="60" src="data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%2260%22%3E%3Crect width=%22320%22 height=%2260%22 fill=%22%232b4c9b%22/%3E%3Ctext x=%2216%22 y=%2238%22 fill=%22white%22 font-size=%2222%22%3EIFSP Exemplo%3C/text%3E%3C/svg%3E"></p>' +
+        '<p>Mais detalhes no <a href="https://moodle.exemplo.edu.br">Moodle</a>.</p><p>Abraços,<br>Helena</p>',
       data: antes(2),
       categoria: "principal",
     },
