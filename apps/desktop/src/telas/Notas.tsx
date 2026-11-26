@@ -101,7 +101,10 @@ function CartaoNotas({
   const recuperacao = textosRecuperacao(instituicao.perfil);
   const suap = disciplina.suap;
   const detalhe = suap?.detalhe ?? null;
-  const [aberto, setAberto] = useState(false);
+  // A nota da etapa ainda não saiu, mas o professor já lançou alguma avaliação.
+  const avaliacoesComNota = (detalhe?.etapas ?? []).flatMap((e) => e.avaliacoes).filter((a) => a.nota !== null).length;
+  // Nesse caso o detalhamento já começa aberto: é ali que estão as notas.
+  const [aberto, setAberto] = useState(() => avaliacoesComNota > 0 && !(suap?.etapas ?? []).some((e) => e.nota !== null));
 
   // Só o que o SUAP já tem; nada calculado pelo app.
   const notas: { rotulo: string; valor: number; destaque?: boolean }[] = [];
@@ -121,7 +124,9 @@ function CartaoNotas({
         {suap?.situacao && <div className="pequeno suave">{suap.situacao}</div>}
       </div>
 
-      {notas.length > 0 ? (
+      {notas.length === 0 && avaliacoesComNota > 0 ? (
+        <p className="pequeno suave">{t("notas.etapaAberta", { count: avaliacoesComNota })}</p>
+      ) : notas.length > 0 ? (
         // Com o detalhamento, clicar nas notas mostra de onde elas vieram.
         detalhe ? (
           <button type="button" className="notas-suap-botao" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>

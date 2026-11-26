@@ -6,7 +6,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ### Novo
 
-- **Notas detalhadas:** o "Atualizar do SUAP" também traz o "Detalhar" de cada disciplina. Na tela de Notas, clicar na nota mostra as avaliações de cada etapa (sigla, descrição, data e nota) e a conta que o SUAP faz: a soma, na "Soma Simples", ou a média. Na "Fórmula", o app avisa que o SUAP não publica qual é.
+- **Notas detalhadas:** o "Atualizar do SUAP" também traz o "Detalhar" de cada disciplina. Na tela de Notas, clicar na nota mostra as avaliações de cada etapa (sigla, descrição, data e nota) e a conta que o SUAP faz: a soma, na "Soma Simples", ou a média. Na "Fórmula", o app avisa que o SUAP não publica qual é. Quando a etapa ainda não fechou mas já há avaliações com nota, o detalhamento aparece aberto.
 
 ### Mudou
 

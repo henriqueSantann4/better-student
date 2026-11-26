@@ -416,7 +416,9 @@
       "ponderada": "Média ponderada pelos pesos: {{resultado}}.",
       "formula": "O professor usa uma fórmula própria para esta etapa, e o SUAP não mostra qual é.",
       "pendentes": "Ainda sem nota: {{siglas}}."
-    }
+    },
+    "etapaAberta_one": "A nota da etapa ainda não fechou, mas já tem {{count}} avaliação com nota:",
+    "etapaAberta_other": "A nota da etapa ainda não fechou, mas já tem {{count}} avaliações com nota:"
   },
   "instituicao": {
     "boasVindas": "Bem-vindo ao Better Student!",
