@@ -2021,3 +2021,14 @@ textarea {
   overflow-y: auto;
 }
 
+.inicio-coluna {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inicio-coluna > .cartao {
+  margin: 0;
+}
+

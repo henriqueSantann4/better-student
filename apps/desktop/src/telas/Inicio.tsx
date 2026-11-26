@@ -61,11 +61,17 @@ export function Inicio({ aoIr }: { aoIr: (destino: Destino, alvo?: string) => vo
           {new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" }).format(agora)}
         </span>
       </header>
+      {/* Duas colunas independentes: um quadro que cresce (as aulas) não abre
+          buraco no outro lado. Notificações em cima, porque têm tamanho fixo. */}
       <div className="inicio-grade">
-        <ProximasAulas agora={agora} porId={porId} aoIr={aoIr} />
-        <Prazos agora={agora} tarefas={tarefas} porId={porId} aoIr={aoIr} />
-        <Notificacoes aoIr={aoIr} />
-        <EmailsRecentes aoIr={aoIr} />
+        <div className="inicio-coluna">
+          <Notificacoes aoIr={aoIr} />
+          <ProximasAulas agora={agora} porId={porId} aoIr={aoIr} />
+        </div>
+        <div className="inicio-coluna">
+          <Prazos agora={agora} tarefas={tarefas} porId={porId} aoIr={aoIr} />
+          <EmailsRecentes aoIr={aoIr} />
+        </div>
       </div>
     </>
   );
