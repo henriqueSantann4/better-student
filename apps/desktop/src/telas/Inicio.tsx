@@ -3,25 +3,18 @@ import { useTranslation } from "react-i18next";
 import {
   diaSemanaDe,
   estadoDaAula,
-  hojeIso,
-  nivelFaltas,
   proximoDiaDeAulas,
-  proximosEventos,
   proximosPrazos,
-  resumirFaltas,
   tarefas as repoTarefas,
   type Disciplina,
   type FilaPrazo,
   type Tarefa,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
-import { formatarData, formatarDiaMes, formatarPrazo, nomeDia } from "../formatos";
-
-/** Seções para onde a tela Início leva (os atalhos dos avisos e das listas). */
-export type DestinoInicio = "agenda" | "grade" | "faltas" | "notas" | "calendario";
-
-/** Eventos do calendário que valem um aviso na semana. */
-const EVENTOS_AVISO = new Set(["feriado", "recesso", "sabado_letivo", "prazo", "prova_final", "semana_provas"]);
+import { destinoDoAviso, textoDoAviso, type Destino } from "../avisos";
+import { useSincronizacao } from "../sincronizacao";
+import { useAvisos } from "./Novidades";
+import { formatarDiaMes, formatarPrazo, nomeDia } from "../formatos";
 
 /** O relógio da tela, atualizado a cada minuto (só enquanto ela está aberta). */
 function useAgora(): Date {
@@ -37,16 +30,17 @@ function useAgora(): Date {
  * Tela Início: num relance, a próxima leva de aulas, os prazos mais próximos
  * e só os avisos que pedem atenção. O resto fica nas outras telas.
  */
-export function Inicio({ aoIr }: { aoIr: (destino: DestinoInicio) => void }) {
+export function Inicio({ aoIr }: { aoIr: (destino: Destino) => void }) {
   const { t } = useTranslation();
   const { banco, disciplinas } = useSemestre();
   const agora = useAgora();
   const [tarefas, setTarefas] = useState<Tarefa[] | null>(null);
 
   // Tarefas mudam na Agenda; aqui basta ler ao abrir a tela.
+  const { versao } = useSincronizacao();
   useEffect(() => {
     repoTarefas.listar(banco).then(setTarefas).catch(() => setTarefas([]));
-  }, [banco]);
+  }, [banco, versao]);
 
   const hora = agora.getHours();
   const saudacao = hora < 5 ? "boaNoite" : hora < 12 ? "bomDia" : hora < 18 ? "boaTarde" : "boaNoite";
@@ -60,7 +54,7 @@ export function Inicio({ aoIr }: { aoIr: (destino: DestinoInicio) => void }) {
           {new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" }).format(agora)}
         </span>
       </header>
-      <Avisos agora={agora} tarefas={tarefas ?? []} aoIr={aoIr} />
+      <Avisos aoIr={aoIr} />
       <div className="inicio-grade">
         <ProximasAulas agora={agora} porId={porId} aoIr={aoIr} />
         <Prazos agora={agora} tarefas={tarefas} porId={porId} aoIr={aoIr} />
@@ -76,7 +70,7 @@ function ProximasAulas({
 }: {
   agora: Date;
   porId: Map<string, Disciplina>;
-  aoIr: (destino: DestinoInicio) => void;
+  aoIr: (destino: Destino) => void;
 }) {
   const { t } = useTranslation();
   const { semestre, horarios, eventos } = useSemestre();
@@ -144,7 +138,7 @@ function Prazos({
   agora: Date;
   tarefas: Tarefa[] | null;
   porId: Map<string, Disciplina>;
-  aoIr: (destino: DestinoInicio) => void;
+  aoIr: (destino: Destino) => void;
 }) {
   const { t } = useTranslation();
   if (tarefas === null) return <section className="cartao inicio-cartao" />;
@@ -186,64 +180,32 @@ function Prazos({
   );
 }
 
-interface Aviso {
-  id: string;
-  texto: string;
-  tipo: "perigo" | "atencao" | "info";
-  destino: DestinoInicio;
-}
-
-/** Só o que pede atenção: no máximo quatro linhas, as mais graves primeiro. */
-function Avisos({ agora, tarefas, aoIr }: { agora: Date; tarefas: Tarefa[]; aoIr: (destino: DestinoInicio) => void }) {
+/**
+ * Só o que pede atenção: no máximo quatro, os mais graves primeiro. Cada um
+ * tem um check: visto, ele some (e só volta se a situação piorar).
+ */
+function Avisos({ aoIr }: { aoIr: (destino: Destino) => void }) {
   const { t } = useTranslation();
-  const { semestre, disciplinas, horarios, faltas, eventos } = useSemestre();
-  const avisos: Aviso[] = [];
-
-  // Faltas: reprovado ou perto do limite.
-  for (const d of disciplinas) {
-    const resumo = resumirFaltas(d, faltas.filter((f) => f.disciplinaId === d.id), semestre, d.suap?.faltas ?? null);
-    const porEncontro = Math.max(0, ...horarios.filter((h) => h.disciplinaId === d.id).map((h) => h.quantidadeAulas));
-    const nivel = nivelFaltas(resumo, porEncontro);
-    if (nivel === "reprovado") {
-      avisos.push({ id: `f-${d.id}`, tipo: "perigo", destino: "faltas", texto: t("inicio.aviso.reprovadoFalta", { nome: d.nome }) });
-    } else if (nivel === "atencao") {
-      const texto = resumo.restantes === 0 ? t("inicio.aviso.noLimite", { nome: d.nome }) : t("inicio.aviso.pertoLimite", { nome: d.nome });
-      avisos.push({ id: `f-${d.id}`, tipo: "atencao", destino: "faltas", texto });
-    }
-  }
-
-  const { atrasadas } = proximosPrazos(tarefas, agora);
-  if (atrasadas.length > 0) {
-    avisos.push({ id: "atrasadas", tipo: "perigo", destino: "agenda", texto: t("inicio.aviso.atrasadas", { count: atrasadas.length }) });
-  }
-
-  // Calendário: o próximo evento importante dos próximos 7 dias.
-  const hoje = hojeIso(agora);
-  const daquiUmaSemana = hojeIso(new Date(agora.getTime() + 7 * 86_400_000));
-  const evento = proximosEventos(eventos, hoje, 20).find((e) => EVENTOS_AVISO.has(e.tipo) && e.dataInicio <= daquiUmaSemana);
-  if (evento) {
-    avisos.push({
-      id: `e-${evento.id}`,
-      tipo: "info",
-      destino: "calendario",
-      texto: t("inicio.aviso.evento", {
-        quando: evento.dataInicio <= hoje ? t("comum.hoje") : formatarData(evento.dataInicio),
-        titulo: evento.titulo,
-      }),
-    });
-  }
-
+  const { avisos, dispensar } = useAvisos();
   if (avisos.length === 0) return null;
-  const ordem = { perigo: 0, atencao: 1, info: 2 };
-  const mostrados = avisos.sort((a, b) => ordem[a.tipo] - ordem[b.tipo]).slice(0, 4);
+  const mostrados = avisos.slice(0, 4);
   const resto = avisos.length - mostrados.length;
 
   return (
     <ul className="inicio-avisos">
       {mostrados.map((a) => (
-        <li key={a.id}>
-          <button type="button" className={`inicio-aviso ${a.tipo}`} onClick={() => aoIr(a.destino)}>
-            {a.texto}
+        <li key={a.chave} className={`inicio-aviso ${a.gravidade}`}>
+          <button type="button" className="inicio-aviso-texto" onClick={() => aoIr(destinoDoAviso(a))}>
+            {textoDoAviso(t, a)}
+          </button>
+          <button
+            type="button"
+            className="inicio-aviso-visto"
+            onClick={() => void dispensar([a])}
+            aria-label={t("novidades.marcarVisto", { aviso: textoDoAviso(t, a) })}
+            title={t("novidades.visto")}
+          >
+            ✓
           </button>
         </li>
       ))}

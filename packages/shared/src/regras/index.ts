@@ -8,3 +8,4 @@ export * from "./agenda.ts";
 export * from "./frase.ts";
 export * from "./lembretes.ts";
 export * from "./inicio.ts";
+export * from "./avisos.ts";

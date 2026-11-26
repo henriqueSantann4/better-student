@@ -190,6 +190,10 @@ export interface Tarefa extends Registro {
   origemId: string | null;
   /** Link para abrir na origem (ex.: a atividade no Moodle). */
   url: string | null;
+  /** Avaliação do SUAP ligada a esta tarefa (disciplina, etapa e sigla), ou `null`. */
+  suapChave: string | null;
+  /** Última data dessa avaliação vista no SUAP. */
+  suapData: DataIso | null;
 }
 
 export interface Subtarefa extends Registro {

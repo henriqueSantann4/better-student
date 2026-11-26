@@ -9,6 +9,7 @@
     "sql:allow-execute",
     "allow-versao-nucleo",
     "allow-abrir-suap",
+    "allow-fechar-suap-escondido",
     "allow-email-conectar",
     "allow-email-conectado",
     "allow-email-desconectar",

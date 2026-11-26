@@ -10,6 +10,13 @@
   if (window.top !== window) return; // ignora iframes
 
   var AVISO_ID = "better-student-aviso";
+  // Janela escondida, aberta pelo app para atualizar sozinho (ver `abrir_suap`).
+  var SILENCIOSO = window.__BETTER_STUDENT_SILENCIOSO__ === true;
+
+  /** Na janela escondida, quando não dá para seguir: avisa o app, que fecha a janela. */
+  function desistir(motivo) {
+    window.__TAURI_INTERNALS__.invoke("suap_sem_sessao", { motivo: String(motivo) }).catch(function () {});
+  }
 
   function aviso(texto, tipo) {
     var caixa = document.getElementById(AVISO_ID);
@@ -37,11 +44,14 @@
 
   async function buscarBoletim() {
     if (document.querySelector('input[type="password"]')) {
+      // A sessão expirou: o login é sempre feito pelo usuário, na janela visível.
+      if (SILENCIOSO) return desistir("login");
       aviso("entre com seu usuário e senha do SUAP. Depois disso, o boletim é buscado sozinho.");
       return;
     }
     var matricula = matriculaDaPagina();
     if (!matricula) {
+      if (SILENCIOSO) return desistir("sem_matricula");
       aviso("não encontrei seu cadastro de aluno nesta página. Abra o menu Ensino → Dados do Aluno.", "erro");
       return;
     }
@@ -78,7 +88,9 @@
         detalhes: detalhes,
       });
     } catch (erro) {
-      aviso("não consegui buscar o boletim: " + (erro && erro.message ? erro.message : erro), "erro");
+      var mensagem = erro && erro.message ? erro.message : erro;
+      if (SILENCIOSO) return desistir(mensagem);
+      aviso("não consegui buscar o boletim: " + mensagem, "erro");
     }
   }
 

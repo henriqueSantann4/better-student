@@ -262,7 +262,7 @@ function CaixaEntrada({
     buscando.current = true;
     setSincronia({ estado: "buscando" });
     try {
-      const novos = await sincronizar(banco, endereco);
+      const { quantidade: novos } = await sincronizar(banco, endereco);
       await recarregar();
       setSincronia({ estado: "ok", novos });
     } catch (erro) {

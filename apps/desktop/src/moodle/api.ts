@@ -113,36 +113,10 @@ export async function carregarPainel(site: string): Promise<PainelMoodle> {
   return { info, disciplinas: lerDisciplinasMoodle(cursos), atividades: lerAtividadesMoodle(eventos) };
 }
 
-/** Notas de uma sala do Moodle. `erro` quando o Moodle não deixou ler aquela sala. */
-export interface NotasDaSala {
-  sala: DisciplinaMoodle;
-  notas: NotaMoodle[];
-  erro: boolean;
-}
-
-/**
- * Notas de todas as salas em que o aluno está inscrito (uma chamada por
- * sala, em paralelo). Uma sala que falhar não derruba as outras.
- */
-export async function carregarNotas(site: string): Promise<NotasDaSala[]> {
-  const info = lerInfoSite(await chamar(site, "core_webservice_get_site_info"));
-  const salas = lerDisciplinasMoodle(await chamar(site, "core_enrol_get_users_courses", { userid: info.idUsuario }));
-  return Promise.all(
-    salas.map(async (sala) => {
-      try {
-        const resposta = await chamar(site, "gradereport_user_get_grade_items", { courseid: sala.id, userid: info.idUsuario });
-        return { sala, notas: lerNotasMoodle(resposta, site), erro: false };
-      } catch {
-        return { sala, notas: [], erro: true };
-      }
-    }),
-  );
-}
-
-/** As salas em que o aluno está inscrito. */
-export async function carregarSalas(site: string): Promise<DisciplinaMoodle[]> {
-  const info = lerInfoSite(await chamar(site, "core_webservice_get_site_info"));
-  return lerDisciplinasMoodle(await chamar(site, "core_enrol_get_users_courses", { userid: info.idUsuario }));
+/** Notas de uma sala do Moodle (itens do livro de notas, sem os totais). */
+export async function carregarNotasDaSala(site: string, salaId: number, idUsuario: number): Promise<NotaMoodle[]> {
+  const resposta = await chamar(site, "gradereport_user_get_grade_items", { courseid: salaId, userid: idUsuario });
+  return lerNotasMoodle(resposta, site);
 }
 
 /** Arquivos que os professores postaram numa sala (slides, PDFs, listas). */

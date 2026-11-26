@@ -7,7 +7,7 @@
  */
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { emails, type Banco, type LoteRecebido } from "@better-student/shared";
+import { classificarEmail, emails, type Banco, type EmailRecebido, type LoteRecebido } from "@better-student/shared";
 
 /** A conexão IMAP só existe no app (precisa do núcleo Rust). */
 export const conexaoDisponivel = isTauri;
@@ -29,19 +29,42 @@ export async function desconectar(banco: Banco, endereco: string): Promise<void>
   await emails.limpar(banco, endereco);
 }
 
+export interface ResultadoSincronia {
+  quantidade: number;
+  /**
+   * Os que chegaram agora na aba Principal e ainda não lidos (para a caixa
+   * "Enquanto você estava fora"). Vazio na primeira busca: ali tudo é "novo".
+   */
+  importantes: EmailRecebido[];
+}
+
+/** Busca em andamento, por conta: uma segunda chamada espera a mesma busca. */
+const emAndamento = new Map<string, Promise<ResultadoSincronia>>();
+
 /**
  * Traz do Gmail só o que é novo (desde o maior UID já guardado) e grava na
- * cópia local. Devolve quantos e-mails chegaram.
+ * cópia local. Uma busca por vez: a tela de e-mail e a atualização ao abrir
+ * o app compartilham a mesma conexão em vez de abrir duas.
  */
-export async function sincronizar(banco: Banco, endereco: string): Promise<number> {
-  const estado = await emails.estado(banco, endereco);
-  const lote = await invoke<LoteRecebido>("email_buscar", {
-    endereco,
-    uidValidity: estado?.uidValidity ?? null,
-    desdeUid: estado?.maiorUid ?? null,
-    limite: estado ? POR_ATUALIZACAO : PRIMEIRA_CARGA,
-  });
-  return emails.gravarLote(banco, endereco, lote);
+export function sincronizar(banco: Banco, endereco: string): Promise<ResultadoSincronia> {
+  const atual = emAndamento.get(endereco);
+  if (atual) return atual;
+  const busca = (async () => {
+    const estado = await emails.estado(banco, endereco);
+    const lote = await invoke<LoteRecebido>("email_buscar", {
+      endereco,
+      uidValidity: estado?.uidValidity ?? null,
+      desdeUid: estado?.maiorUid ?? null,
+      limite: estado ? POR_ATUALIZACAO : PRIMEIRA_CARGA,
+    });
+    const quantidade = await emails.gravarLote(banco, endereco, lote);
+    const importantes = estado
+      ? lote.emails.filter((e) => !e.lido && classificarEmail(e.deEmail, e.assunto) === "principal")
+      : [];
+    return { quantidade, importantes };
+  })().finally(() => emAndamento.delete(endereco));
+  emAndamento.set(endereco, busca);
+  return busca;
 }
 
 /**

@@ -20,7 +20,7 @@ function feriado(data: string): EventoCalendario {
 function tarefa(id: string, tipo: TipoTarefa, prazo: string | null, concluida = false): Tarefa {
   return {
     ...registro, id, disciplinaId: null, tipo, titulo: id, descricao: null, prazo, prioridade: "media",
-    concluidaEm: concluida ? "2026-11-01T00:00:00Z" : null, lembretes: null, origem: null, origemId: null, url: null,
+    concluidaEm: concluida ? "2026-11-01T00:00:00Z" : null, lembretes: null, origem: null, origemId: null, url: null, suapChave: null, suapData: null,
   };
 }
 

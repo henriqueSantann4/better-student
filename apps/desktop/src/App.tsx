@@ -6,7 +6,6 @@ import { abrirBanco } from "./banco";
 import { ProvedorApp, useApp } from "./contexto";
 import { ehDuplicado } from "./formatos";
 import { Agenda } from "./telas/Agenda";
-import { Calendario } from "./telas/Calendario";
 import { Configuracoes } from "./telas/Configuracoes";
 import { CriarSemestre } from "./telas/CriarSemestre";
 import { Email } from "./telas/Email";
@@ -17,8 +16,10 @@ import { Inicio } from "./telas/Inicio";
 import { Materiais } from "./telas/Materiais";
 import { Moodle } from "./telas/Moodle";
 import { Notas } from "./telas/Notas";
+import { CaixaNovidades, PainelAtualizar } from "./telas/Novidades";
+import { ProvedorSincronizacao } from "./sincronizacao";
 
-const SECOES = ["inicio", "agenda", "grade", "calendario", "faltas", "notas", "materiais", "moodle", "email", "configuracoes"] as const;
+const SECOES = ["inicio", "agenda", "grade", "faltas", "notas", "materiais", "moodle", "email", "configuracoes"] as const;
 type Secao = (typeof SECOES)[number];
 
 export function App() {
@@ -43,7 +44,9 @@ export function App() {
 
   return (
     <ProvedorApp banco={banco}>
-      <Layout />
+      <ProvedorSincronizacao>
+        <Layout />
+      </ProvedorSincronizacao>
     </ProvedorApp>
   );
 }
@@ -53,6 +56,12 @@ function Layout() {
   const { dados, instituicao } = useApp();
   const [secao, setSecao] = useState<Secao | null>(null);
   const [versaoNucleo, setVersaoNucleo] = useState<string | null>(null);
+  // A caixa "Enquanto você estava fora" abre uma vez, junto com o app.
+  const [caixa, setCaixa] = useState<"fechada" | "aberta" | "vista">("fechada");
+  const pronto = !!dados && !!instituicao;
+  useEffect(() => {
+    if (pronto && caixa === "fechada") setCaixa("aberta");
+  }, [pronto, caixa]);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -80,6 +89,7 @@ function Layout() {
             {instituicao ? `${dados.semestre.nome} · ${instituicao.perfil.sigla}${instituicao.campus ? ` ${instituicao.campus.nome}` : ""}` : dados.semestre.nome}
           </span>
         )}
+        {pronto && <PainelAtualizar aoTerminarComNovidades={() => setCaixa("aberta")} />}
         {/* Na pergunta inicial (faculdade), o menu fica escondido: ela vem antes de tudo. */}
         {instituicao !== null && SECOES.map((s) => (
           <button
@@ -117,8 +127,6 @@ function Layout() {
           <Faltas />
         ) : secaoAtiva === "notas" ? (
           <Notas aoIrAgenda={() => setSecao("agenda")} />
-        ) : secaoAtiva === "calendario" ? (
-          <Calendario />
         ) : secaoAtiva === "materiais" ? (
           <Materiais />
         ) : secaoAtiva === "email" ? (
@@ -127,6 +135,7 @@ function Layout() {
           <Moodle />
         )}
       </main>
+      {pronto && caixa === "aberta" && <CaixaNovidades aoFechar={() => setCaixa("vista")} aoIr={setSecao} />}
     </div>
   );
 }

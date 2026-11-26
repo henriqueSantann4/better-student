@@ -14,56 +14,39 @@ import {
 import { useSemestre } from "../contexto";
 import { formatarData, formatarDataHora, formatarNota, formatarPrazo } from "../formatos";
 import { ImportarSuap } from "./ImportarSuap";
-import { abrirNoNavegador, carregarNotas, estaConectado, lerSiteMoodle, moodleDisponivel, type NotasDaSala } from "../moodle/api";
+import { abrirNoNavegador } from "../moodle/api";
+import { lerCacheMoodle, type CacheMoodle } from "../moodle/cache";
+import { useSincronizacao } from "../sincronizacao";
 
 type EstadoMoodle = "sem_conexao" | "carregando" | "ok" | "erro";
 
 /**
- * Notas do Moodle de cada disciplina do app (casadas pela sala, como na
- * Agenda). Buscadas na hora, só com o app aberto e o Moodle conectado. No
- * modo navegador, usa notas de exemplo.
+ * Notas do Moodle de cada disciplina do app (casadas pela sala), da última
+ * atualização (ao abrir o app ou no botão Atualizar). No modo navegador,
+ * usa notas de exemplo.
  */
 function useNotasMoodle(): { estado: EstadoMoodle; porDisciplina: Map<string, NotaMoodle[]> } {
   const { banco, disciplinas } = useSemestre();
-  const [estado, setEstado] = useState<EstadoMoodle>("carregando");
-  const [salas, setSalas] = useState<NotasDaSala[]>([]);
+  const { fontes, versao } = useSincronizacao();
+  const [cache, setCache] = useState<CacheMoodle | null | undefined>(undefined);
 
   useEffect(() => {
-    let cancelado = false;
-    void (async () => {
-      try {
-        let lidas: NotasDaSala[];
-        if (moodleDisponivel()) {
-          const site = await lerSiteMoodle(banco);
-          if (!site || !(await estaConectado(site))) {
-            if (!cancelado) setEstado("sem_conexao");
-            return;
-          }
-          lidas = await carregarNotas(site);
-        } else if (import.meta.env.DEV) {
-          lidas = (await import("../moodle/exemplos")).notasDeExemplo();
-        } else {
-          if (!cancelado) setEstado("sem_conexao");
-          return;
-        }
-        if (!cancelado) {
-          setSalas(lidas);
-          setEstado("ok");
-        }
-      } catch {
-        if (!cancelado) setEstado("erro");
-      }
-    })();
-    return () => {
-      cancelado = true;
-    };
-  }, [banco]);
+    lerCacheMoodle(banco).then(setCache).catch(() => setCache(null));
+  }, [banco, versao]);
 
   const porDisciplina = new Map<string, NotaMoodle[]>();
-  for (const { sala, notas } of salas) {
+  for (const sala of cache?.salas ?? []) {
     const d = casarDisciplinaMoodle(sala, disciplinas);
+    const notas = cache?.notas[sala.id] ?? [];
     if (d && notas.length > 0) porDisciplina.set(d.id, [...(porDisciplina.get(d.id) ?? []), ...notas]);
   }
+  const fonte = fontes.moodle.estado;
+  const estado: EstadoMoodle =
+    cache === undefined ? "carregando"
+    : cache ? "ok"
+    : fonte === "buscando" ? "carregando"
+    : fonte === "erro" ? "erro"
+    : "sem_conexao";
   return { estado, porDisciplina };
 }
 
@@ -84,10 +67,12 @@ export function Notas({ aoIrAgenda }: { aoIrAgenda: () => void }) {
   const [importando, setImportando] = useState(false);
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const moodle = useNotasMoodle();
+  const { versao } = useSincronizacao();
 
+  // Provas e trabalhos (inclusive os que vêm do SUAP) mudam a cada atualização.
   useEffect(() => {
     repoTarefas.listar(banco).then(setTarefas).catch(() => setTarefas([]));
-  }, [banco]);
+  }, [banco, versao]);
 
   // Data da última importação do SUAP (a mesma para todas as disciplinas).
   const atualizado = disciplinas

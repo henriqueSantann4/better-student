@@ -3,14 +3,13 @@
  * modo navegador (`pnpm dev:web`), onde não há conexão com o Moodle.
  * Só é importado em desenvolvimento: não entra no instalador.
  */
-import type { NotasDaSala } from "./api";
+import type { DisciplinaMoodle, NotaMoodle } from "@better-student/shared";
 
-export function notasDeExemplo(): NotasDaSala[] {
+export function notasDeExemplo(): { sala: DisciplinaMoodle; notas: NotaMoodle[] }[] {
   const sala = (id: number, nome: string) => ({ id, nome, sigla: "", progresso: null });
   return [
     {
       sala: sala(1, "Banco de Dados I"),
-      erro: false,
       notas: [
         { id: 1, nome: "Questionário 1: modelo relacional", modulo: "quiz", nota: 5.67, maxima: 7, corrigidaEm: "2026-11-20T10:00:00Z", url: null },
         { id: 2, nome: "Lista de exercícios de SQL", modulo: "assign", nota: 2.5, maxima: 3, corrigidaEm: "2026-11-10T10:00:00Z", url: null },
@@ -20,7 +19,6 @@ export function notasDeExemplo(): NotasDaSala[] {
     },
     {
       sala: sala(2, "Inglês Instrumental para a Computação"),
-      erro: false,
       notas: [{ id: 5, nome: "Questionário de vocabulário", modulo: "quiz", nota: null, maxima: 10, corrigidaEm: null, url: null }],
     },
   ];

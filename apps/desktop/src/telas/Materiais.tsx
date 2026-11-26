@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  casarDisciplinaMoodle,
   normalizar,
   PASTA_SEM_DISCIPLINA,
   pastaDaDisciplina,
   tamanhoLegivel,
   type ArquivoMoodle,
-  type DisciplinaMoodle,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import * as arquivos from "../materiais";
 import type { PastaMaterial } from "../materiais";
-import { carregarArquivosDaSala, carregarSalas, estaConectado, lerSiteMoodle, moodleDisponivel } from "../moodle/api";
+import { lerSiteMoodle } from "../moodle/api";
+import { lerCacheMoodle, salaDaDisciplina, type CacheMoodle } from "../moodle/cache";
+import { useSincronizacao, type EstadoFonte } from "../sincronizacao";
 
 /** Data de modificação (milissegundos) no formato curto: "18/11/2026 14:30". */
 function quando(ms: number): string {
@@ -44,6 +44,27 @@ export function Materiais() {
   const [selecionada, setSelecionada] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+  const { fontes, versao } = useSincronizacao();
+  const [cache, setCache] = useState<CacheMoodle | null>(null);
+  const [site, setSite] = useState<string | null>(null);
+
+  // A lista do Moodle vem da última atualização (ao abrir o app ou no botão
+  // Atualizar): a tela abre na hora, já sabendo quantos arquivos cada sala tem.
+  useEffect(() => {
+    lerCacheMoodle(banco).then(setCache).catch(() => setCache(null));
+    lerSiteMoodle(banco).then(setSite).catch(() => setSite(null));
+  }, [banco, versao]);
+
+  /** Arquivos da sala do Moodle de uma pasta; `null` = sem sala (ou sem Moodle). */
+  const doMoodle = (pasta: string): ArquivoMoodle[] | null => {
+    const d = disciplinas.find((x) => pastaDaDisciplina(x.nome) === pasta);
+    const sala = d ? salaDaDisciplina(cache, d, disciplinas) : null;
+    return sala ? (cache?.arquivos[sala.id] ?? []) : null;
+  };
+  const paraBaixar = (p: PastaMaterial) => {
+    const tem = new Set(p.arquivos.map((a) => a.nome.toLowerCase()));
+    return (doMoodle(p.pasta) ?? []).filter((a) => !tem.has(a.nome.toLowerCase())).length;
+  };
 
   const nomesPastas = useMemo(
     () => [...disciplinas.map((d) => pastaDaDisciplina(d.nome)), PASTA_SEM_DISCIPLINA],
@@ -86,7 +107,8 @@ export function Materiais() {
     return <p className="cartao suave">{t("materiais.soNoApp")}</p>;
   }
 
-  const pastaAtual = pastas?.find((p) => p.pasta === selecionada) ?? null;
+  // Sem escolha ainda, abre a primeira disciplina (a tela nunca fica vazia).
+  const pastaAtual = pastas?.find((p) => p.pasta === selecionada) ?? pastas?.[0] ?? null;
   const nomeDe = (pasta: string) =>
     pasta === PASTA_SEM_DISCIPLINA ? t("materiais.semDisciplina") : (disciplinas.find((d) => pastaDaDisciplina(d.nome) === pasta)?.nome ?? pasta);
 
@@ -126,11 +148,14 @@ export function Materiais() {
               <li key={p.pasta}>
                 <button
                   type="button"
-                  className={`materiais-pasta ${p.pasta === selecionada ? "ativa" : ""}`}
+                  className={`materiais-pasta ${p.pasta === pastaAtual?.pasta ? "ativa" : ""}`}
                   onClick={() => setSelecionada(p.pasta)}
                 >
                   <span>{nomeDe(p.pasta)}</span>
-                  <span className="pequeno suave">{t("materiais.arquivos", { count: p.arquivos.length })}</span>
+                  <span className="pequeno suave">
+                    {t("materiais.arquivos", { count: p.arquivos.length })}
+                    {paraBaixar(p) > 0 && ` · ${t("materiais.paraBaixar", { count: paraBaixar(p) })}`}
+                  </span>
                 </button>
               </li>
             ))}
@@ -141,6 +166,9 @@ export function Materiais() {
               pasta={pastaAtual}
               titulo={nomeDe(pastaAtual.pasta)}
               ctx={ctx}
+              moodle={doMoodle(pastaAtual.pasta)}
+              site={site}
+              fonte={cache ? null : fontes.moodle}
               aoMudar={recarregar}
               aoErro={setErro}
             />
@@ -200,12 +228,19 @@ function PainelPasta({
   pasta,
   titulo,
   ctx,
+  moodle,
+  site,
+  fonte,
   aoMudar,
   aoErro,
 }: {
   pasta: PastaMaterial;
   titulo: string;
   ctx: Contexto;
+  moodle: ArquivoMoodle[] | null;
+  site: string | null;
+  /** Estado da busca do Moodle, quando ainda não há lista guardada. */
+  fonte: EstadoFonte | null;
   aoMudar: () => Promise<void>;
   aoErro: (erro: string) => void;
 }) {
@@ -261,7 +296,7 @@ function PainelPasta({
       )}
 
       {pasta.arquivos.length === 0 ? (
-        <p className="suave">{t("materiais.vazia")}</p>
+        <p className="suave">{moodle && moodle.length > 0 ? t("materiais.nadaBaixado") : t("materiais.vazia")}</p>
       ) : (
         <ul className="lista">
           {pasta.arquivos.map((a) => (
@@ -281,72 +316,52 @@ function PainelPasta({
       )}
 
       {pasta.pasta !== PASTA_SEM_DISCIPLINA && (
-        <DoMoodle pasta={pasta} ctx={ctx} aoMudar={aoMudar} aoErro={aoErro} />
+        <DoMoodle pasta={pasta} ctx={ctx} arquivosMoodle={moodle} site={site} fonte={fonte} aoMudar={aoMudar} aoErro={aoErro} />
       )}
     </section>
   );
 }
 
-type EstadoMoodle =
-  | { tipo: "fechado" }
-  | { tipo: "carregando" }
-  | { tipo: "sem_conexao" }
-  | { tipo: "sem_sala" }
-  | { tipo: "ok"; site: string; arquivos: ArquivoMoodle[] };
-
-/** Os arquivos que os professores postaram na sala do Moodle desta disciplina. */
+/**
+ * Arquivos que os professores postaram na sala do Moodle e que ainda não
+ * estão na pasta. A lista já veio na atualização; o download só acontece
+ * quando o aluno pede.
+ */
 function DoMoodle({
   pasta,
   ctx,
+  arquivosMoodle,
+  site,
+  fonte,
   aoMudar,
   aoErro,
 }: {
   pasta: PastaMaterial;
   ctx: Contexto;
+  arquivosMoodle: ArquivoMoodle[] | null;
+  site: string | null;
+  fonte: EstadoFonte | null;
   aoMudar: () => Promise<void>;
   aoErro: (erro: string) => void;
 }) {
   const { t } = useTranslation();
-  const { banco, disciplinas } = useSemestre();
-  const [estado, setEstado] = useState<EstadoMoodle>({ tipo: "fechado" });
   const [baixando, setBaixando] = useState<{ feitos: number; total: number } | null>(null);
-  const salas = useRef<DisciplinaMoodle[] | null>(null);
 
-  const jaTem = new Set(pasta.arquivos.map((a) => a.nome.toLowerCase()));
-
-  async function carregar() {
-    setEstado({ tipo: "carregando" });
-    try {
-      if (ctx.exemplo) {
-        const { arquivosMoodleDeExemplo } = await import("../exemplosMateriais");
-        setEstado({ tipo: "ok", site: "", arquivos: arquivosMoodleDeExemplo() });
-        return;
-      }
-      const site = moodleDisponivel() ? await lerSiteMoodle(banco) : null;
-      if (!site || !(await estaConectado(site))) {
-        setEstado({ tipo: "sem_conexao" });
-        return;
-      }
-      salas.current ??= await carregarSalas(site);
-      const disciplina = disciplinas.find((d) => pastaDaDisciplina(d.nome) === pasta.pasta);
-      const sala = salas.current.find((s) => disciplina && casarDisciplinaMoodle(s, disciplinas)?.id === disciplina.id);
-      if (!sala) {
-        setEstado({ tipo: "sem_sala" });
-        return;
-      }
-      setEstado({ tipo: "ok", site, arquivos: await carregarArquivosDaSala(site, sala.id) });
-    } catch (e) {
-      setEstado({ tipo: "fechado" });
-      aoErro(String(e));
-    }
+  if (!arquivosMoodle) {
+    // Sem lista guardada: diz por quê (buscando, sem conexão); sem sala, não mostra nada.
+    const motivo = fonte?.estado === "buscando" ? "carregando" : fonte?.estado === "inativo" && !ctx.exemplo ? "sem_conexao" : null;
+    return motivo ? <p className="pequeno suave materiais-moodle">{t(`materiais.moodle.${motivo}`)}</p> : null;
   }
 
+  const jaTem = new Set(pasta.arquivos.map((a) => a.nome.toLowerCase()));
+  const faltam = arquivosMoodle.filter((a) => !jaTem.has(a.nome.toLowerCase()));
+
   async function baixar(lista: ArquivoMoodle[]) {
-    if (estado.tipo !== "ok" || lista.length === 0) return;
+    if (lista.length === 0 || (!site && !ctx.exemplo)) return;
     setBaixando({ feitos: 0, total: lista.length });
     for (const [i, a] of lista.entries()) {
       try {
-        if (!ctx.exemplo) await arquivos.baixarDoMoodle(ctx.raiz, pasta.pasta, a.nome, a.url, estado.site);
+        if (!ctx.exemplo) await arquivos.baixarDoMoodle(ctx.raiz, pasta.pasta, a.nome, a.url, site!);
       } catch (e) {
         aoErro(t("materiais.moodle.falhou", { nome: a.nome, erro: String(e) }));
       }
@@ -356,59 +371,36 @@ function DoMoodle({
     await aoMudar();
   }
 
-  if (estado.tipo === "fechado") {
-    return (
-      <div className="materiais-moodle">
-        <button type="button" className="botao" onClick={() => void carregar()}>
-          {t("materiais.moodle.ver")}
-        </button>
-      </div>
-    );
+  if (faltam.length === 0) {
+    return arquivosMoodle.length > 0 ? <p className="pequeno texto-ok materiais-moodle">{t("materiais.moodle.tudoBaixado")}</p> : null;
   }
-  if (estado.tipo !== "ok") {
-    return (
-      <div className="materiais-moodle">
-        <p className="pequeno suave">{t(`materiais.moodle.${estado.tipo}`)}</p>
-      </div>
-    );
-  }
-
-  const faltam = estado.arquivos.filter((a) => !jaTem.has(a.nome.toLowerCase()));
   return (
     <div className="materiais-moodle">
       <div className="resumo-topo">
-        <h3 className="pequeno suave notas-subtitulo">{t("materiais.moodle.titulo")}</h3>
-        {faltam.length > 0 && !baixando && (
+        <h3 className="pequeno suave notas-subtitulo">{t("materiais.moodle.titulo", { count: faltam.length })}</h3>
+        {!baixando && (
           <button type="button" className="botao primario" onClick={() => void baixar(faltam)}>
             {t("materiais.moodle.baixarTodos", { count: faltam.length })}
           </button>
         )}
       </div>
       {baixando && <p className="pequeno">{t("materiais.moodle.baixando", baixando)}</p>}
-      {estado.arquivos.length === 0 ? (
-        <p className="pequeno suave">{t("materiais.moodle.nenhum")}</p>
-      ) : (
-        <ul className="lista">
-          {estado.arquivos.map((a) => (
-            <li key={a.url + a.nome} className="item">
-              <span className="etiqueta neutra-tipo">{tipoDo(a.nome)}</span>
-              <div className="item-texto">
-                <span>{a.nome}</span>
-                <span className="pequeno suave">
-                  {[a.secao, a.recurso].filter(Boolean).join(" · ")} · {tamanhoLegivel(a.tamanho)}
-                </span>
-              </div>
-              {jaTem.has(a.nome.toLowerCase()) ? (
-                <span className="pequeno texto-ok">{t("materiais.moodle.baixado")}</span>
-              ) : (
-                <button type="button" className="botao" disabled={!!baixando} onClick={() => void baixar([a])}>
-                  {t("materiais.moodle.baixar")}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="lista">
+        {faltam.map((a) => (
+          <li key={a.url + a.nome} className="item">
+            <span className="etiqueta neutra-tipo">{tipoDo(a.nome)}</span>
+            <div className="item-texto">
+              <span>{a.nome}</span>
+              <span className="pequeno suave">
+                {[a.secao, a.recurso].filter(Boolean).join(" · ")} · {tamanhoLegivel(a.tamanho)}
+              </span>
+            </div>
+            <button type="button" className="botao" disabled={!!baixando} onClick={() => void baixar([a])}>
+              {t("materiais.moodle.baixar")}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

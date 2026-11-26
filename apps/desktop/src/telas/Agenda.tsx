@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   agruparTarefas,
-  casarDisciplinaMoodle,
+  hojeIso,
   lerFrase,
   ORDEM_GRUPOS,
   paraDataIso,
@@ -18,33 +18,47 @@ import {
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import { formatarDataEmail } from "../formatos";
-import { abrirNoNavegador, carregarPainel, estaConectado, lerSiteMoodle, moodleDisponivel } from "../moodle/api";
+import { abrirNoNavegador } from "../moodle/api";
+import { useSincronizacao } from "../sincronizacao";
+import { diaDoPrazo, EscolherCalendario, eventosDoPeriodo, ItemEvento, MiniCalendario, nomeMes } from "./Calendario";
 
 const TIPOS: TipoTarefa[] = ["prova", "trabalho", "lista", "apresentacao", "atividade_moodle", "outro"];
 const PRIORIDADES: Prioridade[] = ["baixa", "media", "alta"];
 
-type Sincronia = { estado: "parado" } | { estado: "buscando" } | { estado: "ok"; novas: number } | { estado: "erro"; mensagem: string };
+/** "2026-12-03" → "quinta-feira, 3 de dezembro". */
+function nomeDoDia(dia: string): string {
+  return new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${dia}T12:00`));
+}
 
 /**
- * Agenda: provas, trabalhos, listas e as atividades do Moodle, num lugar só,
- * agrupadas pelo prazo (atrasadas, hoje, amanhã, esta semana...).
+ * Agenda: provas, trabalhos, listas, atividades do Moodle e o calendário
+ * acadêmico num lugar só. À esquerda, um mês por vez (com setas); à direita,
+ * as tarefas agrupadas pelo prazo e os eventos do mês. Clicar num dia mostra
+ * só aquele dia.
  */
 export function Agenda() {
   const { t } = useTranslation();
-  const { banco, acao, disciplinas } = useSemestre();
+  const { banco, acao, disciplinas, eventos } = useSemestre();
+  const { versao } = useSincronizacao();
   const [lista, setLista] = useState<Tarefa[]>([]);
   const [subs, setSubs] = useState<Subtarefa[]>([]);
   // Rascunho aberto no formulário completo ("Mais opções"); null = fechado.
   const [rascunho, setRascunho] = useState<Partial<Tarefa> | null>(null);
-  const [moodle, setMoodle] = useState<Sincronia>({ estado: "parado" });
-  const [moodleConectado, setMoodleConectado] = useState(false);
-  const sincronizando = useRef(false);
+  const hoje = hojeIso();
+  const [mes, setMes] = useState(hoje.slice(0, 7));
+  const [dia, setDia] = useState<string | null>(null);
+  const [escolhendoCalendario, setEscolhendoCalendario] = useState(false);
 
   const recarregar = useCallback(async () => {
     const [t, s] = await Promise.all([repoTarefas.listar(banco), repoSubtarefas.listar(banco)]);
     setLista(t);
     setSubs(s);
   }, [banco]);
+
+  // Lê de novo quando a atualização (SUAP, Moodle) grava tarefas novas.
+  useEffect(() => {
+    void recarregar();
+  }, [recarregar, versao]);
 
   /** Roda uma alteração (com o aviso de erro do app) e recarrega a lista. */
   const alterar = useCallback(
@@ -56,51 +70,36 @@ export function Agenda() {
     [acao, recarregar],
   );
 
-  /** Traz as atividades do Moodle como tarefas (só com o app aberto). */
-  const sincronizarMoodle = useCallback(async () => {
-    if (sincronizando.current || !moodleDisponivel()) return;
-    const site = await lerSiteMoodle(banco);
-    if (!site || !(await estaConectado(site))) return;
-    setMoodleConectado(true);
-    sincronizando.current = true;
-    setMoodle({ estado: "buscando" });
-    try {
-      const painel = await carregarPainel(site);
-      // Sala do Moodle → disciplina do app (pelo código do SUAP ou pelo nome).
-      const porSala = new Map(painel.disciplinas.map((sala) => [sala.id, casarDisciplinaMoodle(sala, disciplinas)?.id ?? null]));
-      const r = await repoTarefas.importarMoodle(banco, painel.atividades, (a) =>
-        a.disciplinaId !== null ? (porSala.get(a.disciplinaId) ?? null) : null,
-      );
-      await recarregar();
-      setMoodle({ estado: "ok", novas: r.novas });
-    } catch (erro) {
-      setMoodle({ estado: "erro", mensagem: String(erro) });
-    } finally {
-      sincronizando.current = false;
-    }
-  }, [banco, disciplinas, recarregar]);
-
-  useEffect(() => {
-    void recarregar().then(sincronizarMoodle);
-  }, [recarregar, sincronizarMoodle]);
-
   const grupos = agruparTarefas(lista);
   const porDisciplina = new Map(disciplinas.map((d) => [d.id, d]));
   const pendentes = lista.length - grupos.concluidas.length;
+  const item = (tarefa: Tarefa) => (
+    <ItemTarefa
+      key={tarefa.id}
+      tarefa={tarefa}
+      disciplina={tarefa.disciplinaId ? (porDisciplina.get(tarefa.disciplinaId) ?? null) : null}
+      subtarefas={subs.filter((s) => s.tarefaId === tarefa.id)}
+      disciplinas={disciplinas}
+      alterar={alterar}
+    />
+  );
+
+  const fimDoMes = `${mes}-31`;
+  const eventosDoMes = eventosDoPeriodo(eventos, `${mes}-01`, fimDoMes).filter((e) => e.tipo !== "outro");
 
   return (
     <>
       <header className="cabecalho">
         <h1>{t("agenda.titulo")}</h1>
         <span className="suave">{t("agenda.pendentes", { count: pendentes })}</span>
-        <div className="acoes empurrar-direita">
-          {moodleConectado && (
-            <button type="button" className="botao" onClick={sincronizarMoodle} disabled={moodle.estado === "buscando"}>
-              {moodle.estado === "buscando" ? t("agenda.buscandoMoodle") : t("agenda.atualizarMoodle")}
-            </button>
-          )}
-        </div>
+        {eventos.length > 0 && !escolhendoCalendario && (
+          <button type="button" className="botao empurrar-direita" onClick={() => setEscolhendoCalendario(true)}>
+            {t("calendario.trocar")}
+          </button>
+        )}
       </header>
+
+      {escolhendoCalendario && <EscolherCalendario aoTerminar={() => setEscolhendoCalendario(false)} />}
 
       {!rascunho && (
         <EntradaRapida
@@ -108,9 +107,6 @@ export function Agenda() {
           aoMaisOpcoes={(dados) => setRascunho(dados)}
         />
       )}
-
-      {moodle.estado === "ok" && moodle.novas > 0 && <p className="sucesso">{t("agenda.novasMoodle", { count: moodle.novas })}</p>}
-      {moodle.estado === "erro" && <p className="aviso faixa">{t("agenda.erroMoodle", { mensagem: moodle.mensagem })}</p>}
 
       {rascunho && (
         <FormTarefa
@@ -124,48 +120,96 @@ export function Agenda() {
         />
       )}
 
-      {lista.length === 0 && !rascunho && <p className="cartao suave">{t("agenda.vazia")}</p>}
+      <div className="agenda-layout">
+        <div className="agenda-lado">
+          <MiniCalendario mes={mes} aoMudarMes={setMes} tarefas={lista} diaEscolhido={dia} aoEscolherDia={setDia} />
+          {eventos.length === 0 && !escolhendoCalendario && (
+            <section className="cartao">
+              <p className="pequeno suave">{t("calendario.semCalendario")}</p>
+              <button type="button" className="botao" onClick={() => setEscolhendoCalendario(true)}>
+                {t("calendario.escolher")}
+              </button>
+            </section>
+          )}
+        </div>
 
-      {ORDEM_GRUPOS.filter((g) => g !== "concluidas" && grupos[g].length > 0).map((g) => (
-        <section key={g} className={`cartao grupo-agenda grupo-${g}`}>
-          <h2>
-            {t(`agenda.grupos.${g}`)} <span className="contagem">{grupos[g].length}</span>
-          </h2>
-          <ul className="lista">
-            {grupos[g].map((tarefa) => (
-              <ItemTarefa
-                key={tarefa.id}
-                tarefa={tarefa}
-                disciplina={tarefa.disciplinaId ? (porDisciplina.get(tarefa.disciplinaId) ?? null) : null}
-                subtarefas={subs.filter((s) => s.tarefaId === tarefa.id)}
-                disciplinas={disciplinas}
-                alterar={alterar}
-              />
-            ))}
-          </ul>
-        </section>
-      ))}
+        <div className="agenda-lista">
+          {dia ? (
+            <DoDia dia={dia} tarefas={lista} item={item} aoFechar={() => setDia(null)} />
+          ) : (
+            <>
+              {lista.length === 0 && !rascunho && <p className="cartao suave">{t("agenda.vazia")}</p>}
 
-      {grupos.concluidas.length > 0 && (
-        <details className="cartao">
-          <summary>
-            <strong>{t("agenda.grupos.concluidas")}</strong> <span className="contagem">{grupos.concluidas.length}</span>
-          </summary>
-          <ul className="lista">
-            {grupos.concluidas.map((tarefa) => (
-              <ItemTarefa
-                key={tarefa.id}
-                tarefa={tarefa}
-                disciplina={tarefa.disciplinaId ? (porDisciplina.get(tarefa.disciplinaId) ?? null) : null}
-                subtarefas={subs.filter((s) => s.tarefaId === tarefa.id)}
-                disciplinas={disciplinas}
-                alterar={alterar}
-              />
-            ))}
-          </ul>
-        </details>
-      )}
+              {ORDEM_GRUPOS.filter((g) => g !== "concluidas" && grupos[g].length > 0).map((g) => (
+                <section key={g} className={`cartao grupo-agenda grupo-${g}`}>
+                  <h2>
+                    {t(`agenda.grupos.${g}`)} <span className="contagem">{grupos[g].length}</span>
+                  </h2>
+                  <ul className="lista">{grupos[g].map(item)}</ul>
+                </section>
+              ))}
+
+              {eventosDoMes.length > 0 && (
+                <section className="cartao">
+                  <h2>{t("agenda.calendarioDoMes", { mes: nomeMes(mes) })}</h2>
+                  <ul className="lista">
+                    {eventosDoMes.map((e) => (
+                      <ItemEvento key={e.id} evento={e} passado={e.dataFim < hoje} />
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {grupos.concluidas.length > 0 && (
+                <details className="cartao">
+                  <summary>
+                    <strong>{t("agenda.grupos.concluidas")}</strong> <span className="contagem">{grupos.concluidas.length}</span>
+                  </summary>
+                  <ul className="lista">{grupos.concluidas.map(item)}</ul>
+                </details>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </>
+  );
+}
+
+/** Só um dia: as tarefas com prazo nele (as feitas, apagadas) e os eventos do calendário. */
+function DoDia({
+  dia,
+  tarefas,
+  item,
+  aoFechar,
+}: {
+  dia: string;
+  tarefas: Tarefa[];
+  item: (tarefa: Tarefa) => ReactNode;
+  aoFechar: () => void;
+}) {
+  const { t } = useTranslation();
+  const { eventos } = useSemestre();
+  const doDia = tarefas.filter((x) => x.prazo && diaDoPrazo(x) === dia);
+  const eventosDoDia = eventosDoPeriodo(eventos, dia, dia);
+  return (
+    <section className="cartao">
+      <div className="resumo-topo">
+        <h2 className="primeira-maiuscula">{nomeDoDia(dia)}</h2>
+        <button type="button" className="botao-icone" onClick={aoFechar} aria-label={t("comum.fechar")}>
+          ×
+        </button>
+      </div>
+      {doDia.length === 0 && eventosDoDia.length === 0 && <p className="suave">{t("agenda.diaVazio")}</p>}
+      {doDia.length > 0 && <ul className="lista">{doDia.map(item)}</ul>}
+      {eventosDoDia.length > 0 && (
+        <ul className="lista">
+          {eventosDoDia.map((e) => (
+            <ItemEvento key={e.id} evento={e} passado={e.dataFim < hojeIso()} />
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -232,6 +276,7 @@ function ItemTarefa({
           <span className="pequeno suave">
             {[
               t(`agenda.tipos.${tarefa.tipo}`),
+              tarefa.suapChave ? t("agenda.doSuap") : null,
               disciplina?.nome,
               tarefa.prazo ? formatarDataEmail(tarefa.prazo, true) : null,
               subtarefas.length > 0 ? t("agenda.subtarefasFeitas", { feitas, total: subtarefas.length }) : null,
@@ -291,6 +336,11 @@ function ItemTarefa({
             </button>
           </div>
           {tarefa.origem === "moodle" && <p className="pequeno suave">{t("agenda.veioDoMoodle")}</p>}
+          {tarefa.suapChave && (
+            <p className="pequeno suave">
+              {tarefa.origem === "suap" ? t("agenda.veioDoSuap") : t("agenda.ligadaAoSuap")}
+            </p>
+          )}
         </div>
       )}
     </li>

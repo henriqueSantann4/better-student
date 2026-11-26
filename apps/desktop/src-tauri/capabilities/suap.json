@@ -6,5 +6,5 @@
   "remote": {
     "urls": ["https://suap.*.edu.br/*"]
   },
-  "permissions": ["allow-entregar-suap"]
+  "permissions": ["allow-entregar-suap", "allow-suap-sem-sessao"]
 }

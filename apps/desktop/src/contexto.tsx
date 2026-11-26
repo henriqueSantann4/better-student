@@ -43,6 +43,8 @@ interface Contexto {
    * mensagem no topo da tela e devolve `false`.
    */
   acao: (alteracao: () => Promise<unknown>) => Promise<boolean>;
+  /** Lê de novo o semestre do banco (ex.: depois de uma atualização em segundo plano da tela). */
+  recarregar: () => Promise<void>;
   erro: unknown;
   limparErro: () => void;
 }
@@ -98,7 +100,7 @@ export function ProvedorApp({ banco, children }: { banco: Banco; children: React
   );
 
   return (
-    <ContextoApp.Provider value={{ banco, dados, instituicao, acao, erro, limparErro: () => setErro(null) }}>
+    <ContextoApp.Provider value={{ banco, dados, instituicao, acao, recarregar, erro, limparErro: () => setErro(null) }}>
       {children}
     </ContextoApp.Provider>
   );

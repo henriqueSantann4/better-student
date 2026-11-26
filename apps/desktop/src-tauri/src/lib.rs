@@ -34,10 +34,17 @@ fn versao_nucleo() -> String {
 /// Abre (ou traz para frente) a janela do SUAP. O usuário faz o login na
 /// página do próprio SUAP; o script injetado busca o boletim depois disso.
 ///
+/// `silencioso`: abre a janela ESCONDIDA, para atualizar ao abrir o app sem
+/// incomodar. Se a sessão do SUAP ainda vale (o WebView guarda os cookies do
+/// site, como um navegador), o script busca tudo e entrega; se pedir login,
+/// ele chama `suap_sem_sessao` e o app mostra o botão para entrar. A senha
+/// continua nunca passando pelo app.
+///
 /// É `async` de propósito: no Windows, criar uma janela dentro de um comando
 /// síncrono trava o app (problema conhecido do WebView2, wry#583).
 #[tauri::command]
-async fn abrir_suap(app: AppHandle, servidor: String) -> Result<(), String> {
+async fn abrir_suap(app: AppHandle, servidor: String, silencioso: Option<bool>) -> Result<(), String> {
+    let silencioso = silencioso.unwrap_or(false);
     let url: tauri::Url = servidor.parse().map_err(|_| "endereço do SUAP inválido".to_string())?;
     // Só aceita o SUAP de um instituto, por HTTPS: o mesmo padrão da capability.
     let host = url.host_str().unwrap_or_default();
@@ -46,20 +53,56 @@ async fn abrir_suap(app: AppHandle, servidor: String) -> Result<(), String> {
     }
 
     if let Some(janela) = app.get_webview_window(JANELA_SUAP) {
-        // Já aberta: recarrega para o script buscar o boletim de novo.
-        janela.navigate(url).map_err(|e| e.to_string())?;
-        janela.set_focus().map_err(|e| e.to_string())?;
-        return Ok(());
+        // Já aberta (o usuário está nela, ou outra busca escondida): não mexe.
+        if silencioso {
+            return Err("a janela do SUAP já está aberta".into());
+        }
+        // Se era a escondida, ela fecha e abre de novo visível, sem o modo silencioso.
+        if !janela.is_visible().unwrap_or(true) {
+            let _ = janela.destroy();
+        } else {
+            // Já aberta: recarrega para o script buscar o boletim de novo.
+            janela.navigate(url).map_err(|e| e.to_string())?;
+            janela.set_focus().map_err(|e| e.to_string())?;
+            return Ok(());
+        }
     }
 
+    // O modo vai num script à parte, que roda antes do `suap.js`.
+    let modo = format!("window.__BETTER_STUDENT_SILENCIOSO__ = {silencioso};");
     WebviewWindowBuilder::new(&app, JANELA_SUAP, WebviewUrl::External(url))
         .title("SUAP · Better Student")
         .inner_size(1100.0, 800.0)
         .center()
+        .visible(!silencioso)
+        .initialization_script(&modo)
         .initialization_script(SCRIPT_SUAP)
         .build()
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+/// Chamado pela janela ESCONDIDA do SUAP quando a sessão expirou (a página
+/// pede login) ou a busca falhou: avisa o app e fecha a janela.
+#[tauri::command]
+fn suap_sem_sessao(app: AppHandle, janela: WebviewWindow, motivo: String) -> Result<(), String> {
+    if janela.label() != JANELA_SUAP {
+        return Err("comando exclusivo da janela do SUAP".into());
+    }
+    let motivo: String = motivo.chars().take(200).collect();
+    app.emit_to("main", "suap:sem_sessao", motivo).map_err(|e| e.to_string())?;
+    janela.destroy().map_err(|e| e.to_string())
+}
+
+/// Fecha a janela do SUAP se ela estiver escondida (o app desistiu de esperar).
+/// A janela visível é do usuário: essa fica.
+#[tauri::command]
+fn fechar_suap_escondido(app: AppHandle) {
+    if let Some(janela) = app.get_webview_window(JANELA_SUAP) {
+        if !janela.is_visible().unwrap_or(true) {
+            let _ = janela.destroy();
+        }
+    }
 }
 
 /// Página do "Detalhar" de uma disciplina, com o número do diário da linha
@@ -85,7 +128,8 @@ struct PacoteSuap {
 
 /// Recebido da janela do SUAP: repassa o boletim (e horários/calendário, se vieram)
 /// para a janela principal (evento `suap:boletim`), fecha a janela do SUAP e
-/// volta ao app. O app mostra uma prévia: nada é gravado sem o usuário confirmar.
+/// volta ao app (se ela estava visível). Na importação pela tela, o app mostra
+/// uma prévia; na atualização automática, grava direto.
 #[tauri::command]
 fn entregar_suap(
     app: AppHandle,
@@ -108,10 +152,13 @@ fn entregar_suap(
     {
         return Err("página do SUAP grande demais".into());
     }
+    let escondida = !janela.is_visible().unwrap_or(true);
     app.emit_to("main", "suap:boletim", PacoteSuap { boletim, horarios, calendario, detalhes })
         .map_err(|e| e.to_string())?;
-    if let Some(principal) = app.get_webview_window("main") {
-        let _ = principal.set_focus();
+    if !escondida {
+        if let Some(principal) = app.get_webview_window("main") {
+            let _ = principal.set_focus();
+        }
     }
     janela.close().map_err(|e| e.to_string())
 }
@@ -164,6 +211,18 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../../../../packages/shared/src/banco/migrations/0007_suap_detalhe.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 8,
+            description: "provas e trabalhos do suap na agenda",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0008_tarefa_suap.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 9,
+            description: "novidades para a caixa ao abrir o app",
+            sql: include_str!("../../../../packages/shared/src/banco/migrations/0009_novidades.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -180,6 +239,8 @@ pub fn run() {
             versao_nucleo,
             abrir_suap,
             entregar_suap,
+            suap_sem_sessao,
+            fechar_suap_escondido,
             email::email_conectar,
             email::email_conectado,
             email::email_desconectar,

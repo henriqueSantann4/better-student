@@ -14,6 +14,8 @@ interface LinhaTarefa extends LinhaRegistro {
   origem: string | null;
   origem_id: string | null;
   url: string | null;
+  suap_chave: string | null;
+  suap_data: string | null;
 }
 
 function lerTarefa(l: LinhaTarefa): Tarefa {
@@ -30,6 +32,8 @@ function lerTarefa(l: LinhaTarefa): Tarefa {
     origem: l.origem,
     origemId: l.origem_id,
     url: l.url,
+    suapChave: l.suap_chave ?? null,
+    suapData: l.suap_data ?? null,
   };
 }
 

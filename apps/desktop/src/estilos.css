@@ -1609,3 +1609,204 @@ textarea {
   background: color-mix(in srgb, var(--suave) 15%, transparent);
 }
 
+/* ---------- Atualizar (menu) ---------- */
+
+.painel-atualizar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.botao-atualizar {
+  width: 100%;
+}
+
+.estado-fontes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Caixa "Enquanto você estava fora" ---------- */
+
+.sobreposto {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 16px 16px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+}
+
+.caixa-novidades {
+  width: 100%;
+  max-width: 560px;
+  margin: 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.novidades-lista .novidade {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.novidades-lista .novidade:hover .item-texto > span:first-child {
+  text-decoration: underline;
+}
+
+.novidades-nada {
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.aviso-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.aviso-linha.perigo .aviso-texto {
+  color: var(--perigo);
+}
+
+.aviso-texto {
+  text-align: left;
+}
+
+/* ---------- Avisos do Início com check ---------- */
+
+.inicio-aviso {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+}
+
+.inicio-aviso-texto,
+.inicio-aviso-visto {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.inicio-aviso-texto {
+  padding: 6px 4px 6px 14px;
+}
+
+.inicio-aviso-visto {
+  padding: 6px 12px 6px 6px;
+  opacity: 0.6;
+}
+
+.inicio-aviso-visto:hover {
+  opacity: 1;
+}
+
+/* ---------- Agenda com calendário ---------- */
+
+.agenda-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .agenda-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agenda-lado {
+  position: sticky;
+  top: 0;
+}
+
+.agenda-lista > .cartao:first-child {
+  margin-top: 0;
+}
+
+.mini-calendario {
+  margin-top: 0;
+}
+
+.mini-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.mini-topo h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.mini-calendario .grade-mes {
+  width: 100%;
+}
+
+.mini-calendario .grade-mes td {
+  position: relative;
+  height: 34px;
+  padding: 1px;
+  cursor: default;
+}
+
+.mini-calendario .grade-mes td button {
+  width: 100%;
+  min-width: 28px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mini-calendario .grade-mes td.dia-escolhido button {
+  outline: 2px solid var(--destaque);
+  outline-offset: -2px;
+}
+
+.marca-tarefa.feita {
+  opacity: 0.35;
+}
+
+.mini-acoes {
+  display: flex;
+  justify-content: center;
+  min-height: 4px;
+}
+
+.mini-calendario .legenda-calendario {
+  margin-top: 8px;
+}
+
+.primeira-maiuscula::first-letter {
+  text-transform: uppercase;
+}
+

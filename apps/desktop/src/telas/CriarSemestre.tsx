@@ -1,23 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  aplicarDetalhesSuap,
-  aplicarImportacao,
-  calendario as repoCalendario,
   estimarDatas,
-  importarHorarios,
+  mesmoPeriodo,
   nomeDoPeriodo,
   periodoDaData,
   periodoDoNome,
   planejarImportacao,
   semestreDoBoletim,
   semestres,
+  sincronizarSuap,
+  SEM_EXTRAS,
   type BoletimSuap,
+  type ExtrasSuap,
 } from "@better-student/shared";
 import { useApp } from "../contexto";
 import { CORES } from "../cores";
 import { formatarDataCompleta } from "../formatos";
-import { EntradaBoletim, mesmoPeriodo, PreviaHorarios, PreviaImportacao, SEM_EXTRAS, type ExtrasSuap } from "./ImportarSuap";
+import { EntradaBoletim, PreviaHorarios, PreviaImportacao } from "./ImportarSuap";
 
 /**
  * Primeiro acesso. Dois caminhos:
@@ -79,10 +79,8 @@ function ComecarPeloSuap() {
     await acao(async () => {
       // As regras (médias, recuperação, frequência) vêm da instituição escolhida.
       const semestre = await semestres.criar(banco, { ...novo, regras: instituicao?.perfil.regras });
-      await aplicarImportacao(banco, semestre.id, boletim, plano, CORES);
-      if (horarios) await importarHorarios(banco, semestre.id, horarios);
-      if (extras.detalhes.length > 0) await aplicarDetalhesSuap(banco, semestre.id, extras.detalhes);
-      if (doCalendario) await repoCalendario.aplicarPacote(banco, semestre, "suap", doCalendario);
+      // Tudo de uma vez: disciplinas, horários, detalhamento, calendário e provas com data.
+      await sincronizarSuap(banco, semestre, boletim, { ...extras, horarios, calendario: doCalendario }, { plano, cores: CORES });
     });
   }
 

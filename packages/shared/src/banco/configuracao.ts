@@ -8,7 +8,13 @@ export type ChaveConfiguracao =
   | "lembretesPadrao"
   | "suapServidor"
   | "emailInstitucional"
-  | "moodleSite";
+  | "moodleSite"
+  /** Avisos que o aluno marcou como vistos, com o nível de cada um (ver regras/avisos). */
+  | "avisosDispensados"
+  /** Última lista de salas, notas e arquivos do Moodle (para abrir as telas sem esperar). */
+  | "cacheMoodle"
+  /** Quando a caixa "Enquanto você estava fora" foi fechada pela última vez. */
+  | "ultimaVisita";
 
 /** Configurações gerais, guardadas como JSON numa tabela chave/valor. */
 export const configuracao = {

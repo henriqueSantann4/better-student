@@ -13,7 +13,6 @@
     "faltas": "Faltas",
     "notas": "Notas",
     "materiais": "Materiais",
-    "calendario": "Calendário",
     "email": "E-mail",
     "moodle": "Moodle",
     "configuracoes": "Configurações"
@@ -191,8 +190,6 @@
   "calendario": {
     "titulo": "Calendário acadêmico",
     "trocar": "Trocar calendário",
-    "proximos": "Próximos",
-    "semestreTodo": "Semestre inteiro",
     "segue": "aulas de {{dia}}",
     "escolher": "Calendário do campus",
     "explicacao": "O calendário traz as datas reais do semestre, os feriados e recessos (o app não mostra aula nesses dias) e os sábados letivos, com a grade do dia que eles seguem.",
@@ -219,12 +216,6 @@
     "embutidos": "Ou use um calendário que já vem com o app",
     "outroPeriodo": "Esse calendário é de {{periodo}}, mas o semestre atual é {{semestre}}.",
     "suapInvalido": "Não reconheci essa página como o calendário acadêmico do SUAP.",
-    "visao": "Visão do calendário",
-    "visoes": {
-      "mes": "Mês",
-      "lista": "Lista"
-    },
-    "semEventos": "Nenhum evento neste mês.",
     "legenda": {
       "letivo": "Dia letivo",
       "sem_aula": "Feriado / recesso",
@@ -233,7 +224,10 @@
       "fechamento": "Fechamento",
       "hoje": "Hoje",
       "tarefa": "Prova / entrega"
-    }
+    },
+    "mesAnterior": "Mês anterior",
+    "mesSeguinte": "Mês seguinte",
+    "semCalendario": "O calendário acadêmico (feriados, sábados letivos) ainda não está no app."
   },
   "email": {
     "titulo": "E-mail da faculdade",
@@ -333,11 +327,6 @@
     "nova": "Nova tarefa",
     "editar": "Editar tarefa",
     "vazia": "Nada na agenda. Crie uma tarefa ou conecte o Moodle para trazer as atividades com prazo.",
-    "atualizarMoodle": "Atualizar do Moodle",
-    "buscandoMoodle": "Buscando no Moodle…",
-    "novasMoodle_one": "{{count}} atividade nova do Moodle.",
-    "novasMoodle_other": "{{count}} atividades novas do Moodle.",
-    "erroMoodle": "Não consegui buscar as atividades do Moodle: {{mensagem}}",
     "grupos": {
       "atrasadas": "Atrasadas",
       "hoje": "Hoje",
@@ -390,7 +379,12 @@
         "dataNoPassado": "Essa data já passou.",
         "disciplinaSemAulaNoDia": "Essa disciplina não tem aula nesse dia: o prazo fica até o fim do dia (ou escreva a hora na frase)."
       }
-    }
+    },
+    "doSuap": "SUAP",
+    "veioDoSuap": "Veio do SUAP (detalhamento das notas). Se o professor mudar a data lá, ela muda aqui; se tirar, ela some.",
+    "ligadaAoSuap": "Esta anotação também está no SUAP: se a data mudar lá, muda aqui.",
+    "calendarioDoMes": "Calendário acadêmico · {{mes}}",
+    "diaVazio": "Nada marcado neste dia."
   },
   "notas": {
     "titulo": "Notas",
@@ -551,19 +545,74 @@
     "copiados_other": "{{count}} arquivos copiados.",
     "vazia": "Nenhum arquivo ainda.",
     "moodle": {
-      "ver": "Ver arquivos do Moodle",
-      "titulo": "No Moodle",
-      "carregando": "Buscando os arquivos da sala no Moodle…",
+      "carregando": "Buscando a lista de arquivos do Moodle…",
       "sem_conexao": "Conecte o Moodle (na aba Moodle) para baixar os arquivos dos professores.",
-      "sem_sala": "Não achei a sala do Moodle desta disciplina.",
-      "nenhum": "Os professores ainda não postaram arquivos nesta sala.",
       "baixar": "Baixar",
-      "baixado": "baixado",
       "baixarTodos_one": "Baixar {{count}} arquivo",
       "baixarTodos_other": "Baixar {{count}} arquivos",
       "baixando": "Baixando {{feitos}} de {{total}}…",
-      "falhou": "Não consegui baixar {{nome}}: {{erro}}"
+      "falhou": "Não consegui baixar {{nome}}: {{erro}}",
+      "titulo_one": "No Moodle, ainda não baixado ({{count}})",
+      "titulo_other": "No Moodle, ainda não baixados ({{count}})",
+      "tudoBaixado": "Todos os arquivos do Moodle desta disciplina já estão na pasta."
     },
-    "arquivos_zero": "nenhum arquivo"
+    "arquivos_zero": "nenhum arquivo",
+    "paraBaixar_one": "{{count}} para baixar",
+    "paraBaixar_other": "{{count}} para baixar",
+    "nadaBaixado": "Nenhum arquivo baixado ainda."
+  },
+  "novidades": {
+    "titulo": "Enquanto você estava fora",
+    "desde": "Desde a última vez: {{quando}}",
+    "buscando": "Buscando novidades: {{fontes}}…",
+    "chegou_one": "Chegou {{count}} novidade",
+    "chegou_other": "Chegaram {{count}} novidades",
+    "avisos": "Avisos",
+    "todosVistos": "Marcar todos como vistos",
+    "visto": "Visto",
+    "marcarVisto": "Marcar como visto: {{aviso}}",
+    "nada": "Nada de novo. Você não perdeu nada desde a última vez.",
+    "nadaAinda": "Nada de novo até agora. Ainda estou buscando.",
+    "ok": "Entendi",
+    "rotulos": {
+      "prova_suap": "SUAP",
+      "prova_remarcada": "SUAP",
+      "prova_removida": "SUAP",
+      "nota": "Nota",
+      "atividade_moodle": "Moodle",
+      "arquivo_moodle": "Arquivo",
+      "email": "E-mail"
+    },
+    "tipos": {
+      "prova_suap": "{{titulo}} marcada para {{data}}",
+      "prova_remarcada": "{{titulo}} mudou para {{data}}",
+      "prova_removida": "{{titulo}} ficou sem data no SUAP",
+      "nota": "{{titulo}}: {{nota}}",
+      "atividade_moodle": "Atividade nova: {{titulo}}",
+      "atividade_moodle_prazo": "Atividade nova: {{titulo}} (até {{prazo}})",
+      "arquivo_moodle": "Arquivo novo: {{titulo}}",
+      "email": "{{de}}: {{titulo}}"
+    }
+  },
+  "atualizar": {
+    "botao": "Atualizar",
+    "buscando": "Atualizando…",
+    "fontes": {
+      "suap": "SUAP",
+      "moodle": "Moodle",
+      "email": "E-mail"
+    },
+    "estados": {
+      "buscando": "buscando…",
+      "ok": "em dia",
+      "erro": "não deu certo",
+      "entrar": "entre de novo",
+      "inativo": ""
+    },
+    "suapEntrar": "O SUAP pediu para entrar de novo (a sessão expira de tempos em tempos).",
+    "entrarSuap": "Entrar no SUAP",
+    "ultima": "Atualizado às {{hora}}",
+    "nadaNovo": "nada de novo",
+    "periodoDiferente": "o boletim é de outro semestre (importe pela Grade)"
   }
 }

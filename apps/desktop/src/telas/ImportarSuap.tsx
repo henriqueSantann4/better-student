@@ -1,47 +1,25 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  aplicarDetalhesSuap,
-  aplicarImportacao,
+  calendarioServe as calendarioDoPeriodo,
   ErroBoletim,
-  calendario as repoCalendario,
-  importarHorarios,
-  lerBoletimSuap,
-  lerCalendarioSuap,
-  lerDetalheNotasSuap,
-  lerHorariosSuap,
+  mesmoPeriodo,
   periodoConfere,
   periodoDoNome,
   planejarImportacao,
+  sincronizarSuap,
+  SEM_EXTRAS,
   type BoletimSuap,
-  type DetalheDoDiario,
+  type ExtrasSuap,
   type HorariosSuap,
   type ItemImportacao,
   type ResultadoImportacao,
   type ResultadoHorarios,
-  type SemestrePacote,
 } from "@better-student/shared";
 import { useApp, useSemestre } from "../contexto";
-import { buscarBoletimNoSuap, gravarServidorSuap, lerServidorSuap, suapAutomaticoDisponivel } from "../suap";
+import { type PacoteSuap, buscarBoletimNoSuap, gravarServidorSuap, lerPacoteSuap, lerServidorSuap, suapAutomaticoDisponivel } from "../suap";
 import { CORES } from "../cores";
 import { formatarDataHora, formatarNota, nomeDia } from "../formatos";
-
-/** O que veio junto com o boletim na busca automática. */
-export interface ExtrasSuap {
-  horarios: HorariosSuap | null;
-  calendario: SemestrePacote | null;
-  /** "Detalhar" de cada disciplina (as avaliações e a forma de cálculo). */
-  detalhes: DetalheDoDiario[];
-}
-
-export const SEM_EXTRAS: ExtrasSuap = { horarios: null, calendario: null, detalhes: [] };
-
-type Periodo = { ano: number; periodo: number } | null;
-
-/** Mesmo período, ou não dá para saber (aí aceita). */
-export function mesmoPeriodo(a: Periodo, b: Periodo): boolean {
-  return !a || !b || (a.ano === b.ano && a.periodo === b.periodo);
-}
 
 /**
  * Importa o boletim do SUAP num semestre que já existe. As peças de baixo
@@ -58,9 +36,7 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
   // Calendário e horários só são aplicados se forem do mesmo período do semestre.
   const periodoSemestre = periodoDoNome(semestre.nome);
   const { calendario } = extras;
-  const periodoCal = calendario ? periodoDoNome(calendario.periodo) : null;
-  const calendarioServe =
-    !!calendario && !!periodoSemestre && periodoCal?.ano === periodoSemestre.ano && periodoCal.periodo === periodoSemestre.periodo;
+  const calendarioServe = calendarioDoPeriodo(calendario, semestre);
   const horarios = extras.horarios && mesmoPeriodo(extras.horarios.periodo, periodoSemestre) ? extras.horarios : null;
 
   const plano = boletim ? planejarImportacao(boletim, disciplinas) : [];
@@ -68,16 +44,12 @@ export function ImportarSuap({ aoFechar }: { aoFechar: () => void }) {
 
   async function importar() {
     if (!boletim) return;
-    // As cores novas continuam o rodízio a partir das disciplinas que já existem.
-    const cores = [...CORES.slice(disciplinas.length % CORES.length), ...CORES];
-    const saida: { resultado?: ResultadoImportacao; horarios?: ResultadoHorarios } = {};
+    const saida: { resultado?: ResultadoImportacao; horarios?: ResultadoHorarios | null } = {};
     const ok = await acao(async () => {
-      saida.resultado = await aplicarImportacao(banco, semestre.id, boletim, plano, cores);
-      // Depois das disciplinas: os horários precisam delas já criadas para casar.
-      if (horarios) saida.horarios = await importarHorarios(banco, semestre.id, horarios);
-      // O detalhamento casa pelo número do diário, gravado logo acima pelo boletim.
-      if (extras.detalhes.length > 0) await aplicarDetalhesSuap(banco, semestre.id, extras.detalhes);
-      if (calendarioServe) await repoCalendario.aplicarPacote(banco, semestre, "suap", calendario!);
+      // Tudo de uma vez (boletim, horários, detalhamento, calendário e provas com data).
+      const r = await sincronizarSuap(banco, semestre, boletim, extras, { plano, cores: CORES });
+      saida.resultado = r.importacao;
+      saida.horarios = r.horarios;
     });
     if (ok && saida.resultado) {
       setResultado(saida.resultado);
@@ -149,15 +121,6 @@ export function ResultadoImportacaoTexto({
   );
 }
 
-/** Executa um leitor; se ele falhar, devolve `null`. */
-function tentar<T>(ler: () => T): T | null {
-  try {
-    return ler();
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Recebe o boletim de duas formas:
  *  - abrindo a página salva (Ctrl+S → "Página da Web, somente HTML");
@@ -186,24 +149,11 @@ export function EntradaBoletim({
     return () => pararEspera.current?.();
   }, [banco, automatico]);
 
-  function ler(
-    html: string,
-    htmlHorarios: string | null = null,
-    htmlCalendario: string | null = null,
-    paginasDetalhe: { diario: string; html: string }[] = [],
-  ) {
+  function ler(html: string, pacote?: Omit<PacoteSuap, "boletim">) {
     try {
-      const boletim = lerBoletimSuap(html);
+      const { boletim, extras } = lerPacoteSuap({ boletim: html, horarios: null, calendario: null, detalhes: [], ...pacote });
       setAviso(null);
-      // Horários e calendário são bônus: se não der para ler, segue só com o boletim.
-      aoLer(boletim, {
-        horarios: htmlHorarios ? tentar(() => lerHorariosSuap(htmlHorarios)) : null,
-        calendario: htmlCalendario ? tentar(() => lerCalendarioSuap(htmlCalendario)) : null,
-        detalhes: paginasDetalhe.flatMap(({ diario, html: pagina }) => {
-          const detalhe = tentar(() => lerDetalheNotasSuap(pagina));
-          return detalhe && detalhe.etapas.length > 0 ? [{ diario, detalhe }] : [];
-        }),
-      });
+      aoLer(boletim, extras);
     } catch (erro) {
       setAviso(erro instanceof ErroBoletim ? t(`importar.erro.${erro.motivo}`) : String(erro));
     }
@@ -217,7 +167,7 @@ export function EntradaBoletim({
       await gravarServidorSuap(banco, servidor);
       pararEspera.current = await buscarBoletimNoSuap(servidor, (pacote) => {
         setAguardando(false);
-        ler(pacote.boletim, pacote.horarios, pacote.calendario, pacote.detalhes ?? []);
+        ler(pacote.boletim, pacote);
       });
     } catch (erro) {
       setAguardando(false);

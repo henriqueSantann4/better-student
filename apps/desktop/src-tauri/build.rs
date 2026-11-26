@@ -8,6 +8,8 @@ fn main() {
             "versao_nucleo",
             "abrir_suap",
             "entregar_suap",
+            "suap_sem_sessao",
+            "fechar_suap_escondido",
             "email_conectar",
             "email_conectado",
             "email_desconectar",
