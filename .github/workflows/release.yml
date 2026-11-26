@@ -1,0 +1,103 @@
+# Publica uma versão do app no GitHub (aba Releases), com o instalador do Windows.
+#
+# Como usar: com a versão já trocada nos quatro arquivos (ver CLAUDE.md,
+# seção "Versões") e o commit no main, crie e envie a tag da versão:
+#
+#   git tag v1.1.0
+#   git push origin v1.1.0
+#
+# O GitHub compila o app num Windows deles, roda os testes e cria a Release
+# "Better Student 1.1.0" com o instalador (.exe) e o .msi anexados. Também dá
+# para rodar à mão na aba Actions ("Run workflow"), informando a tag.
+
+name: Publicar versão
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag da versão (ex.: v1.1.0). Precisa já existir no GitHub."
+        required: true
+
+# Só pode criar a Release e anexar arquivos; nada além disso.
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - name: Baixar o código da tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Conferir se a tag bate com a versão do app
+        shell: pwsh
+        run: |
+          $versao = $env:TAG -replace '^v', ''
+          $arquivos = @{
+            'apps/desktop/package.json'              = (Get-Content apps/desktop/package.json -Raw | ConvertFrom-Json).version
+            'packages/shared/package.json'           = (Get-Content packages/shared/package.json -Raw | ConvertFrom-Json).version
+            'apps/desktop/src-tauri/tauri.conf.json' = (Get-Content apps/desktop/src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+            'apps/desktop/src-tauri/Cargo.toml'      = ([regex]::Match((Get-Content apps/desktop/src-tauri/Cargo.toml -Raw), '(?m)^version\s*=\s*"([^"]+)"')).Groups[1].Value
+          }
+          $errado = $false
+          foreach ($item in $arquivos.GetEnumerator()) {
+            if ($item.Value -ne $versao) {
+              Write-Host "::error::$($item.Key) está na versão $($item.Value), mas a tag é $env:TAG"
+              $errado = $true
+            }
+          }
+          if ($errado) { exit 1 }
+          Write-Host "Versão $versao confere nos quatro arquivos."
+
+      - name: Instalar o pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Instalar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Instalar o Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Reaproveitar a compilação do Rust de versões anteriores
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Instalar as dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Checar os tipos e rodar os testes
+        run: |
+          pnpm typecheck
+          pnpm test
+
+      - name: Compilar e publicar a Release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          tauriScript: pnpm tauri
+          tagName: ${{ env.TAG }}
+          releaseName: "Better Student __VERSION__"
+          releaseBody: |
+            Instalador para Windows 10 e 11.
+
+            **Como instalar:** baixe o arquivo que termina em `x64-setup.exe` (em "Assets", logo abaixo) e abra.
+            O Windows pode mostrar "O Windows protegeu o computador", porque o instalador não tem assinatura digital paga.
+            Clique em **Mais informações** e depois em **Executar assim mesmo**.
+
+            O que mudou nesta versão: veja o [CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/CHANGELOG.md).
+          releaseDraft: false
+          prerelease: false

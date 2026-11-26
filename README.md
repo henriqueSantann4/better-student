@@ -9,19 +9,31 @@
   Agenda, grade horária, faltas, notas, materiais e uma ponte direta entre o celular e o PC.
 </p>
 
-> **Em desenvolvimento inicial.** Ainda não existe versão utilizável.
+## Como instalar (Windows 10 e 11)
 
-## O que o app vai fazer
+1. Abra a página de **[versões do app](../../releases/latest)** (aba *Releases* do GitHub).
+2. Em **Assets**, baixe o arquivo que termina em **`x64-setup.exe`** (por exemplo, `Better Student_1.1.0_x64-setup.exe`).
+3. Abra o arquivo baixado. O Windows pode mostrar **"O Windows protegeu o computador"**: isso acontece porque o instalador não tem assinatura digital (que é paga), não porque tem algo errado. Clique em **Mais informações** e depois em **Executar assim mesmo**.
+4. Siga o instalador. Ele não pede senha de administrador: instala só para o seu usuário.
+5. Abra o **Better Student**. Na primeira vez ele pergunta a sua faculdade e o seu campus e pede para você entrar no SUAP uma vez; daí em diante, ele busca suas disciplinas, horários, notas e provas sozinho sempre que você abrir.
 
-- **Agenda** de provas, trabalhos e tarefas, com lembretes configuráveis
-- **Grade horária**, com a próxima aula e a sala
+Para atualizar, baixe e instale a versão nova do mesmo jeito: seus dados continuam onde estavam. Para desinstalar, use *Configurações do Windows → Aplicativos*.
+
+> Seus dados ficam só no seu computador. A senha do SUAP nunca passa pelo app (você entra na página do próprio SUAP), e as senhas do e-mail e a chave do Moodle ficam no cofre do Windows.
+
+## O que o app faz
+
+- **Início:** as próximas aulas, os próximos prazos, as notificações e os e-mails mais recentes, num relance
+- **Agenda** de provas, trabalhos e tarefas, com o calendário acadêmico do campus; escreva "prova de POO quinta 19h" e ela entende
+- **Provas e trabalhos do SUAP** entram sozinhos na Agenda (e mudam se o professor mudar a data)
+- **Grade horária**, com a sala de cada aula
 - **Controle de faltas** calculado pela carga horária de cada disciplina
-- **Calculadora de notas**: quanto preciso tirar para passar?
-- **Materiais organizados por disciplina**, automaticamente
-- **Foto do quadro**: tire no celular e ela cai na pasta certa do PC
-- **E-mail institucional** com prioridade para avisos de professores e detecção de prazos
-- **Integração com SUAP e Moodle**
-- **Flashcards** com repetição espaçada
+- **Notas** do SUAP e do Moodle, com o detalhamento de cada avaliação e o critério de cálculo do professor
+- **Materiais** numa pasta por disciplina, com os arquivos do Moodle para baixar
+- **E-mail institucional**, separado em Principal, Atualizações e Divulgação
+- **Integração com SUAP e Moodle**, atualizada ao abrir o app
+
+Em breve: lembretes no Windows, app de celular (foto do quadro direto na pasta da disciplina) e flashcards.
 
 Mais detalhes em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
@@ -67,6 +79,19 @@ pnpm build         # gera o instalador (.exe/.msi) em apps/desktop/src-tauri/tar
 ```
 
 A primeira execução de `pnpm dev` demora alguns minutos porque compila o Rust. As próximas são rápidas.
+
+## Publicando uma versão
+
+1. Troque a versão nos quatro arquivos (`apps/desktop/package.json`, `packages/shared/package.json`, `apps/desktop/src-tauri/tauri.conf.json` e `apps/desktop/src-tauri/Cargo.toml`) e registre as mudanças no [`CHANGELOG.md`](CHANGELOG.md).
+2. Faça o commit no `main` e envie.
+3. Crie e envie a tag da versão:
+
+   ```bash
+   git tag v1.1.0
+   git push origin v1.1.0
+   ```
+
+O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) compila o app num Windows do GitHub, roda os testes e publica a versão na aba Releases, com o instalador anexado. Se a tag não bater com a versão dos quatro arquivos, ele para antes de compilar.
 
 ## Contribuindo
 
