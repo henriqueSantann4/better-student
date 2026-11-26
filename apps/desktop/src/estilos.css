@@ -127,9 +127,7 @@ body {
 
 /* ---------- Estrutura ---------- */
 
-.conteudo {
-  max-width: 1100px;
-}
+/* Todas as telas usam a largura inteira da janela (pedido do Antonio). */
 
 .cabecalho {
   display: flex;
@@ -1017,9 +1015,6 @@ button:focus-visible {
 }
 
 /* A caixa de entrada usa a largura toda, como um cliente de e-mail. */
-.conteudo:has(.email) {
-  max-width: none;
-}
 
 .texto-atencao {
   color: var(--atencao-texto);
@@ -1723,10 +1718,6 @@ textarea {
 }
 
 /* ---------- Agenda com calendário ---------- */
-
-.conteudo:has(.agenda-layout) {
-  max-width: none;
-}
 
 /* O mês grande à esquerda (mais fácil de ler) e as atividades à direita. */
 .agenda-layout {
