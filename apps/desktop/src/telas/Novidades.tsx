@@ -22,7 +22,7 @@ import { useSincronizacao, type Fonte } from "../sincronizacao";
  * Avisos de agora (faltas, atrasadas, evento na semana), sem os que o aluno
  * já marcou como vistos. `dispensar` grava o check.
  */
-export function useAvisos(): { avisos: Aviso[]; dispensar: (vistos: Aviso[]) => Promise<void> } {
+export function useAvisos(): { avisos: Aviso[]; vistos: Aviso[]; dispensar: (vistos: Aviso[]) => Promise<void> } {
   const { banco, semestre, disciplinas, horarios, faltas, eventos } = useSemestre();
   const { versao } = useSincronizacao();
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
@@ -35,8 +35,10 @@ export function useAvisos(): { avisos: Aviso[]; dispensar: (vistos: Aviso[]) => 
 
   const todos = avisosDoMomento({ semestre, disciplinas, horarios, faltas, eventos, tarefas }, new Date());
   const avisos = dispensados ? semDispensados(todos, dispensados) : [];
-  const dispensar = async (vistos: Aviso[]) => setDispensados(await dispensarAvisos(banco, vistos, todos));
-  return { avisos, dispensar };
+  // Os já vistos continuam na lista do Início, em cinza, para reler.
+  const vistos = dispensados ? todos.filter((a) => !avisos.includes(a)) : [];
+  const dispensar = async (marcados: Aviso[]) => setDispensados(await dispensarAvisos(banco, marcados, todos));
+  return { avisos, vistos, dispensar };
 }
 
 const FONTES: Fonte[] = ["suap", "moodle", "email"];

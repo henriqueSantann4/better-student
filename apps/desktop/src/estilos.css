@@ -1907,3 +1907,117 @@ textarea {
   font-size: 0.9rem;
 }
 
+/* ---------- Início: quatro quadros (aulas, prazos, notificações, e-mails) ---------- */
+
+.inicio-grade {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .inicio-grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+.notificacoes {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notificacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.notificacao:last-child {
+  border-bottom: 0;
+}
+
+.notificacao-abrir {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notificacao-abrir:hover .notificacao-titulo {
+  text-decoration: underline;
+}
+
+.notificacao-titulo {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.notificacao-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.notificacao-marca {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--destaque);
+}
+
+.notificacao.perigo .notificacao-marca {
+  background: var(--perigo);
+}
+
+.notificacao.atencao .notificacao-marca {
+  background: var(--atencao);
+}
+
+.notificacao.lida {
+  opacity: 0.5;
+}
+
+.notificacao.lida .notificacao-titulo {
+  font-weight: 400;
+}
+
+.notificacao.lida .notificacao-marca {
+  background: transparent;
+  outline: 1px solid var(--suave);
+}
+
+.notificacao-check {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: none;
+  color: var(--suave);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.notificacao-check:hover {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+.inicio-quadro-lista {
+  max-height: 420px;
+  overflow-y: auto;
+}
+

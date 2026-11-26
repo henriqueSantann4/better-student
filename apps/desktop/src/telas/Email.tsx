@@ -24,7 +24,7 @@ type Pasta = "entrada" | "estrela" | "naoLidos";
  *   3. a caixa de entrada busca os e-mails novos sempre que é aberta.
  * No modo navegador de desenvolvimento não há IMAP: aparecem exemplos.
  */
-export function Email() {
+export function Email({ abrirId = null }: { abrirId?: string | null }) {
   const { t } = useTranslation();
   const { banco } = useApp();
   const [endereco, setEndereco] = useState<string | null | undefined>(undefined);
@@ -67,6 +67,7 @@ export function Email() {
   return (
     <CaixaEntrada
       endereco={endereco}
+      abrirId={abrirId}
       aoTrocar={() => setEditando(true)}
       aoDesconectar={
         conexaoDisponivel()
@@ -230,10 +231,13 @@ type Sincronia = { estado: "parado" } | { estado: "buscando" } | { estado: "ok";
 
 function CaixaEntrada({
   endereco,
+  abrirId,
   aoTrocar,
   aoDesconectar,
 }: {
   endereco: string;
+  /** E-mail que já abre aberto (vindo do Início). */
+  abrirId: string | null;
   aoTrocar: () => void;
   aoDesconectar?: () => void;
 }) {
@@ -244,7 +248,7 @@ function CaixaEntrada({
   const [pasta, setPasta] = useState<Pasta>("entrada");
   const [categoria, setCategoria] = useState<CategoriaEmail>("principal");
   const [busca, setBusca] = useState("");
-  const [abertoId, setAbertoId] = useState<string | null>(null);
+  const [abertoId, setAbertoId] = useState<string | null>(abrirId);
   const [sincronia, setSincronia] = useState<Sincronia>({ estado: "parado" });
   const conectado = conexaoDisponivel();
 
@@ -294,6 +298,16 @@ function CaixaEntrada({
       if (mudanca.estrela !== undefined) void repoEmails.marcar(banco, id, "estrela", mudanca.estrela);
     }
   }
+
+  // Vindo do Início: assim que a lista chega, abre na aba certa e marca como lido.
+  const pedido = useRef(abrirId);
+  useEffect(() => {
+    const alvo = emails.find((e) => e.id === pedido.current);
+    if (!alvo) return;
+    pedido.current = null;
+    setCategoria(alvo.categoria);
+    if (!alvo.lido) alterar(alvo.id, { lido: true });
+  }, [emails]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function abrir(email: EmailT) {
     setAbertoId(email.id);

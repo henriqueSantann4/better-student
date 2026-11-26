@@ -544,9 +544,26 @@
       "pertoLimite": "{{nome}}: perto do limite de faltas",
       "atrasadas_one": "{{count}} tarefa atrasada",
       "atrasadas_other": "{{count}} tarefas atrasadas",
-      "evento": "{{quando}}: {{titulo}}",
-      "mais_one": "+{{count}} aviso",
-      "mais_other": "+{{count}} avisos"
+      "evento": "{{quando}}: {{titulo}}"
+    },
+    "notificacoes": {
+      "titulo": "Notificações",
+      "naoLidas_one": "{{count}} não lida",
+      "naoLidas_other": "{{count}} não lidas",
+      "vazio": "Nenhuma notificação. Avisos de faltas, provas marcadas e notas novas aparecem aqui.",
+      "marcarLida": "Marcar como lida",
+      "lida": "Lida",
+      "todasLidas": "Marcar todas como lidas"
+    },
+    "emails": {
+      "titulo": "E-mails recentes",
+      "verTodos": "Ver todos",
+      "naoLidos_one": "{{count}} não lido",
+      "naoLidos_other": "{{count}} não lidos",
+      "vazio": "Nenhum e-mail na aba Principal.",
+      "semConta": "Conecte o e-mail institucional na aba E-mail para ver os mais recentes aqui.",
+      "marcarLido": "Marcar como lido",
+      "exemplo": "Modo navegador: e-mails de exemplo."
     }
   },
   "materiais": {

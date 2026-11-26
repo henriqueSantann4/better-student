@@ -66,6 +66,15 @@ export const novidades = {
     return linhas.map(ler);
   },
 
+  /** Das últimas semanas, vistas ou não, mais novas primeiro (para a tela Início). */
+  async recentes(banco: Banco, limite = 30): Promise<Novidade[]> {
+    const linhas = await banco.selecionar<LinhaNovidade>(
+      "SELECT * FROM novidade ORDER BY criado_em DESC, rowid DESC LIMIT ?",
+      [limite],
+    );
+    return linhas.map(ler);
+  },
+
   async marcarVistas(banco: Banco, ids: readonly string[]): Promise<void> {
     const momento = agora();
     for (const id of ids) await banco.executar("UPDATE novidade SET vista_em = ? WHERE id = ?", [momento, id]);

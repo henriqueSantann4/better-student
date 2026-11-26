@@ -56,6 +56,12 @@ function Layout() {
   const { dados, instituicao } = useApp();
   const [secao, setSecao] = useState<Secao | null>(null);
   const [versaoNucleo, setVersaoNucleo] = useState<string | null>(null);
+  // E-mail a abrir quando o Início leva para a tela de E-mail.
+  const [emailAlvo, setEmailAlvo] = useState<string | null>(null);
+  const irPara = (destino: Secao, alvo?: string) => {
+    setEmailAlvo(destino === "email" ? (alvo ?? null) : null);
+    setSecao(destino);
+  };
   // A caixa "Enquanto você estava fora" abre uma vez, junto com o app.
   const [caixa, setCaixa] = useState<"fechada" | "aberta" | "vista">("fechada");
   const pronto = !!dados && !!instituicao;
@@ -97,7 +103,7 @@ function Layout() {
             type="button"
             className={`menu-item ${s === secaoAtiva ? "ativo" : ""}`}
             aria-current={s === secaoAtiva ? "page" : undefined}
-            onClick={() => setSecao(s)}
+            onClick={() => irPara(s)}
           >
             {t(`menu.${s}`)}
           </button>
@@ -118,7 +124,7 @@ function Layout() {
         ) : dados === null ? (
           <CriarSemestre />
         ) : secaoAtiva === "inicio" ? (
-          <Inicio aoIr={setSecao} />
+          <Inicio aoIr={irPara} />
         ) : secaoAtiva === "agenda" ? (
           <Agenda />
         ) : secaoAtiva === "grade" ? (
@@ -130,7 +136,7 @@ function Layout() {
         ) : secaoAtiva === "materiais" ? (
           <Materiais />
         ) : secaoAtiva === "email" ? (
-          <Email />
+          <Email abrirId={emailAlvo} key={emailAlvo ?? "email"} />
         ) : (
           <Moodle />
         )}
