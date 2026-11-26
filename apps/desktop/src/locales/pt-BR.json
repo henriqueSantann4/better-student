@@ -384,7 +384,9 @@
     "veioDoSuap": "Veio do SUAP (detalhamento das notas). Se o professor mudar a data lá, ela muda aqui; se tirar, ela some.",
     "ligadaAoSuap": "Esta anotação também está no SUAP: se a data mudar lá, muda aqui.",
     "calendarioDoMes": "Calendário acadêmico · {{mes}}",
-    "diaVazio": "Nada marcado neste dia."
+    "diaVazio": "Nada marcado neste dia.",
+    "atividadesDoMes": "Atividades de {{mes}}",
+    "mesVazio": "Nenhuma prova, trabalho ou tarefa com prazo neste mês."
   },
   "notas": {
     "titulo": "Notas",

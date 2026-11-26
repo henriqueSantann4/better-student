@@ -4,7 +4,6 @@ import {
   agruparTarefas,
   hojeIso,
   lerFrase,
-  ORDEM_GRUPOS,
   paraDataIso,
   prazoDaFrase,
   subtarefas as repoSubtarefas,
@@ -84,6 +83,11 @@ export function Agenda() {
     />
   );
 
+  // Tarefas com prazo no mês aberto (as feitas ficam apagadas), em ordem de prazo.
+  const doMes = lista
+    .filter((x) => x.prazo && diaDoPrazo(x).slice(0, 7) === mes && !grupos.atrasadas.includes(x))
+    .sort((a, b) => a.prazo!.localeCompare(b.prazo!));
+  const semPrazo = lista.filter((x) => !x.prazo);
   const fimDoMes = `${mes}-31`;
   const eventosDoMes = eventosDoPeriodo(eventos, `${mes}-01`, fimDoMes).filter((e) => e.tipo !== "outro");
 
@@ -140,14 +144,26 @@ export function Agenda() {
             <>
               {lista.length === 0 && !rascunho && <p className="cartao suave">{t("agenda.vazia")}</p>}
 
-              {ORDEM_GRUPOS.filter((g) => g !== "concluidas" && grupos[g].length > 0).map((g) => (
-                <section key={g} className={`cartao grupo-agenda grupo-${g}`}>
+              {/* Atrasadas aparecem em qualquer mês: são o que pede ação. */}
+              {grupos.atrasadas.length > 0 && (
+                <section className="cartao grupo-agenda grupo-atrasadas">
                   <h2>
-                    {t(`agenda.grupos.${g}`)} <span className="contagem">{grupos[g].length}</span>
+                    {t("agenda.grupos.atrasadas")} <span className="contagem">{grupos.atrasadas.length}</span>
                   </h2>
-                  <ul className="lista">{grupos[g].map(item)}</ul>
+                  <ul className="lista">{grupos.atrasadas.map(item)}</ul>
                 </section>
-              ))}
+              )}
+
+              <section className="cartao">
+                <h2>
+                  {t("agenda.atividadesDoMes", { mes: nomeMes(mes) })} <span className="contagem">{doMes.length}</span>
+                </h2>
+                {doMes.length > 0 ? (
+                  <ul className="lista">{doMes.map(item)}</ul>
+                ) : (
+                  <p className="pequeno suave">{t("agenda.mesVazio")}</p>
+                )}
+              </section>
 
               {eventosDoMes.length > 0 && (
                 <section className="cartao">
@@ -160,13 +176,13 @@ export function Agenda() {
                 </section>
               )}
 
-              {grupos.concluidas.length > 0 && (
-                <details className="cartao">
-                  <summary>
-                    <strong>{t("agenda.grupos.concluidas")}</strong> <span className="contagem">{grupos.concluidas.length}</span>
-                  </summary>
-                  <ul className="lista">{grupos.concluidas.map(item)}</ul>
-                </details>
+              {semPrazo.length > 0 && (
+                <section className="cartao grupo-agenda grupo-semPrazo">
+                  <h2>
+                    {t("agenda.grupos.semPrazo")} <span className="contagem">{semPrazo.length}</span>
+                  </h2>
+                  <ul className="lista">{semPrazo.map(item)}</ul>
+                </section>
               )}
             </>
           )}
