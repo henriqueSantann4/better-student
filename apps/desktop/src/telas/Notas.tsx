@@ -1,17 +1,71 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  casarDisciplinaMoodle,
   explicarEtapa,
   tarefas as repoTarefas,
   textosRecuperacao,
   type DetalheNotasSuap,
   type Disciplina,
   type EtapaDetalhe,
+  type NotaMoodle,
   type Tarefa,
 } from "@better-student/shared";
 import { useSemestre } from "../contexto";
 import { formatarData, formatarDataHora, formatarNota, formatarPrazo } from "../formatos";
 import { ImportarSuap } from "./ImportarSuap";
+import { abrirNoNavegador, carregarNotas, estaConectado, lerSiteMoodle, moodleDisponivel, type NotasDaSala } from "../moodle/api";
+
+type EstadoMoodle = "sem_conexao" | "carregando" | "ok" | "erro";
+
+/**
+ * Notas do Moodle de cada disciplina do app (casadas pela sala, como na
+ * Agenda). Buscadas na hora, só com o app aberto e o Moodle conectado. No
+ * modo navegador, usa notas de exemplo.
+ */
+function useNotasMoodle(): { estado: EstadoMoodle; porDisciplina: Map<string, NotaMoodle[]> } {
+  const { banco, disciplinas } = useSemestre();
+  const [estado, setEstado] = useState<EstadoMoodle>("carregando");
+  const [salas, setSalas] = useState<NotasDaSala[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    void (async () => {
+      try {
+        let lidas: NotasDaSala[];
+        if (moodleDisponivel()) {
+          const site = await lerSiteMoodle(banco);
+          if (!site || !(await estaConectado(site))) {
+            if (!cancelado) setEstado("sem_conexao");
+            return;
+          }
+          lidas = await carregarNotas(site);
+        } else if (import.meta.env.DEV) {
+          lidas = (await import("../moodle/exemplos")).notasDeExemplo();
+        } else {
+          if (!cancelado) setEstado("sem_conexao");
+          return;
+        }
+        if (!cancelado) {
+          setSalas(lidas);
+          setEstado("ok");
+        }
+      } catch {
+        if (!cancelado) setEstado("erro");
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [banco]);
+
+  const porDisciplina = new Map<string, NotaMoodle[]>();
+  for (const { sala, notas } of salas) {
+    const d = casarDisciplinaMoodle(sala, disciplinas);
+    if (d && notas.length > 0) porDisciplina.set(d.id, [...(porDisciplina.get(d.id) ?? []), ...notas]);
+  }
+  return { estado, porDisciplina };
+}
 
 /** Tipos de tarefa da Agenda que costumam valer nota. */
 const TIPOS_AVALIADOS = new Set(["prova", "trabalho", "apresentacao"]);
@@ -29,6 +83,7 @@ export function Notas({ aoIrAgenda }: { aoIrAgenda: () => void }) {
   const { banco, disciplinas } = useSemestre();
   const [importando, setImportando] = useState(false);
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const moodle = useNotasMoodle();
 
   useEffect(() => {
     repoTarefas.listar(banco).then(setTarefas).catch(() => setTarefas([]));
@@ -57,7 +112,11 @@ export function Notas({ aoIrAgenda }: { aoIrAgenda: () => void }) {
         <p className="cartao suave">{t("faltas.semDisciplinas")}</p>
       ) : (
         <>
-          {atualizado && <p className="suave pequeno">{t("notas.atualizado", { data: formatarDataHora(atualizado) })}</p>}
+          <p className="suave pequeno">
+            {atualizado && t("notas.atualizado", { data: formatarDataHora(atualizado) })}{" "}
+            {moodle.estado === "carregando" && t("notas.moodle.carregando")}
+            {moodle.estado === "erro" && t("notas.moodle.erro")}
+          </p>
           <div className="grade-cartoes notas-grade">
             {disciplinas.map((d) => (
               <CartaoNotas
@@ -76,6 +135,7 @@ export function Notas({ aoIrAgenda }: { aoIrAgenda: () => void }) {
                   // Com data primeiro, na ordem; sem data no fim.
                   .sort((a, b) => (a.prazo ?? "9999").localeCompare(b.prazo ?? "9999"))}
                 aoIrAgenda={aoIrAgenda}
+                notasMoodle={moodle.porDisciplina.get(d.id) ?? []}
               />
             ))}
           </div>
@@ -90,11 +150,13 @@ function CartaoNotas({
   pendentes,
   agora,
   aoIrAgenda,
+  notasMoodle,
 }: {
   disciplina: Disciplina;
   pendentes: Tarefa[];
   agora: Date;
   aoIrAgenda: () => void;
+  notasMoodle: NotaMoodle[];
 }) {
   const { t } = useTranslation();
   const { instituicao } = useSemestre();
@@ -144,6 +206,8 @@ function CartaoNotas({
         </button>
       )}
       {detalhe && aberto && <DetalheDaNota detalhe={detalhe} />}
+
+      {notasMoodle.length > 0 && <NotasDoMoodle notas={notasMoodle} />}
 
       <h3 className="pequeno suave notas-subtitulo">{t("notas.proximas")}</h3>
       {pendentes.length > 0 ? (
@@ -257,6 +321,45 @@ function EtapaDaNota({ etapa }: { etapa: EtapaDetalhe }) {
           ` ${t("notas.conta.pendentes", { siglas: explicacao.pendentes.map((a) => a.sigla).join(", ") })}`}
       </p>
     </section>
+  );
+}
+
+/**
+ * As atividades do Moodle que já têm nota (como o professor lançou) e quantas
+ * ainda não têm. Clicar no nome abre a atividade no Moodle.
+ */
+function NotasDoMoodle({ notas }: { notas: NotaMoodle[] }) {
+  const { t } = useTranslation();
+  const comNota = notas.filter((n) => n.nota !== null);
+  const semNota = notas.length - comNota.length;
+  return (
+    <>
+      <h3 className="pequeno suave notas-subtitulo">{t("notas.moodle.titulo")}</h3>
+      {comNota.length > 0 ? (
+        <ul className="lista">
+          {comNota.map((n) => (
+            <li key={n.id} className="item">
+              <div className="item-texto">
+                {n.url ? (
+                  <button type="button" className="link" onClick={() => void abrirNoNavegador(n.url!)}>
+                    {n.nome}
+                  </button>
+                ) : (
+                  <span>{n.nome}</span>
+                )}
+              </div>
+              <span className="sem-quebra">
+                <strong>{formatarNota(n.nota)}</strong>
+                {n.maxima !== null && <span className="pequeno suave"> {t("notas.moodle.de", { maxima: formatarNota(n.maxima) })}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="pequeno suave">{t("notas.moodle.nenhumaComNota")}</p>
+      )}
+      {semNota > 0 && comNota.length > 0 && <p className="pequeno suave">{t("notas.moodle.semNota", { count: semNota })}</p>}
+    </>
   );
 }
 

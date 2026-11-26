@@ -418,7 +418,16 @@
       "pendentes": "Ainda sem nota: {{siglas}}."
     },
     "etapaAberta_one": "A nota da etapa ainda não fechou, mas já tem {{count}} avaliação com nota:",
-    "etapaAberta_other": "A nota da etapa ainda não fechou, mas já tem {{count}} avaliações com nota:"
+    "etapaAberta_other": "A nota da etapa ainda não fechou, mas já tem {{count}} avaliações com nota:",
+    "moodle": {
+      "titulo": "No Moodle",
+      "carregando": "Buscando as notas do Moodle…",
+      "erro": "Não deu para buscar as notas do Moodle agora.",
+      "de": "de {{maxima}}",
+      "nenhumaComNota": "Nenhuma atividade corrigida ainda.",
+      "semNota_one": "{{count}} atividade ainda sem nota.",
+      "semNota_other": "{{count}} atividades ainda sem nota."
+    }
   },
   "instituicao": {
     "boasVindas": "Bem-vindo ao Better Student!",

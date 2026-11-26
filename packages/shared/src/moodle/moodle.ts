@@ -6,7 +6,9 @@
  * - core_webservice_get_site_info → quem é o usuário e qual o site;
  * - core_enrol_get_users_courses → disciplinas em que está inscrito;
  * - core_calendar_get_action_events_by_timesort → atividades com prazo
- *   (tarefas, questionários, fóruns), as mesmas da "Linha do tempo".
+ *   (tarefas, questionários, fóruns), as mesmas da "Linha do tempo";
+ * - gradereport_user_get_grade_items → notas do aluno em cada disciplina
+ *   (o mesmo relatório da tela "Notas" do app oficial).
  */
 
 import { textoDe } from "../importacao/html.ts";
@@ -133,3 +135,57 @@ export function parametrosMoodle(dados: Record<string, unknown>, prefixo = ""): 
   }
   return pares;
 }
+
+/** Uma atividade que vale nota no Moodle (questionário, tarefa, item lançado à mão...). */
+export interface NotaMoodle {
+  id: number;
+  nome: string;
+  /** "quiz", "assign"...; `null` para notas lançadas direto no livro de notas. */
+  modulo: string | null;
+  /** `null` = ainda sem nota (ou nota escondida pelo professor). */
+  nota: number | null;
+  maxima: number | null;
+  /** Data em que a nota foi dada (ISO), quando o Moodle informa. */
+  corrigidaEm: string | null;
+  /** Link da atividade no Moodle. */
+  url: string | null;
+}
+
+interface ItemNotaBruto {
+  id?: number;
+  itemname?: string | null;
+  itemtype?: string;
+  itemmodule?: string | null;
+  cmid?: number;
+  graderaw?: number | null;
+  grademax?: number;
+  gradedategraded?: number | null;
+  gradeishidden?: boolean;
+}
+
+/**
+ * Notas de UMA disciplina (resposta de gradereport_user_get_grade_items).
+ * Ficam de fora o total do curso e os totais de categoria: são contas do
+ * Moodle, e o app só mostra o que o professor lançou.
+ */
+export function lerNotasMoodle(resposta: unknown, site = ""): NotaMoodle[] {
+  const r = conferirResposta<{ usergrades?: Array<{ gradeitems?: ItemNotaBruto[] }> }>(resposta);
+  const itens = r.usergrades?.[0]?.gradeitems ?? [];
+  const base = site.replace(/\/+$/, "");
+  return itens
+    .filter((i) => i.itemtype !== "course" && i.itemtype !== "category")
+    .map((i) => {
+      const escondida = i.gradeishidden === true;
+      const nota = !escondida && typeof i.graderaw === "number" ? i.graderaw : null;
+      return {
+        id: Number(i.id ?? 0),
+        nome: limparTexto(i.itemname) || "Sem nome",
+        modulo: i.itemmodule ?? null,
+        nota: nota === null ? null : Math.round(nota * 100) / 100,
+        maxima: typeof i.grademax === "number" ? i.grademax : null,
+        corrigidaEm: nota !== null && i.gradedategraded ? new Date(i.gradedategraded * 1000).toISOString() : null,
+        url: base && i.itemmodule && i.cmid ? `${base}/mod/${i.itemmodule}/view.php?id=${i.cmid}` : null,
+      };
+    });
+}
+
