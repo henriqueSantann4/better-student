@@ -26,7 +26,8 @@ Este arquivo passa o contexto de uma conversa de planejamento (feita no Claude) 
 ## Versões
 
 - **1.0.0** (25/11/2026, tag `v1.0.0`): tudo o que está marcado [feito] ou [testar] abaixo. Resumo em [`CHANGELOG.md`](CHANGELOG.md).
-- **1.1.0**: em elaboração. O que entrar nela vai para a seção `[1.1.0]` do CHANGELOG.
+- **1.1.0** (26/11/2026, tag `v1.1.0`): primeira versão publicada pelo workflow, com instalador na aba Releases e atualização automática. Resumo em [`CHANGELOG.md`](CHANGELOG.md).
+- **1.2.0**: em elaboração. O que entrar nela vai para uma seção `[1.2.0]` nova no CHANGELOG.
 - A versão fica em quatro lugares, que devem andar juntos: `apps/desktop/package.json`, `packages/shared/package.json`, `apps/desktop/src-tauri/tauri.conf.json` e `apps/desktop/src-tauri/Cargo.toml`.
 
 ## Estado atual
